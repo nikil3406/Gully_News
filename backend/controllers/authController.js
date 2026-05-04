@@ -25,6 +25,7 @@ export const register = async (req, res) => {
     res.json(newUser.rows[0]);
 
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
