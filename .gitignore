@@ -1,0 +1,15 @@
+# Root gitignore
+# Ignore environment files
+.env
+.env.*
+!.env.example
+
+# dependencies
+node_modules
+
+# misc
+.DS_Store
+
+# production
+/build
+
