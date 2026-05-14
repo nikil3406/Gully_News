@@ -3,23 +3,23 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
     const userExists = await pool.query(
-      "SELECT * FROM users WHERE email=$1",
-      [email]
+      "SELECT * FROM users WHERE email=$1 OR username=$2",
+      [email, username]
     );
 
     if (userExists.rows.length > 0) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User or email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await pool.query(
-      "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
-      [email, hashedPassword]
+      "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *",
+      [username, email, hashedPassword]
     );
 
     res.json(newUser.rows[0]);
@@ -45,7 +45,7 @@ export const login = async (req, res) => {
 
     const validPassword = await bcrypt.compare(
       password,
-      user.rows[0].password
+      user.rows[0].password_hash
     );
 
     if (!validPassword) {
@@ -63,4 +63,4 @@ export const login = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+};
