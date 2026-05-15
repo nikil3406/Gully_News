@@ -1,7 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 function ArticleCard({ article }) {
   const isAuthenticated = !!localStorage.getItem('token');
+  const [likesCount, setLikesCount] = useState(article.likes_count || 0);
+  const [isLiked, setIsLiked] = useState(article.is_liked_by_user || false); 
+  const [viewsCount, setViewsCount] = useState(article.views_count || 0);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasViewed = React.useRef(false);
+
+  const handleView = async () => {
+    if (!hasViewed.current) {
+      hasViewed.current = true;
+      setViewsCount(prev => prev + 1);
+      try {
+        await fetch(`http://localhost:5000/api/posts/${article.id}/view`, {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error("Failed to increment view", error);
+      }
+    }
+  };
+
+  const handleReadMore = () => {
+    setIsExpanded(true);
+    handleView();
+  };
+
+  const handleLike = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/posts/${article.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setIsLiked(data.liked);
+        setLikesCount(prev => data.liked ? prev + 1 : prev - 1);
+      }
+    } catch (error) {
+      console.error("Failed to toggle like", error);
+    }
+  };
+
   return (
     <div style={styles.card}>
       {article.image_url && (
@@ -11,8 +57,11 @@ function ArticleCard({ article }) {
         <div style={styles.category}>{article.category}</div>
         <h3 style={styles.title}>{article.title}</h3>
         <p style={styles.summary}>
-          {article.content && article.content.length > 150 
-            ? article.content.substring(0, 150) + "..." 
+          {!isExpanded && article.content && article.content.length > 150 
+            ? <>
+                {article.content.substring(0, 150)}...
+                <button style={styles.readMoreButton} onClick={handleReadMore}>Read More</button>
+              </>
             : article.content}
         </p>
         <div style={styles.meta}>
@@ -20,13 +69,16 @@ function ArticleCard({ article }) {
           <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>
         </div>
         <div style={styles.stats}>
-          <span style={styles.stat}>👁 {article.views_count}</span>
+          <span style={styles.stat}>👁 {viewsCount}</span>
           {isAuthenticated ? (
-            <button style={styles.interactiveButton}>
-              ❤️ {article.likes_count}
+            <button 
+              style={{...styles.interactiveButton, color: isLiked ? '#e0245e' : '#666'}} 
+              onClick={handleLike}
+            >
+              {isLiked ? '❤️' : '🤍'} {likesCount}
             </button>
           ) : (
-            <span style={styles.stat}>❤️ {article.likes_count}</span>
+            <span style={styles.stat}>❤️ {likesCount}</span>
           )}
           {isAuthenticated ? (
             <button style={styles.interactiveButton}>
@@ -115,6 +167,16 @@ const styles = {
     color: '#666',
     transition: 'all 0.2s',
   },
+  readMoreButton: {
+    background: 'none',
+    border: 'none',
+    color: '#007bff',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    marginLeft: '5px',
+    padding: 0,
+    fontSize: '14px',
+  }
 };
 
 export default ArticleCard;

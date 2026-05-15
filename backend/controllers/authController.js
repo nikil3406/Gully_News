@@ -82,7 +82,8 @@ export const getProfile = async (req, res) => {
     }
 
     const postsResult = await pool.query(
-      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category 
+      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+              EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1) as is_liked_by_user
        FROM posts p 
        LEFT JOIN users u ON p.user_id = u.id 
        LEFT JOIN categories c ON p.category_id = c.id 
@@ -130,6 +131,37 @@ export const updateProfile = async (req, res) => {
 
   } catch (err) {
     console.error("Update profile error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const toggleFollow = async (req, res) => {
+  const { id } = req.params; // Target user ID
+  const followerId = req.user.userId;
+
+  if (parseInt(id) === followerId) {
+    return res.status(400).json({ message: "You cannot follow yourself" });
+  }
+
+  try {
+    const followCheck = await pool.query(
+      "SELECT * FROM followers WHERE follower_id = $1 AND following_id = $2",
+      [followerId, id]
+    );
+
+    if (followCheck.rows.length > 0) {
+      // Unfollow
+      await pool.query("DELETE FROM followers WHERE follower_id = $1 AND following_id = $2", [followerId, id]);
+      await pool.query("UPDATE users SET followers_count = followers_count - 1 WHERE id = $1", [id]);
+      res.json({ followed: false });
+    } else {
+      // Follow
+      await pool.query("INSERT INTO followers (follower_id, following_id) VALUES ($1, $2)", [followerId, id]);
+      await pool.query("UPDATE users SET followers_count = followers_count + 1 WHERE id = $1", [id]);
+      res.json({ followed: true });
+    }
+  } catch (err) {
+    console.error("Error toggling follow:", err);
     res.status(500).json({ error: err.message });
   }
 };

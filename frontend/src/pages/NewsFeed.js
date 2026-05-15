@@ -27,8 +27,14 @@ function NewsFeed() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const token = localStorage.getItem('token');
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = token;
+        }
+
         const [postsRes, catsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/posts'),
+          fetch('http://localhost:5000/api/posts', { headers }),
           fetch('http://localhost:5000/api/posts/categories')
         ]);
 
