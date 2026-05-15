@@ -4,6 +4,8 @@ import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 
+import { useNavigate } from 'react-router-dom';
+
 function NewsFeed() {
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
@@ -12,6 +14,7 @@ function NewsFeed() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   // Check authentication status
   useEffect(() => {
@@ -19,102 +22,33 @@ function NewsFeed() {
     setIsAuthenticated(!!token);
   }, []);
 
-  // Mock data for now
+  // Fetch real data
   useEffect(() => {
-    // Mock articles data
-    const mockArticles = [
-      {
-        id: 1,
-        title: "Annual Community Festival This Weekend",
-        summary: "The annual Downtown Community Festival is set to take place this weekend at Central Park. The event will feature local vendors, live music, and activities for all ages.",
-        content: "Full article content here...",
-        author: "Alex Johnson",
-        category: "Local News",
-        category_id: 1,
-        image_url: "https://via.placeholder.com/600x400",
-        views_count: 245,
-        likes_count: 18,
-        comments_count: 7,
-        is_trending: true,
-        created_at: "2024-01-15T10:00:00Z"
-      },
-      {
-        id: 2,
-        title: "Local High School Wins Regional Championship",
-        summary: "Westside High School's basketball team brought home the regional championship trophy after an exciting game against their rivals.",
-        content: "Full article content here...",
-        author: "Sarah Chen",
-        category: "Sports",
-        category_id: 2,
-        image_url: "https://via.placeholder.com/600x400",
-        views_count: 189,
-        likes_count: 25,
-        comments_count: 12,
-        is_trending: true,
-        created_at: "2024-01-14T15:30:00Z"
-      },
-      {
-        id: 3,
-        title: "New Coffee Shop Opens on Main Street",
-        summary: "A new artisanal coffee shop opened its doors on Main Street this week, offering locally roasted beans and homemade pastries.",
-        content: "Full article content here...",
-        author: "Alex Johnson",
-        category: "Business",
-        category_id: 3,
-        image_url: "https://via.placeholder.com/600x400",
-        views_count: 156,
-        likes_count: 14,
-        comments_count: 5,
-        is_trending: false,
-        created_at: "2024-01-13T09:15:00Z"
-      },
-      {
-        id: 4,
-        title: "School Board Approves New Technology Initiative",
-        summary: "The local school board has approved a comprehensive technology initiative to provide tablets for all middle school students.",
-        content: "Full article content here...",
-        author: "Mike Wilson",
-        category: "Education",
-        category_id: 4,
-        image_url: "https://via.placeholder.com/600x400",
-        views_count: 98,
-        likes_count: 8,
-        comments_count: 3,
-        is_trending: false,
-        created_at: "2024-01-12T14:20:00Z"
-      },
-      {
-        id: 5,
-        title: "Community Health Fair Offers Free Screenings",
-        summary: "Local healthcare providers are offering free health screenings and wellness information at this weekend's community health fair.",
-        content: "Full article content here...",
-        author: "Sarah Chen",
-        category: "Health",
-        category_id: 5,
-        image_url: "https://via.placeholder.com/600x400",
-        views_count: 134,
-        likes_count: 11,
-        comments_count: 6,
-        is_trending: false,
-        created_at: "2024-01-11T11:45:00Z"
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [postsRes, catsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/posts'),
+          fetch('http://localhost:5000/api/posts/categories')
+        ]);
+
+        if (postsRes.ok && catsRes.ok) {
+          const posts = await postsRes.json();
+          const cats = await catsRes.json();
+          setArticles(posts);
+          setFilteredArticles(posts);
+          setCategories(cats);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    // Mock categories data
-    const mockCategories = [
-      { id: 1, name: 'Local News', color: '#007bff' },
-      { id: 2, name: 'Sports', color: '#28a745' },
-      { id: 3, name: 'Business', color: '#ffc107' },
-      { id: 4, name: 'Education', color: '#17a2b8' },
-      { id: 5, name: 'Health', color: '#dc3545' },
-      { id: 6, name: 'Entertainment', color: '#6f42c1' }
-    ];
-
-    setArticles(mockArticles);
-    setCategories(mockCategories);
-    setFilteredArticles(mockArticles);
-    setLoading(false);
+    fetchData();
   }, []);
+
 
   // Filter articles based on category and search
   useEffect(() => {
@@ -160,11 +94,15 @@ function NewsFeed() {
         <div style={styles.sidebar}>
           {isAuthenticated && (
             <div style={styles.createPostSection}>
-              <button style={styles.createPostButton}>
+              <button 
+                style={styles.createPostButton}
+                onClick={() => navigate('/create-post')}
+              >
                 ✍️ Create New Post
               </button>
             </div>
           )}
+
           <SearchBar onSearch={handleSearch} />
           <CategoryFilter 
             categories={categories}

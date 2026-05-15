@@ -5,13 +5,14 @@ import { useNavigate, Link } from "react-router-dom";
 function Register() {
   const navigate = useNavigate();
 
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!username || !email || !password) {
       alert("Please fill all fields");
       return;
     }
@@ -19,7 +20,7 @@ function Register() {
     try {
       await axios.post(
         "http://localhost:5000/api/auth/register",
-        { email, password }
+        { username, email, password }
       );
 
       alert("Registered successfully");
@@ -34,6 +35,14 @@ function Register() {
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleRegister}>
         <h2>Register</h2>
+
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e)=>setUsername(e.target.value)}
+          style={styles.input}
+        />
 
         <input
           type="email"
@@ -52,6 +61,7 @@ function Register() {
         />
 
         <button style={styles.button}>Register</button>
+
 
         <p>
           Already have an account?{" "}

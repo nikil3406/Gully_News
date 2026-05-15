@@ -10,7 +10,11 @@ function ArticleCard({ article }) {
       <div style={styles.content}>
         <div style={styles.category}>{article.category}</div>
         <h3 style={styles.title}>{article.title}</h3>
-        <p style={styles.summary}>{article.summary}</p>
+        <p style={styles.summary}>
+          {article.content && article.content.length > 150 
+            ? article.content.substring(0, 150) + "..." 
+            : article.content}
+        </p>
         <div style={styles.meta}>
           <span style={styles.author}>{article.author}</span>
           <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 function Header() {
   const token = localStorage.getItem('token');
+  const location = useLocation();
   
   return (
     <header style={styles.header}>
@@ -25,7 +26,12 @@ function Header() {
         <nav style={styles.nav}>
           {token ? (
             <div style={styles.userMenu}>
-              <Link to="/dashboard" style={styles.navLink}>Dashboard</Link>
+              {location.pathname !== '/' && (
+                <Link to="/" style={styles.navLink}>Home</Link>
+              )}
+              {location.pathname !== '/profile' && (
+                <Link to="/profile" style={styles.navLink}>Profile</Link>
+              )}
               <Link to="/create-post" style={styles.navLink}>Create Post</Link>
               <button 
                 style={styles.logoutButton}
