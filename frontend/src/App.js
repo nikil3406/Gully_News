@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
 import Profile from "./pages/Profile";
+import PostDetail from "./pages/PostDetail";
 
 function DashboardRedirect() {
   const token = localStorage.getItem("token");
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
       </Routes>
     </BrowserRouter>

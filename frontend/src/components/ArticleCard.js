@@ -1,34 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function ArticleCard({ article }) {
+  const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('token');
   const [likesCount, setLikesCount] = useState(article.likes_count || 0);
   const [isLiked, setIsLiked] = useState(article.is_liked_by_user || false); 
   const [viewsCount, setViewsCount] = useState(article.views_count || 0);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hasViewed = React.useRef(false);
-
-  const handleView = async () => {
-    if (!hasViewed.current) {
-      hasViewed.current = true;
-      setViewsCount(prev => prev + 1);
-      try {
-        await fetch(`http://localhost:5000/api/posts/${article.id}/view`, {
-          method: 'POST',
-        });
-      } catch (error) {
-        console.error("Failed to increment view", error);
-      }
-    }
-  };
-
-  const handleReadMore = () => {
-    setIsExpanded(true);
-    handleView();
-  };
-
-  const handleLike = async () => {
+  const handleLike = async (e) => {
+    e.stopPropagation(); // Prevent card navigation when liking
     if (!isAuthenticated) return;
     try {
       const token = localStorage.getItem('token');
@@ -48,19 +29,33 @@ function ArticleCard({ article }) {
     }
   };
 
+  const navigateToDetail = () => {
+    navigate(`/post/${article.id}`);
+  };
+
   return (
     <div style={styles.card}>
       {article.image_url && (
-        <img src={article.image_url} alt={article.title} style={styles.image} />
+        <img 
+          src={article.image_url} 
+          alt={article.title} 
+          style={{...styles.image, cursor: 'pointer'}} 
+          onClick={navigateToDetail}
+        />
       )}
       <div style={styles.content}>
         <div style={styles.category}>{article.category}</div>
-        <h3 style={styles.title}>{article.title}</h3>
+        <h3 
+          style={{...styles.title, cursor: 'pointer'}} 
+          onClick={navigateToDetail}
+        >
+          {article.title}
+        </h3>
         <p style={styles.summary}>
-          {!isExpanded && article.content && article.content.length > 150 
+          {article.content && article.content.length > 150 
             ? <>
                 {article.content.substring(0, 150)}...
-                <button style={styles.readMoreButton} onClick={handleReadMore}>Read More</button>
+                <button style={styles.readMoreButton} onClick={navigateToDetail}>Read More</button>
               </>
             : article.content}
         </p>
@@ -80,13 +75,9 @@ function ArticleCard({ article }) {
           ) : (
             <span style={styles.stat}>❤️ {likesCount}</span>
           )}
-          {isAuthenticated ? (
-            <button style={styles.interactiveButton}>
-              💬 {article.comments_count}
-            </button>
-          ) : (
-            <span style={styles.stat}>💬 {article.comments_count}</span>
-          )}
+          <button style={styles.interactiveButton} onClick={navigateToDetail}>
+            💬 {article.comments_count}
+          </button>
         </div>
       </div>
     </div>
