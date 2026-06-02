@@ -1,6 +1,6 @@
 import express from "express";
-import { register, login, getProfile, updateProfile, toggleFollow } from "../controllers/authController.js";
-import { verifyToken } from "../middleware/authMiddleware.js";
+import { register, login, getProfile, updateProfile, toggleFollow, searchUsers, getUserProfileById } from "../controllers/authController.js";
+import { verifyToken, optionalVerifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -10,4 +10,8 @@ router.get("/profile", verifyToken, getProfile);
 router.put("/profile", verifyToken, updateProfile);
 router.post("/:id/follow", verifyToken, toggleFollow);
 
-export default router;
+// User search and public profile
+router.get("/users/search", searchUsers);
+router.get("/profile/:id", optionalVerifyToken, getUserProfileById);
+
+export default router;

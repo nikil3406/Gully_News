@@ -165,3 +165,76 @@ export const toggleFollow = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const searchUsers = async (req, res) => {
+  const { q } = req.query;
+  if (!q) {
+    return res.json([]);
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, username, email, profile_image, bio, reputation_score, followers_count 
+       FROM users 
+       WHERE username ILIKE $1 OR email ILIKE $1 
+       LIMIT 10`,
+      [`%${q}%`]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Search users error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUserProfileById = async (req, res) => {
+  const { id } = req.params;
+  const viewerId = req.user ? req.user.userId : null;
+
+  try {
+    // Get user details
+    const userResult = await pool.query(
+      `SELECT id, username, email, profile_image, bio, reputation_score, followers_count, created_at
+       FROM users 
+       WHERE id = $1`,
+      [id]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the viewer is following this user
+    let isFollowing = false;
+    if (viewerId) {
+      const followCheck = await pool.query(
+        "SELECT 1 FROM followers WHERE follower_id = $1 AND following_id = $2",
+        [viewerId, id]
+      );
+      isFollowing = followCheck.rows.length > 0;
+    }
+
+    // Get user's posts
+    const postsResult = await pool.query(
+      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+              EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $2) as is_liked_by_user
+       FROM posts p 
+       LEFT JOIN users u ON p.user_id = u.id 
+       LEFT JOIN categories c ON p.category_id = c.id 
+       WHERE p.user_id = $1
+       ORDER BY p.created_at DESC`,
+      [id, viewerId]
+    );
+
+    res.json({
+      user: {
+        ...userResult.rows[0],
+        is_following: isFollowing
+      },
+      posts: postsResult.rows
+    });
+  } catch (err) {
+    console.error("Get user profile by id error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

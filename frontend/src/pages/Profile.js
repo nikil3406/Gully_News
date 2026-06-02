@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 
+const getUserColor = (username) => {
+  if (!username) return '#007bff';
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 70%, 45%)`;
+};
+
 const Profile = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [userData, setUserData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,33 +29,60 @@ const Profile = () => {
   const [editBio, setEditBio] = useState('');
   const [editProfileImage, setEditProfileImage] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  // Decode current logged-in user ID from token
+  useEffect(() => {
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserId(payload.userId);
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    }
+  }, [token]);
+
+  const isOwnProfile = !id || (currentUserId && parseInt(id) === currentUserId);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          window.location.href = '/login';
+        const url = isOwnProfile 
+          ? 'http://localhost:5000/api/auth/profile' 
+          : `http://localhost:5000/api/auth/profile/${id}`;
+
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = token;
+        }
+
+        if (isOwnProfile && !token) {
+          navigate('/login');
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/profile', {
-          headers: {
-            'Authorization': token
-          }
-        });
+        const response = await fetch(url, { headers });
 
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('User not found');
+          }
           throw new Error('Failed to fetch profile');
         }
 
         const data = await response.json();
         setUserData(data.user);
         setPosts(data.posts);
-        setEditUsername(data.user.username || '');
-        setEditEmail(data.user.email || '');
-        setEditBio(data.user.bio || '');
-        setEditProfileImage(data.user.profile_image || '');
+        
+        if (isOwnProfile) {
+          setEditUsername(data.user.username || '');
+          setEditEmail(data.user.email || '');
+          setEditBio(data.user.bio || '');
+          setEditProfileImage(data.user.profile_image || '');
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -47,14 +90,15 @@ const Profile = () => {
       }
     };
 
+    // Only fetch if currentUserId is resolved OR if viewer is logged out (so currentUserId stays null)
+    // This avoids double fetching or race conditions when resolving token on mount.
     fetchProfile();
-  }, []);
+  }, [id, currentUserId, token, navigate]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/auth/profile', {
         method: 'PUT',
         headers: {
@@ -70,7 +114,8 @@ const Profile = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update profile');
       }
 
       const updatedUser = await response.json();
@@ -84,8 +129,37 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div style={styles.loading}>Loading your profile...</div>;
+  const handleFollowToggle = async () => {
+    if (!token) return;
+    setFollowLoading(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/${userData.id}/follow`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to follow/unfollow user');
+      }
+
+      const data = await response.json();
+      setUserData(prev => ({
+        ...prev,
+        is_following: data.followed,
+        followers_count: prev.followers_count + (data.followed ? 1 : -1)
+      }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  if (loading) return <div style={styles.loading}>Loading profile...</div>;
   if (error) return <div style={styles.error}>Error: {error}</div>;
+  if (!userData) return <div style={styles.error}>User not found</div>;
 
   return (
     <div style={styles.page}>
@@ -97,20 +171,25 @@ const Profile = () => {
               {userData.profile_image ? (
                 <img src={userData.profile_image} alt={userData.username} style={styles.avatar} />
               ) : (
-                <div style={styles.defaultAvatar}>{userData.username[0].toUpperCase()}</div>
+                <div style={{
+                  ...styles.defaultAvatar,
+                  backgroundColor: getUserColor(userData.username)
+                }}>
+                  {userData.username ? userData.username[0].toUpperCase() : 'U'}
+                </div>
               )}
             </div>
             <div style={styles.textInfo}>
               <h1 style={styles.username}>{userData.username}</h1>
-              <p style={styles.email}>{userData.email}</p>
+              {isOwnProfile && <p style={styles.email}>{userData.email}</p>}
               <p style={styles.bio}>{userData.bio || "No bio added yet."}</p>
               <div style={styles.statsRow}>
                 <div style={styles.statItem}>
-                  <span style={styles.statValue}>{userData.reputation_score}</span>
+                  <span style={styles.statValue}>{userData.reputation_score || 0}</span>
                   <span style={styles.statLabel}>Reputation</span>
                 </div>
                 <div style={styles.statItem}>
-                  <span style={styles.statValue}>{userData.followers_count}</span>
+                  <span style={styles.statValue}>{userData.followers_count || 0}</span>
                   <span style={styles.statLabel}>Followers</span>
                 </div>
                 <div style={styles.statItem}>
@@ -120,7 +199,32 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          <button style={styles.editButton} onClick={() => setIsEditing(true)}>Edit Profile</button>
+          
+          <div style={styles.actionContainer}>
+            {isOwnProfile ? (
+              <button style={styles.editButton} onClick={() => setIsEditing(true)}>Edit Profile</button>
+            ) : token ? (
+              <button 
+                style={{
+                  ...styles.followButton,
+                  backgroundColor: userData.is_following ? '#e1e5e9' : '#007bff',
+                  color: userData.is_following ? '#333' : '#fff',
+                  border: userData.is_following ? '1px solid #ccc' : 'none'
+                }}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
+                {followLoading ? '...' : userData.is_following ? '✓ Following' : 'Follow'}
+              </button>
+            ) : (
+              <button 
+                style={styles.followButtonDisabled}
+                onClick={() => navigate('/login')}
+              >
+                🔑 Log in to Follow
+              </button>
+            )}
+          </div>
         </div>
 
         {isEditing && (
@@ -192,7 +296,9 @@ const Profile = () => {
         )}
 
         <div style={styles.contentSection}>
-          <h2 style={styles.sectionTitle}>Your Articles</h2>
+          <h2 style={styles.sectionTitle}>
+            {isOwnProfile ? 'Your Articles' : `${userData.username}'s Articles`}
+          </h2>
           {posts.length > 0 ? (
             <div style={styles.postsGrid}>
               {posts.map(post => (
@@ -201,10 +307,12 @@ const Profile = () => {
             </div>
           ) : (
             <div style={styles.noPosts}>
-              <p>You haven't published any articles yet.</p>
-              <button style={styles.createButton} onClick={() => window.location.href='/create-post'}>
-                Create Your First Post
-              </button>
+              <p>{isOwnProfile ? "You haven't published any articles yet." : "This reporter hasn't published any articles yet."}</p>
+              {isOwnProfile && (
+                <button style={styles.createButton} onClick={() => navigate('/create-post')}>
+                  Create Your First Post
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -224,6 +332,7 @@ const styles = {
     padding: '0 20px',
   },
   profileHeader: {
+    backgroundColor: '#doc', // Will default to fallback or styled container
     backgroundColor: '#fff',
     borderRadius: '16px',
     padding: '40px',
@@ -252,7 +361,6 @@ const styles = {
   defaultAvatar: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#007bff',
     color: '#fff',
     display: 'flex',
     alignItems: 'center',
@@ -264,11 +372,13 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    textAlign: 'left',
   },
   username: {
     fontSize: '32px',
     margin: 0,
     color: '#1a1a1a',
+    fontWeight: 'bold',
   },
   email: {
     color: '#666',
@@ -302,11 +412,35 @@ const styles = {
     color: '#888',
     textTransform: 'uppercase',
   },
+  actionContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
   editButton: {
     padding: '10px 20px',
     borderRadius: '8px',
     border: '1px solid #ddd',
     backgroundColor: '#fff',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'all 0.2s',
+  },
+  followButton: {
+    padding: '10px 24px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+  },
+  followButtonDisabled: {
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: '1px solid #e1e5e9',
+    backgroundColor: '#f8f9fa',
+    color: '#666',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600',
@@ -319,6 +453,7 @@ const styles = {
     fontSize: '24px',
     marginBottom: '20px',
     color: '#1a1a1a',
+    textAlign: 'left',
   },
   postsGrid: {
     display: 'grid',
@@ -381,6 +516,7 @@ const styles = {
     fontSize: '24px',
     marginBottom: '20px',
     color: '#1a1a1a',
+    textAlign: 'left',
   },
   formGroup: {
     marginBottom: '20px',
@@ -391,6 +527,7 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     color: '#444',
+    textAlign: 'left',
   },
   input: {
     width: '100%',
