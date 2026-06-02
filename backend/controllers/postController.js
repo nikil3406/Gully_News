@@ -48,10 +48,16 @@ export const getPosts = async (req, res) => {
 
 export const getPostById = async (req, res) => {
   const { id } = req.params;
+  const userId = req.user ? req.user.userId : null;
   try {
     const post = await pool.query(
-      "SELECT p.*, COALESCE(u.username, u.email) as author FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = $1",
-      [id]
+      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+              EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $2) as is_liked_by_user
+       FROM posts p 
+       JOIN users u ON p.user_id = u.id 
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.id = $1`,
+      [id, userId]
     );
 
 
