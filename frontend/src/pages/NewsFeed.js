@@ -67,10 +67,13 @@ function NewsFeed() {
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(article =>
-        article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.summary.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter(article => {
+        const title = article.title ? article.title.toLowerCase() : '';
+        const content = article.content ? article.content.toLowerCase() : '';
+        const searchLower = searchTerm.toLowerCase();
+        
+        return title.includes(searchLower) || content.includes(searchLower);
+      });
     }
 
     setFilteredArticles(filtered);

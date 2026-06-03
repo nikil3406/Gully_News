@@ -21,6 +21,8 @@ function Header() {
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -32,6 +34,39 @@ function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Decode current logged-in user ID from token
+  useEffect(() => {
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserId(payload.userId);
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    }
+  }, [token]);
+
+  // Fetch current user's profile
+  useEffect(() => {
+    const fetchCurrentUserProfile = async () => {
+      if (!currentUserId || !token) return;
+      try {
+        const response = await fetch(`http://localhost:5000/api/auth/profile/${currentUserId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUserProfile(data.user);
+        }
+      } catch (err) {
+        console.error('Error fetching current user profile:', err);
+      }
+    };
+    fetchCurrentUserProfile();
+  }, [currentUserId, token]);
 
   // Debounced search logic
   useEffect(() => {
@@ -130,8 +165,23 @@ function Header() {
               {location.pathname !== '/' && (
                 <Link to="/" style={styles.navLink}>Home</Link>
               )}
-              {location.pathname !== '/profile' && (
-                <Link to="/profile" style={styles.navLink}>Profile</Link>
+              {currentUserProfile && (
+                <div
+                  style={styles.profileAvatarContainer}
+                  onClick={() => navigate(`/profile/${currentUserId}`)}
+                  title="View Profile"
+                >
+                  {currentUserProfile.profile_image ? (
+                    <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
+                  ) : (
+                    <div style={{
+                      ...styles.profileAvatarDefault,
+                      backgroundColor: getUserColor(currentUserProfile.username)
+                    }}>
+                      {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                </div>
               )}
               <Link to="/create-post" style={styles.navLink}>Create Post</Link>
               <button
@@ -319,6 +369,31 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+  },
+  profileAvatarContainer: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    cursor: 'pointer',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    flexShrink: 0,
+    border: '2px solid #e1e5e9',
+  },
+  profileAvatar: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  profileAvatarDefault: {
+    width: '100%',
+    height: '100%',
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '16px',
+    fontWeight: 'bold',
   },
   authButtons: {
     display: 'flex',
