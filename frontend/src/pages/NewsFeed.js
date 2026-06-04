@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
@@ -17,6 +17,7 @@ function NewsFeed() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const sentinelRef = useRef(null);
 
   // Check authentication status
   useEffect(() => {
@@ -69,6 +70,8 @@ function NewsFeed() {
       const res = await fetch(`http://localhost:5000/api/posts?${params.toString()}`, { headers });
       if (res.ok) {
         const data = await res.json();
+        // Add delay for demo purposes to show loading state
+        await new Promise(resolve => setTimeout(resolve, 500));
         // data structure: { posts: [], nextCursor: "", hasMore: boolean }
         if (shouldAppend) {
           setArticles(prev => [...prev, ...data.posts]);
@@ -90,6 +93,33 @@ function NewsFeed() {
   useEffect(() => {
     fetchArticles(null, false);
   }, [fetchArticles]);
+
+  // Setup Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && hasMore && !loadingMore && !loading) {
+            fetchArticles(nextCursor, true);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1
+      }
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      if (sentinel) observer.unobserve(sentinel);
+    };
+  }, [hasMore, loadingMore, loading, nextCursor, fetchArticles]);
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -145,14 +175,13 @@ function NewsFeed() {
               ))}
               
               {hasMore && (
-                <div style={styles.loadMoreContainer}>
-                  <button 
-                    className="load-more-btn"
-                    onClick={() => fetchArticles(nextCursor, true)}
-                    disabled={loadingMore}
-                  >
-                    {loadingMore ? 'Loading...' : 'Load More'}
-                  </button>
+                <div ref={sentinelRef} style={styles.sentinel}>
+                  {loadingMore && (
+                    <div style={styles.loadingIndicator}>
+                      <div style={styles.spinner}></div>
+                      <p>Loading more articles...</p>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -214,11 +243,27 @@ const styles = {
     transition: 'background-color 0.2s',
     boxShadow: '0 2px 4px rgba(0,123,255,0.3)',
   },
-  loadMoreContainer: {
+  sentinel: {
+    height: '100px',
     display: 'flex',
     justifyContent: 'center',
-    marginTop: '25px',
-    marginBottom: '40px',
+    alignItems: 'center',
+    margin: '40px 0',
+  },
+  loadingIndicator: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '15px',
+    padding: '20px',
+  },
+  spinner: {
+    width: '40px',
+    height: '40px',
+    border: '4px solid #e9ecef',
+    borderTop: '4px solid #007bff',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
   },
 };
 
