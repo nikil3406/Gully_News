@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
@@ -8,11 +8,13 @@ import { useNavigate } from 'react-router-dom';
 
 function NewsFeed() {
   const [articles, setArticles] = useState([]);
-  const [filteredArticles, setFilteredArticles] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
@@ -22,62 +24,72 @@ function NewsFeed() {
     setIsAuthenticated(!!token);
   }, []);
 
-  // Fetch real data
+  // Fetch categories once on mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchCategories = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = token;
-        }
-
-        const [postsRes, catsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/posts', { headers }),
-          fetch('http://localhost:5000/api/posts/categories')
-        ]);
-
-        if (postsRes.ok && catsRes.ok) {
-          const posts = await postsRes.json();
-          const cats = await catsRes.json();
-          setArticles(posts);
-          setFilteredArticles(posts);
+        const res = await fetch('http://localhost:5000/api/posts/categories');
+        if (res.ok) {
+          const cats = await res.json();
           setCategories(cats);
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching categories:', err);
       }
     };
-
-    fetchData();
+    fetchCategories();
   }, []);
 
+  const fetchArticles = useCallback(async (cursorVal = null, shouldAppend = false) => {
+    if (shouldAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
 
-  // Filter articles based on category and search
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = token;
+      }
+
+      const params = new URLSearchParams();
+      params.append('limit', '5');
+      if (selectedCategory) {
+        params.append('category_id', selectedCategory.toString());
+      }
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      if (cursorVal) {
+        params.append('cursor', cursorVal);
+      }
+
+      const res = await fetch(`http://localhost:5000/api/posts?${params.toString()}`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        // data structure: { posts: [], nextCursor: "", hasMore: boolean }
+        if (shouldAppend) {
+          setArticles(prev => [...prev, ...data.posts]);
+        } else {
+          setArticles(data.posts);
+        }
+        setNextCursor(data.nextCursor);
+        setHasMore(data.hasMore);
+      }
+    } catch (err) {
+      console.error('Error fetching articles:', err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [selectedCategory, searchTerm]);
+
+  // Fetch articles on filter change
   useEffect(() => {
-    let filtered = articles;
-
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(article => article.category_id === selectedCategory);
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(article => {
-        const title = article.title ? article.title.toLowerCase() : '';
-        const content = article.content ? article.content.toLowerCase() : '';
-        const searchLower = searchTerm.toLowerCase();
-        
-        return title.includes(searchLower) || content.includes(searchLower);
-      });
-    }
-
-    setFilteredArticles(filtered);
-  }, [selectedCategory, searchTerm, articles]);
+    fetchArticles(null, false);
+  }, [fetchArticles]);
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -87,7 +99,7 @@ function NewsFeed() {
     setSearchTerm(term);
   };
 
-  if (loading) {
+  if (loading && articles.length === 0) {
     return (
       <div style={styles.loading}>
         <div>Loading Gully News...</div>
@@ -121,15 +133,29 @@ function NewsFeed() {
         </div>
         
         <div style={styles.content}>
-          {filteredArticles.length === 0 ? (
+          {articles.length === 0 ? (
             <div style={styles.noResults}>
               <h3>No articles found</h3>
               <p>Try adjusting your search or filters</p>
             </div>
           ) : (
-            filteredArticles.map(article => (
-              <ArticleCard key={article.id} article={article} />
-            ))
+            <>
+              {articles.map(article => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+              
+              {hasMore && (
+                <div style={styles.loadMoreContainer}>
+                  <button 
+                    className="load-more-btn"
+                    onClick={() => fetchArticles(nextCursor, true)}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? 'Loading...' : 'Load More'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -187,6 +213,12 @@ const styles = {
     cursor: 'pointer',
     transition: 'background-color 0.2s',
     boxShadow: '0 2px 4px rgba(0,123,255,0.3)',
+  },
+  loadMoreContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '25px',
+    marginBottom: '40px',
   },
 };
 

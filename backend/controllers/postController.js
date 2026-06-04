@@ -29,17 +29,84 @@ export const createPost = async (req, res) => {
 export const getPosts = async (req, res) => {
   try {
     const userId = req.user ? req.user.userId : null;
-    const posts = await pool.query(
-      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
-              EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1) as is_liked_by_user
-       FROM posts p 
-       LEFT JOIN users u ON p.user_id = u.id 
-       LEFT JOIN categories c ON p.category_id = c.id 
-       ORDER BY p.created_at DESC`,
-      [userId]
-    );
+    const { cursor, limit = 5, category_id, search } = req.query;
 
-    res.json(posts.rows);
+    const parsedLimit = parseInt(limit, 10) || 5;
+    const queryLimit = parsedLimit + 1;
+
+    let queryParams = [userId];
+    let paramIndex = 2; // $1 is userId
+
+    let whereClauses = [];
+
+    // Category filter
+    if (category_id) {
+      whereClauses.push(`p.category_id = $${paramIndex}`);
+      queryParams.push(parseInt(category_id, 10));
+      paramIndex++;
+    }
+
+    // Search filter
+    if (search) {
+      whereClauses.push(`(p.title ILIKE $${paramIndex} OR p.content ILIKE $${paramIndex})`);
+      queryParams.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    // Cursor filter
+    if (cursor) {
+      try {
+        const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
+        const { created_at, id } = decoded;
+        if (created_at && id) {
+          whereClauses.push(
+            `(p.created_at < $${paramIndex} OR (p.created_at = $${paramIndex} AND p.id < $${paramIndex + 1}))`
+          );
+          queryParams.push(new Date(created_at));
+          queryParams.push(parseInt(id, 10));
+          paramIndex += 2;
+        }
+      } catch (err) {
+        console.error("Invalid cursor format:", err);
+      }
+    }
+
+    const whereClauseStr = whereClauses.length > 0 ? "WHERE " + whereClauses.join(" AND ") : "";
+
+    const query = `
+      SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+             EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1) as is_liked_by_user
+      FROM posts p 
+      LEFT JOIN users u ON p.user_id = u.id 
+      LEFT JOIN categories c ON p.category_id = c.id 
+      ${whereClauseStr}
+      ORDER BY p.created_at DESC, p.id DESC
+      LIMIT $${paramIndex}
+    `;
+
+    queryParams.push(queryLimit);
+
+    const result = await pool.query(query, queryParams);
+    const rows = result.rows;
+
+    const hasMore = rows.length > parsedLimit;
+    const posts = hasMore ? rows.slice(0, parsedLimit) : rows;
+
+    let nextCursor = null;
+    if (posts.length > 0 && hasMore) {
+      const lastPost = posts[posts.length - 1];
+      const cursorObj = {
+        created_at: lastPost.created_at,
+        id: lastPost.id
+      };
+      nextCursor = Buffer.from(JSON.stringify(cursorObj)).toString("base64");
+    }
+
+    res.json({
+      posts,
+      nextCursor,
+      hasMore
+    });
   } catch (err) {
     console.error("Error fetching posts:", err);
     res.status(500).json({ error: err.message });
