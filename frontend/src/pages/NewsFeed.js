@@ -16,6 +16,7 @@ function NewsFeed() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
   const sentinelRef = useRef(null);
 
@@ -23,6 +24,17 @@ function NewsFeed() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
+    
+    // Decode JWT to get user ID
+    if (token) {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        setCurrentUserId(decoded.userId);
+      } catch (err) {
+        console.error('Error decoding token:', err);
+      }
+    }
   }, []);
 
   // Fetch categories once on mount
@@ -129,6 +141,32 @@ function NewsFeed() {
     setSearchTerm(term);
   };
 
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this post?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token
+        }
+      });
+
+      if (response.ok) {
+        // Remove the deleted post from articles
+        setArticles(prev => prev.filter(article => article.id !== postId));
+      } else {
+        alert('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Error deleting post');
+    }
+  };
+
   if (loading && articles.length === 0) {
     return (
       <div style={styles.loading}>
@@ -171,7 +209,12 @@ function NewsFeed() {
           ) : (
             <>
               {articles.map(article => (
-                <ArticleCard key={article.id} article={article} />
+                <ArticleCard 
+                  key={article.id} 
+                  article={article} 
+                  currentUserId={currentUserId}
+                  onDelete={handleDeletePost}
+                />
               ))}
               
               {hasMore && (

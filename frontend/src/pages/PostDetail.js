@@ -13,9 +13,24 @@ function PostDetail() {
   const [isLiked, setIsLiked] = useState(false);
   const [viewsCount, setViewsCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const isAuthenticated = !!localStorage.getItem('token');
   const hasViewed = useRef(false);
+
+  // Decode JWT to get current user ID
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(atob(payload));
+        setCurrentUserId(decoded.userId);
+      } catch (err) {
+        console.error('Error decoding token:', err);
+      }
+    }
+  }, []);
 
   // Fetch post details
   useEffect(() => {
@@ -92,6 +107,33 @@ function PostDetail() {
       }
     } catch (error) {
       console.error("Failed to toggle like", error);
+    }
+  };
+
+  // Handle Delete Post
+  const handleDeletePost = async () => {
+    if (!window.confirm('Are you sure you want to delete this post?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/posts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token
+        }
+      });
+
+      if (response.ok) {
+        alert('Post deleted successfully');
+        navigate('/');
+      } else {
+        alert('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Error deleting post');
     }
   };
 
@@ -182,12 +224,23 @@ function PostDetail() {
           {/* Interactive Stats Bar */}
           <div style={styles.interactiveBar}>
             {isAuthenticated ? (
-              <button 
-                style={{...styles.likeButton, color: isLiked ? '#e0245e' : '#4a5568', borderColor: isLiked ? '#fed7d7' : '#e2e8f0', backgroundColor: isLiked ? '#fff5f5' : '#fff'}} 
-                onClick={handleLike}
-              >
-                {isLiked ? '❤️ Liked' : '🤍 Like'} • {likesCount}
-              </button>
+              <>
+                <button 
+                  style={{...styles.likeButton, color: isLiked ? '#e0245e' : '#4a5568', borderColor: isLiked ? '#fed7d7' : '#e2e8f0', backgroundColor: isLiked ? '#fff5f5' : '#fff'}} 
+                  onClick={handleLike}
+                >
+                  {isLiked ? '❤️ Liked' : '🤍 Like'} • {likesCount}
+                </button>
+                {currentUserId && post && post.user_id === currentUserId && (
+                  <button 
+                    style={styles.deleteButton}
+                    onClick={handleDeletePost}
+                    title="Delete this post"
+                  >
+                    🗑️ Delete Post
+                  </button>
+                )}
+              </>
             ) : (
               <div style={styles.likeBadge}>
                 ❤️ Likes • {likesCount}
@@ -386,6 +439,7 @@ const styles = {
     borderTop: '1px solid #edf2f7',
     paddingTop: '20px',
     display: 'flex',
+    gap: '12px',
     justifyContent: 'flex-start',
   },
   likeButton: {
@@ -410,6 +464,20 @@ const styles = {
     borderRadius: '20px',
     fontWeight: '600',
     fontSize: '13px',
+  },
+  deleteButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 18px',
+    borderRadius: '20px',
+    border: '1px solid #fca5a5',
+    backgroundColor: '#fef2f2',
+    color: '#dc2626',
+    fontWeight: '600',
+    fontSize: '13px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   commentsWrapper: {
     backgroundColor: '#fff',

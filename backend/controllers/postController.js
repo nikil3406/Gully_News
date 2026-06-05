@@ -186,3 +186,38 @@ export const incrementView = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const deletePost = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    // Check if the post exists and user is the author
+    const postCheck = await pool.query(
+      "SELECT user_id FROM posts WHERE id = $1",
+      [id]
+    );
+
+    if (postCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (postCheck.rows[0].user_id !== userId) {
+      return res.status(403).json({ message: "You can only delete your own posts" });
+    }
+
+    // Delete associated likes
+    await pool.query("DELETE FROM likes WHERE post_id = $1", [id]);
+
+    // Delete associated comments
+    await pool.query("DELETE FROM comments WHERE post_id = $1", [id]);
+
+    // Delete the post
+    await pool.query("DELETE FROM posts WHERE id = $1", [id]);
+
+    res.json({ message: "Post deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting post:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

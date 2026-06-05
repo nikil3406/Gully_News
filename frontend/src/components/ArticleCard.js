@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function ArticleCard({ article }) {
+function ArticleCard({ article, currentUserId, onDelete }) {
   const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('token');
+  const isPostCreator = currentUserId && article.user_id === currentUserId;
   const [likesCount, setLikesCount] = useState(article.likes_count || 0);
   const [isLiked, setIsLiked] = useState(article.is_liked_by_user || false); 
   const [viewsCount, setViewsCount] = useState(article.views_count || 0);
@@ -60,8 +61,22 @@ function ArticleCard({ article }) {
             : article.content}
         </p>
         <div style={styles.meta}>
-          <span style={styles.author}>{article.author}</span>
-          <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>
+          <div style={styles.authorInfo}>
+            <span style={styles.author}>{article.author}</span>
+            <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>
+          </div>
+          {isPostCreator && onDelete && (
+            <button 
+              style={styles.deleteButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(article.id);
+              }}
+              title="Delete this post"
+            >
+              🗑️ Delete
+            </button>
+          )}
         </div>
         <div style={styles.stats}>
           <span style={styles.stat}>👁 {viewsCount}</span>
@@ -128,11 +143,30 @@ const styles = {
     fontSize: '12px',
     color: '#999',
   },
+  authorInfo: {
+    display: 'flex',
+    gap: '15px',
+    alignItems: 'center',
+  },
   author: {
     fontWeight: 'bold',
   },
   date: {
     color: '#999',
+  },
+  deleteButton: {
+    background: 'none',
+    border: 'none',
+    color: '#dc3545',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: '600',
+    padding: '4px 8px',
+    transition: 'all 0.2s',
+    borderRadius: '4px',
+    '&:hover': {
+      backgroundColor: '#fff3cd',
+    }
   },
   stats: {
     display: 'flex',
