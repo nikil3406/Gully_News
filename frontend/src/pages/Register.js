@@ -97,13 +97,37 @@ const styles = {
   },
   button: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     background: "#007bff",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "6px",
     cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "600",
+    marginTop: "8px",
+    transition: "background-color 0.2s",
   },
 };
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 480px) {
+    [class*="form"] {
+      padding: 20px;
+    }
+    [class*="input"] {
+      padding: 10px;
+      font-size: 16px;
+    }
+    [class*="button"] {
+      padding: 11px;
+    }
+  }
+`;
+if (!document.querySelector('[data-register-styles]')) {
+  styleSheet.setAttribute('data-register-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default Register;

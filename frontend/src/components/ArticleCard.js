@@ -105,48 +105,52 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     overflow: 'hidden',
-    marginBottom: '20px',
-    transition: 'transform 0.2s',
+    marginBottom: '16px',
+    transition: 'transform 0.2s, box-shadow 0.2s',
   },
   image: {
     width: '100%',
-    height: '200px',
+    height: '180px',
     objectFit: 'cover',
   },
   content: {
-    padding: '15px',
+    padding: '12px',
   },
   category: {
     color: '#007bff',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    marginBottom: '8px',
+    marginBottom: '6px',
+    letterSpacing: '0.5px',
   },
   title: {
-    fontSize: '18px',
+    fontSize: '15px',
     fontWeight: 'bold',
-    margin: '0 0 10px 0',
+    margin: '0 0 8px 0',
     lineHeight: '1.3',
   },
   summary: {
     color: '#666',
-    fontSize: '14px',
+    fontSize: '13px',
     lineHeight: '1.5',
-    margin: '0 0 15px 0',
+    margin: '0 0 12px 0',
   },
   meta: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '10px',
-    fontSize: '12px',
+    marginBottom: '8px',
+    fontSize: '11px',
     color: '#999',
+    flexWrap: 'wrap',
+    gap: '8px',
   },
   authorInfo: {
     display: 'flex',
-    gap: '15px',
+    gap: '12px',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   author: {
     fontWeight: 'bold',
@@ -159,36 +163,35 @@ const styles = {
     border: 'none',
     color: '#dc3545',
     cursor: 'pointer',
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: '600',
-    padding: '4px 8px',
+    padding: '4px 6px',
     transition: 'all 0.2s',
-    borderRadius: '4px',
-    '&:hover': {
-      backgroundColor: '#fff3cd',
-    }
+    borderRadius: '3px',
+    whiteSpace: 'nowrap',
   },
   stats: {
     display: 'flex',
-    gap: '15px',
-    fontSize: '12px',
+    gap: '10px',
+    fontSize: '11px',
     color: '#666',
+    flexWrap: 'wrap',
   },
   stat: {
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
+    gap: '3px',
   },
   interactiveButton: {
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
-    padding: '4px 8px',
+    gap: '3px',
+    padding: '4px 6px',
     border: '1px solid #ddd',
-    borderRadius: '4px',
+    borderRadius: '3px',
     backgroundColor: '#fff',
     cursor: 'pointer',
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#666',
     transition: 'all 0.2s',
   },
@@ -198,10 +201,71 @@ const styles = {
     color: '#007bff',
     cursor: 'pointer',
     fontWeight: 'bold',
-    marginLeft: '5px',
+    marginLeft: '3px',
     padding: 0,
-    fontSize: '14px',
+    fontSize: '13px',
   }
 };
+
+// Responsive styles for different screen sizes
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (min-width: 640px) {
+    [class*="card"] {
+      margin-bottom: 18px;
+    }
+    [class*="image"] {
+      height: 200px;
+    }
+    [class*="content"] {
+      padding: 14px;
+    }
+    [class*="category"] {
+      font-size: 12px;
+    }
+    [class*="title"] {
+      font-size: 16px;
+    }
+    [class*="summary"] {
+      font-size: 14px;
+    }
+    [class*="stats"] {
+      font-size: 12px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    [class*="image"] {
+      height: 220px;
+    }
+    [class*="content"] {
+      padding: 15px;
+    }
+    [class*="title"] {
+      font-size: 18px;
+    }
+    [class*="summary"] {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="card"] {
+      border-radius: 6px;
+    }
+    [class*="image"] {
+      height: 150px;
+    }
+    [class*="authorInfo"] {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+  }
+`;
+if (!document.querySelector('[data-article-card-styles]')) {
+  styleSheet.setAttribute('data-article-card-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default ArticleCard;

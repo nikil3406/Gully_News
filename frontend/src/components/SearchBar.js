@@ -84,24 +84,24 @@ function SearchBar({ onSearch }) {
 
 const styles = {
   searchForm: {
-    marginBottom: '20px',
+    marginBottom: '16px',
     width: '100%',
   },
   searchWrapper: {
     display: 'flex',
     gap: '0',
-    width: '250px',
+    width: '100%',
   },
   searchInputContainer: {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
     border: '2px solid #e1e5e9',
-    borderRadius: '25px 0 0 25px',
-    paddingLeft: '10px',
+    borderRadius: '20px 0 0 20px',
+    paddingLeft: '12px',
     paddingRight: '6px',
     backgroundColor: '#fff',
-    height: '36px',
+    height: '34px',
     transition: 'border-color 0.2s ease',
   },
   searchIcon: {
@@ -111,7 +111,7 @@ const styles = {
   },
   searchInput: {
     flex: 1,
-    padding: '8px 4px',
+    padding: '6px 4px',
     border: 'none',
     outline: 'none',
     fontSize: '13px',
@@ -121,25 +121,54 @@ const styles = {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    fontSize: '14px',
-    padding: '2px 6px',
+    fontSize: '12px',
+    padding: '2px 4px',
     color: '#999',
     transition: 'color 0.2s',
     marginRight: '2px',
     flexShrink: 0,
   },
   searchButton: {
-    padding: '8px 6px',
+    padding: '6px 10px',
     border: '2px solid #007bff',
     borderLeft: 'none',
-    borderRadius: '0 25px 25px 0',
+    borderRadius: '0 20px 20px 0',
     backgroundColor: '#007bff',
     color: '#fff',
     cursor: 'pointer',
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: 'bold',
     transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
   },
 };
+
+// Responsive styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="searchWrapper"] {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="searchForm"] {
+      margin-bottom: 12px;
+    }
+    [class*="searchInputContainer"] {
+      height: 32px;
+      padding-left: 10px;
+    }
+    [class*="searchButton"] {
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+  }
+`;
+if (!document.querySelector('[data-searchbar-styles]')) {
+  styleSheet.setAttribute('data-searchbar-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default SearchBar;

@@ -163,95 +163,147 @@ const styles = {
   },
   container: {
     maxWidth: '800px',
-    margin: '40px auto',
-    padding: '0 20px',
+    margin: '0 auto',
+    padding: '20px 16px',
   },
   formCard: {
     backgroundColor: '#fff',
-    padding: '40px',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+    padding: '28px',
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
   },
   title: {
-    fontSize: '28px',
+    fontSize: '24px',
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: '8px',
+    marginBottom: '6px',
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: '16px',
+    fontSize: '14px',
     color: '#666',
-    marginBottom: '32px',
+    marginBottom: '24px',
     textAlign: 'center',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '16px',
   },
   inputGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
     flex: 1,
   },
   row: {
     display: 'flex',
-    gap: '20px',
+    gap: '16px',
     flexWrap: 'wrap',
   },
   label: {
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
     color: '#333',
   },
   input: {
-    padding: '12px 16px',
-    borderRadius: '8px',
+    padding: '10px 12px',
+    borderRadius: '6px',
     border: '1px solid #ddd',
     fontSize: '16px',
     outline: 'none',
     transition: 'border-color 0.2s',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   select: {
-    padding: '12px 16px',
-    borderRadius: '8px',
+    padding: '10px 12px',
+    borderRadius: '6px',
     border: '1px solid #ddd',
     fontSize: '16px',
     outline: 'none',
     backgroundColor: '#fff',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   textarea: {
-    padding: '12px 16px',
-    borderRadius: '8px',
+    padding: '10px 12px',
+    borderRadius: '6px',
     border: '1px solid #ddd',
     fontSize: '16px',
     outline: 'none',
-    minHeight: '200px',
+    minHeight: '150px',
     resize: 'vertical',
+    width: '100%',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
   },
   button: {
-    padding: '14px',
-    borderRadius: '8px',
+    padding: '12px',
+    borderRadius: '6px',
     border: 'none',
     backgroundColor: '#007bff',
     color: '#fff',
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: 'bold',
     cursor: 'pointer',
-    marginTop: '10px',
+    marginTop: '8px',
     transition: 'background-color 0.2s',
   },
   error: {
     backgroundColor: '#fff1f0',
     border: '1px solid #ffa39e',
     color: '#cf1322',
-    padding: '12px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    fontSize: '14px',
+    padding: '10px',
+    borderRadius: '6px',
+    marginBottom: '16px',
+    fontSize: '13px',
   },
 };
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="container"] {
+      padding: 16px 12px;
+    }
+    [class*="formCard"] {
+      padding: 20px;
+    }
+    [class*="title"] {
+      font-size: 20px;
+    }
+    [class*="subtitle"] {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="container"] {
+      padding: 12px 12px;
+    }
+    [class*="formCard"] {
+      padding: 16px;
+      border-radius: 8px;
+    }
+    [class*="title"] {
+      font-size: 18px;
+    }
+    [class*="form"] {
+      gap: 12px;
+    }
+    [class*="row"] {
+      flex-direction: column;
+      gap: 12px;
+    }
+    [class*="textarea"] {
+      min-height: 120px;
+    }
+  }
+`;
+if (!document.querySelector('[data-createpost-styles]')) {
+  styleSheet.setAttribute('data-createpost-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default CreatePost;

@@ -69,33 +69,61 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "100vh",
+    minHeight: "100vh",
     background: "#f5f5f5",
+    padding: "16px",
   },
   form: {
     background: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    width: "300px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+    padding: "24px",
+    borderRadius: "8px",
+    width: "100%",
+    maxWidth: "380px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
     textAlign: "center",
   },
   input: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     margin: "10px 0",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    fontSize: "16px",
+    boxSizing: "border-box",
   },
   button: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     background: "#28a745",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "6px",
     cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "600",
+    marginTop: "8px",
+    transition: "background-color 0.2s",
   },
 };
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 480px) {
+    [class*="form"] {
+      padding: 20px;
+    }
+    [class*="input"] {
+      padding: 10px;
+      font-size: 16px;
+    }
+    [class*="button"] {
+      padding: 11px;
+    }
+  }
+`;
+if (!document.querySelector('[data-login-styles]')) {
+  styleSheet.setAttribute('data-login-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default Login;

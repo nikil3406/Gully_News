@@ -268,8 +268,8 @@ const styles = {
   },
   container: {
     maxWidth: '800px',
-    margin: '30px auto',
-    padding: '0 20px 60px 20px',
+    margin: '0 auto',
+    padding: '20px 16px 40px 16px',
   },
   loadingContainer: {
     display: 'flex',
@@ -277,10 +277,10 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     height: '60vh',
-    gap: '15px',
+    gap: '12px',
   },
   loadingText: {
-    fontSize: '16px',
+    fontSize: '14px',
     color: '#4a5568',
     fontWeight: '500',
   },
@@ -294,29 +294,30 @@ const styles = {
   },
   errorContainer: {
     textAlign: 'center',
-    padding: '40px',
+    padding: '30px 20px',
     backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-    marginTop: '60px',
+    borderRadius: '10px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    marginTop: '40px',
   },
   errorTitle: {
     color: '#e53e3e',
-    fontSize: '22px',
-    marginBottom: '10px',
+    fontSize: '18px',
+    marginBottom: '8px',
   },
   errorText: {
     color: '#718096',
-    marginBottom: '20px',
+    marginBottom: '16px',
+    fontSize: '13px',
   },
   backButton: {
     backgroundColor: '#3182ce',
     color: '#fff',
     border: 'none',
-    padding: '10px 20px',
+    padding: '8px 16px',
     borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: 'bold',
   },
   backButtonLink: {
@@ -324,85 +325,85 @@ const styles = {
     border: 'none',
     color: '#4a5568',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
-    marginBottom: '20px',
+    marginBottom: '16px',
     padding: 0,
     display: 'inline-flex',
     alignItems: 'center',
     transition: 'color 0.2s',
-    ':hover': {
-      color: '#3182ce'
-    }
   },
   articleCard: {
     backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-    padding: '30px',
-    marginBottom: '25px',
+    borderRadius: '10px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    padding: '20px',
+    marginBottom: '16px',
   },
   articleHeader: {
-    marginBottom: '25px',
+    marginBottom: '20px',
   },
   category: {
     backgroundColor: '#ebf8ff',
     color: '#2b6cb0',
-    fontSize: '11px',
+    fontSize: '10px',
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    padding: '4px 10px',
-    borderRadius: '20px',
+    padding: '4px 8px',
+    borderRadius: '16px',
     display: 'inline-block',
-    marginBottom: '12px',
+    marginBottom: '10px',
   },
   title: {
-    fontSize: '32px',
+    fontSize: '24px',
     fontWeight: '800',
     color: '#1a202c',
-    margin: '0 0 20px 0',
-    lineHeight: '1.25',
+    margin: '0 0 16px 0',
+    lineHeight: '1.3',
+    wordBreak: 'break-word',
   },
   metaRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '15px',
+    gap: '12px',
     borderBottom: '1px solid #edf2f7',
-    paddingBottom: '20px',
+    paddingBottom: '16px',
   },
   authorInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '10px',
   },
   authorAvatar: {
-    width: '40px',
-    height: '40px',
+    width: '36px',
+    height: '36px',
     backgroundColor: '#3182ce',
     color: '#fff',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '16px',
+    fontSize: '14px',
     fontWeight: 'bold',
+    flexShrink: 0,
   },
   authorName: {
     fontWeight: 'bold',
     color: '#2d3748',
-    fontSize: '14px',
+    fontSize: '13px',
   },
   publishDate: {
     color: '#718096',
-    fontSize: '12px',
+    fontSize: '11px',
   },
   statsRow: {
     display: 'flex',
-    gap: '15px',
-    fontSize: '13px',
+    gap: '10px',
+    fontSize: '12px',
     color: '#718096',
+    flexWrap: 'wrap',
   },
   statItem: {
     backgroundColor: '#f7fafc',
@@ -412,11 +413,11 @@ const styles = {
   },
   mediaContainer: {
     width: '100%',
-    maxHeight: '450px',
+    maxHeight: '350px',
     overflow: 'hidden',
     borderRadius: '8px',
-    marginBottom: '25px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    marginBottom: '20px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
   },
   image: {
     width: '100%',
@@ -429,28 +430,30 @@ const styles = {
     objectFit: 'cover',
   },
   articleContent: {
-    fontSize: '16px',
+    fontSize: '14px',
     color: '#2d3748',
-    lineHeight: '1.8',
+    lineHeight: '1.7',
     whiteSpace: 'pre-wrap',
-    marginBottom: '30px',
+    marginBottom: '24px',
+    wordBreak: 'break-word',
   },
   interactiveBar: {
     borderTop: '1px solid #edf2f7',
-    paddingTop: '20px',
+    paddingTop: '16px',
     display: 'flex',
-    gap: '12px',
+    gap: '10px',
     justifyContent: 'flex-start',
+    flexWrap: 'wrap',
   },
   likeButton: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '8px 18px',
-    borderRadius: '20px',
+    gap: '6px',
+    padding: '6px 14px',
+    borderRadius: '18px',
     border: '1px solid',
     fontWeight: '600',
-    fontSize: '13px',
+    fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
@@ -460,31 +463,97 @@ const styles = {
     backgroundColor: '#f7fafc',
     border: '1px solid #e2e8f0',
     color: '#4a5568',
-    padding: '8px 18px',
-    borderRadius: '20px',
+    padding: '6px 14px',
+    borderRadius: '18px',
     fontWeight: '600',
-    fontSize: '13px',
+    fontSize: '12px',
   },
   deleteButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 18px',
-    borderRadius: '20px',
+    padding: '6px 14px',
+    borderRadius: '18px',
     border: '1px solid #fca5a5',
     backgroundColor: '#fef2f2',
     color: '#dc2626',
     fontWeight: '600',
-    fontSize: '13px',
+    fontSize: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
   commentsWrapper: {
     backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+    borderRadius: '10px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
     overflow: 'hidden',
   }
 };
+
+// Responsive styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="container"] {
+      padding: 16px 12px 30px;
+    }
+    [class*="articleCard"] {
+      padding: 16px;
+    }
+    [class*="title"] {
+      font-size: 20px;
+    }
+    [class*="mediaContainer"] {
+      max-height: 280px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="container"] {
+      padding: 12px 8px 24px;
+    }
+    [class*="articleCard"] {
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+    }
+    [class*="title"] {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    [class*="articleContent"] {
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    [class*="mediaContainer"] {
+      max-height: 250px;
+      margin-bottom: 16px;
+    }
+    [class*="metaRow"] {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding-bottom: 12px;
+    }
+    [class*="statsRow"] {
+      gap: 6px;
+      font-size: 11px;
+    }
+    [class*="interactiveBar"] {
+      padding-top: 12px;
+      gap: 6px;
+    }
+    [class*="likeButton"],
+    [class*="deleteButton"],
+    [class*="likeBadge"] {
+      padding: 5px 12px;
+      font-size: 11px;
+    }
+  }
+`;
+if (!document.querySelector('[data-postdetail-styles]')) {
+  styleSheet.setAttribute('data-postdetail-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default PostDetail;

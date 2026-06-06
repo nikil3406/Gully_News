@@ -243,44 +243,46 @@ const styles = {
   mainContent: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '20px',
+    padding: '16px',
     display: 'flex',
-    gap: '20px',
+    gap: '16px',
   },
   sidebar: {
     width: '280px',
     position: 'sticky',
     top: '80px',
     height: 'fit-content',
+    display: 'block',
   },
   content: {
     flex: 1,
+    minWidth: 0,
   },
   loading: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    fontSize: '18px',
+    fontSize: '16px',
   },
   noResults: {
     textAlign: 'center',
-    padding: '60px 20px',
+    padding: '40px 20px',
     backgroundColor: '#fff',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   createPostSection: {
-    marginBottom: '20px',
+    marginBottom: '16px',
   },
   createPostButton: {
     width: '100%',
-    padding: '15px',
+    padding: '12px',
     backgroundColor: '#007bff',
     color: '#fff',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
+    borderRadius: '6px',
+    fontSize: '14px',
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
@@ -291,13 +293,13 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: '40px 0',
+    margin: '30px 0',
   },
   loadingIndicator: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '15px',
+    gap: '12px',
     padding: '20px',
   },
   spinner: {
@@ -309,5 +311,48 @@ const styles = {
     animation: 'spin 1s linear infinite',
   },
 };
+
+// Responsive styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="mainContent"] {
+      flex-direction: column;
+      padding: 12px;
+      gap: 12px;
+    }
+    [class*="sidebar"] {
+      width: 100%;
+      position: relative;
+      top: auto;
+      display: block;
+      margin-bottom: 20px;
+    }
+    [class*="content"] {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="mainContent"] {
+      padding: 8px;
+      gap: 8px;
+    }
+    [class*="createPostButton"] {
+      padding: 10px;
+      font-size: 13px;
+    }
+    [class*="noResults"] {
+      padding: 30px 16px;
+    }
+    [class*="sentinel"] {
+      margin: 20px 0;
+    }
+  }
+`;
+if (!document.querySelector('[data-newsfeed-styles]')) {
+  styleSheet.setAttribute('data-newsfeed-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default NewsFeed;

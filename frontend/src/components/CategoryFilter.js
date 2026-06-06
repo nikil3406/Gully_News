@@ -39,70 +39,105 @@ const styles = {
   sidebar: {
     backgroundColor: '#fff',
     borderRadius: '8px',
-    padding: '20px',
+    padding: '16px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     height: 'fit-content',
   },
   title: {
-    fontSize: '18px',
+    fontSize: '16px',
     fontWeight: 'bold',
-    marginBottom: '15px',
+    marginBottom: '12px',
     color: '#333',
+    margin: '0 0 12px 0',
   },
   subtitle: {
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: 'bold',
-    marginBottom: '10px',
+    marginBottom: '8px',
     color: '#333',
+    margin: '0 0 8px 0',
   },
   categoryList: {
-    marginBottom: '25px',
+    marginBottom: '20px',
   },
   category: {
     display: 'block',
     width: '100%',
-    padding: '10px 12px',
+    padding: '9px 10px',
     border: 'none',
     backgroundColor: 'transparent',
     textAlign: 'left',
     cursor: 'pointer',
     borderRadius: '4px',
-    marginBottom: '5px',
-    fontSize: '14px',
+    marginBottom: '4px',
+    fontSize: '13px',
     transition: 'background-color 0.2s',
   },
   activeCategory: {
     display: 'block',
     width: '100%',
-    padding: '10px 12px',
+    padding: '9px 10px',
     border: 'none',
     backgroundColor: '#007bff',
     color: '#fff',
     textAlign: 'left',
     cursor: 'pointer',
     borderRadius: '4px',
-    marginBottom: '5px',
-    fontSize: '14px',
+    marginBottom: '4px',
+    fontSize: '13px',
     fontWeight: 'bold',
   },
   trendingSection: {
     borderTop: '1px solid #e1e5e9',
-    paddingTop: '20px',
+    paddingTop: '16px',
   },
   trendingList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
   },
   trendingItem: {
     backgroundColor: '#f8f9fa',
-    padding: '8px 12px',
+    padding: '7px 10px',
     borderRadius: '4px',
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#666',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
   },
 };
+
+// Responsive styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="sidebar"] {
+      padding: 12px;
+    }
+    [class*="trendingSection"] {
+      padding-top: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [class*="sidebar"] {
+      padding: 12px;
+      background-color: transparent;
+      box-shadow: none;
+      border-radius: 0;
+    }
+    [class*="title"] {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    [class*="categoryList"] {
+      margin-bottom: 16px;
+    }
+  }
+`;
+if (!document.querySelector('[data-categoryfilter-styles]')) {
+  styleSheet.setAttribute('data-categoryfilter-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default CategoryFilter;

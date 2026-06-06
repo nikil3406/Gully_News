@@ -23,6 +23,7 @@ function Header() {
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -97,7 +98,12 @@ function Header() {
     setSearchQuery('');
     setResults([]);
     setShowDropdown(false);
+    setMobileMenuOpen(false);
     navigate(`/profile/${userId}`);
+  };
+
+  const handleNavLinkClick = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -109,6 +115,7 @@ function Header() {
           </Link>
         </div>
 
+        {/* Search bar - hidden on mobile */}
         <div style={styles.searchBarContainer} ref={searchRef}>
           <div style={styles.searchBar}>
             <input
@@ -159,6 +166,16 @@ function Header() {
           )}
         </div>
 
+        {/* Hamburger menu button - visible on mobile */}
+        <button 
+          style={styles.hamburger}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          ☰
+        </button>
+
+        {/* Desktop navigation */}
         <nav style={styles.nav}>
           {token ? (
             <div style={styles.userMenu}>
@@ -203,6 +220,62 @@ function Header() {
           )}
         </nav>
       </div>
+
+      {/* Mobile navigation menu */}
+      {mobileMenuOpen && (
+        <div style={styles.mobileMenu}>
+          <div style={styles.mobileMenuContent}>
+            {token ? (
+              <>
+                {location.pathname !== '/' && (
+                  <Link to="/" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Home</Link>
+                )}
+                {currentUserProfile && (
+                  <div
+                    style={styles.mobileProfileContainer}
+                    onClick={() => {
+                      navigate(`/profile/${currentUserId}`);
+                      handleNavLinkClick();
+                    }}
+                  >
+                    <div style={styles.mobileProfileAvatar}>
+                      {currentUserProfile.profile_image ? (
+                        <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
+                      ) : (
+                        <div style={{
+                          ...styles.profileAvatarDefault,
+                          backgroundColor: getUserColor(currentUserProfile.username),
+                          width: '32px',
+                          height: '32px'
+                        }}>
+                          {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
+                    </div>
+                    <span style={styles.mobileProfileName}>{currentUserProfile.username}</span>
+                  </div>
+                )}
+                <Link to="/create-post" style={styles.mobileNavLink} onClick={handleNavLinkClick}>📝 Create Post</Link>
+                <button
+                  style={styles.mobileLogoutButton}
+                  onClick={() => {
+                    localStorage.removeItem('token');
+                    window.location.reload();
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Home</Link>
+                <Link to="/login" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Login</Link>
+                <Link to="/register" style={styles.mobileNavButtonLink} onClick={handleNavLinkClick}>Register</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -214,31 +287,38 @@ const styles = {
     position: 'sticky',
     top: 0,
     zIndex: 1000,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
   },
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '15px 20px',
+    padding: '12px 16px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: '12px',
+    flexWrap: 'wrap',
   },
   logo: {
-    fontSize: '24px',
+    fontSize: '20px',
     fontWeight: 'bold',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   },
   logoLink: {
     textDecoration: 'none',
     color: '#007bff',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
+    fontSize: 'inherit',
   },
   searchBarContainer: {
-    flex: 1,
+    flex: '1 1 auto',
     maxWidth: '400px',
-    margin: '0 40px',
+    minWidth: '150px',
     position: 'relative',
+    display: 'none',
   },
   searchBar: {
     display: 'flex',
@@ -247,27 +327,29 @@ const styles = {
   },
   searchInput: {
     flex: 1,
-    padding: '8px 15px',
+    padding: '8px 12px',
     border: '1px solid #ddd',
     borderRadius: '20px 0 0 20px',
     outline: 'none',
-    fontSize: '14px',
+    fontSize: '13px',
     transition: 'border-color 0.2s',
   },
   searchButton: {
-    padding: '8px 15px',
+    padding: '8px 12px',
     border: '1px solid #ddd',
     borderLeft: 'none',
     borderRadius: '0 20px 20px 0',
     backgroundColor: '#f8f9fa',
     cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'background-color 0.2s',
   },
   dropdown: {
     position: 'absolute',
     top: '100%',
     left: 0,
     right: 0,
-    marginTop: '8px',
+    marginTop: '6px',
     backgroundColor: '#fff',
     borderRadius: '12px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
@@ -277,23 +359,23 @@ const styles = {
     zIndex: 1001,
   },
   dropdownMessage: {
-    padding: '15px',
+    padding: '12px',
     textAlign: 'center',
     color: '#888',
-    fontSize: '14px',
+    fontSize: '13px',
   },
   dropdownItem: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '12px 16px',
+    gap: '10px',
+    padding: '10px 12px',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
     borderBottom: '1px solid #f1f3f5',
   },
   avatarContainer: {
-    width: '36px',
-    height: '36px',
+    width: '32px',
+    height: '32px',
     borderRadius: '50%',
     overflow: 'hidden',
     flexShrink: 0,
@@ -310,7 +392,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: 'bold',
   },
   userInfo: {
@@ -321,12 +403,12 @@ const styles = {
   username: {
     fontWeight: '600',
     color: '#333',
-    fontSize: '14px',
+    fontSize: '13px',
     margin: 0,
     textAlign: 'left',
   },
   userBio: {
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#888',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -334,36 +416,52 @@ const styles = {
     marginTop: '2px',
     textAlign: 'left',
   },
+  hamburger: {
+    display: 'none',
+    background: 'none',
+    border: 'none',
+    fontSize: '24px',
+    cursor: 'pointer',
+    padding: '8px',
+    margin: '0 -8px',
+    color: '#333',
+    transition: 'color 0.2s',
+  },
   nav: {
     display: 'flex',
     alignItems: 'center',
+    gap: '8px',
+    flexShrink: 0,
   },
   navLink: {
     textDecoration: 'none',
     color: '#333',
-    padding: '8px 16px',
-    fontSize: '14px',
+    padding: '8px 12px',
+    fontSize: '13px',
     transition: 'color 0.2s',
+    whiteSpace: 'nowrap',
+    borderRadius: '4px',
   },
   navButton: {
     textDecoration: 'none',
     backgroundColor: '#007bff',
     color: '#fff',
-    padding: '8px 16px',
+    padding: '6px 14px',
     borderRadius: '4px',
-    fontSize: '14px',
+    fontSize: '13px',
     border: 'none',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   logoutButton: {
     backgroundColor: '#dc3545',
     color: '#fff',
-    padding: '8px 16px',
+    padding: '6px 14px',
     borderRadius: '4px',
-    fontSize: '14px',
+    fontSize: '13px',
     border: 'none',
     cursor: 'pointer',
-    marginLeft: '8px',
+    whiteSpace: 'nowrap',
   },
   userMenu: {
     display: 'flex',
@@ -371,8 +469,8 @@ const styles = {
     gap: '8px',
   },
   profileAvatarContainer: {
-    width: '40px',
-    height: '40px',
+    width: '36px',
+    height: '36px',
     borderRadius: '50%',
     overflow: 'hidden',
     cursor: 'pointer',
@@ -392,14 +490,136 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '16px',
+    fontSize: '14px',
     fontWeight: 'bold',
   },
   authButtons: {
     display: 'flex',
     alignItems: 'center',
+    gap: '6px',
+  },
+  mobileMenu: {
+    display: 'none',
+    backgroundColor: '#fff',
+    borderTop: '1px solid #e1e5e9',
+    position: 'absolute',
+    width: '100%',
+    left: 0,
+    top: '100%',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    zIndex: 999,
+  },
+  mobileMenuContent: {
+    padding: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  mobileNavLink: {
+    textDecoration: 'none',
+    color: '#333',
+    padding: '10px 12px',
+    fontSize: '14px',
+    borderRadius: '4px',
+    display: 'block',
+    transition: 'background-color 0.2s',
+  },
+  mobileNavButtonLink: {
+    textDecoration: 'none',
+    backgroundColor: '#007bff',
+    color: '#fff',
+    padding: '10px 12px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    display: 'block',
+    textAlign: 'center',
+  },
+  mobileLogoutButton: {
+    backgroundColor: '#dc3545',
+    color: '#fff',
+    padding: '10px 12px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+    width: '100%',
+  },
+  mobileProfileContainer: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '12px',
+    padding: '12px',
+    borderRadius: '4px',
+    backgroundColor: '#f8f9fa',
+    cursor: 'pointer',
+  },
+  mobileProfileAvatar: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
+  mobileProfileName: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  // Media query styles handled through JavaScript injection
+  '@media (max-width: 768px)': {
+    searchBarContainer: {
+      display: 'none',
+    },
+    hamburger: {
+      display: 'block',
+    },
+    nav: {
+      display: 'none',
+    },
+    mobileMenu: {
+      display: 'block',
+    },
   },
 };
+
+// Apply media query styles for mobile responsiveness
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @media (max-width: 768px) {
+    [class*="searchBarContainer"] {
+      display: none !important;
+    }
+    [class*="hamburger"] {
+      display: block !important;
+    }
+    [class*="nav"] {
+      display: none !important;
+    }
+    [class*="mobileMenu"] {
+      display: block !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    [class*="hamburger"] {
+      display: none !important;
+    }
+    [class*="mobileMenu"] {
+      display: none !important;
+    }
+    [class*="searchBarContainer"] {
+      display: flex !important;
+    }
+    [class*="nav"] {
+      display: flex !important;
+    }
+  }
+`;
+if (!document.querySelector('[data-header-styles]')) {
+  styleSheet.setAttribute('data-header-styles', 'true');
+  document.head.appendChild(styleSheet);
+}
 
 export default Header;
