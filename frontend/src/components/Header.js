@@ -11,7 +11,11 @@ const getUserColor = (username) => {
   return `hsl(${h}, 70%, 45%)`;
 };
 
-function Header() {
+function Header({ categories = [], selectedCategory, onCategorySelect, showCategoryDropdown = false }) {
+  const handleCategorySelect = (e) => {
+    const val = e.target.value;
+    onCategorySelect?.(val === '' ? null : Number(val));
+  };
   const token = localStorage.getItem('token');
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,20 +119,41 @@ function Header() {
           </Link>
         </div>
 
-        {/* Search bar - hidden on mobile */}
+        {/* Search + category filter (desktop: search only, mobile: dropdown + search) */}
         <div className="header__searchBarContainer" style={styles.searchBarContainer} ref={searchRef}>
+          <div style={styles.mobileSearchRow} className="header__mobileSearchRow">
+            {showCategoryDropdown && (
+              <div style={styles.mobileCategoryWrap} className="header__mobileCategoryWrap">
+                <select
+                  className="header__mobileCategoryDropdown"
+                  value={selectedCategory ?? ''}
+                  onChange={handleCategorySelect}
+                  aria-label="Filter by category"
+                  style={styles.mobileCategoryDropdown}
+                >
+                  <option value="">📰 All News</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-          <div style={styles.searchBar}>
-            <input
-              type="text"
-              placeholder="Search local reporters..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowDropdown(true)}
-              style={styles.searchInput}
-            />
-            <button style={styles.searchButton}>🔍</button>
+            <div style={styles.searchBar}>
+              <input
+                type="text"
+                placeholder="Search local reporters..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowDropdown(true)}
+                style={styles.searchInput}
+              />
+              <button style={styles.searchButton}>🔍</button>
+            </div>
           </div>
+
           {showDropdown && searchQuery.trim() && (
             <div style={styles.dropdown}>
               {loading ? (
@@ -166,6 +191,7 @@ function Header() {
             </div>
           )}
         </div>
+
 
         {/* Hamburger menu button - visible on mobile */}
         <button
@@ -295,12 +321,7 @@ const styles = {
   container: {
     maxWidth: '1200px',
     margin: '0 auto',
-    padding: '12px 16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    flexWrap: 'wrap',
+    padding: '12px 16px'
   },
   logo: {
     fontSize: '20px',
@@ -318,10 +339,30 @@ const styles = {
   },
   searchBarContainer: {
     flex: '1 1 auto',
-    maxWidth: '400px',
+    maxWidth: '520px',
     minWidth: '150px',
     position: 'relative',
-    display: 'none',
+    display: 'block',
+  },
+  mobileSearchRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    width: '100%',
+  },
+  mobileCategoryWrap: {
+    flex: '0 0 auto',
+    display: 'block',
+  },
+  mobileCategoryDropdown: {
+    padding: '8px 10px',
+    border: '1px solid #ddd',
+    borderRadius: '20px',
+    backgroundColor: '#fff',
+    fontSize: '13px',
+    color: '#333',
+    outline: 'none',
+    maxWidth: '150px',
   },
   searchBar: {
     display: 'flex',

@@ -7,6 +7,29 @@ import CategoryFilter from '../components/CategoryFilter';
 import { useNavigate } from 'react-router-dom';
 
 function NewsFeed() {
+  const useMediaQuery = (query) => {
+    const getMatches = () => {
+      if (typeof window === 'undefined') return false;
+      return window.matchMedia(query).matches;
+    };
+
+    const [matches, setMatches] = React.useState(getMatches());
+
+    React.useEffect(() => {
+      const mql = window.matchMedia(query);
+      const onChange = () => setMatches(mql.matches);
+      onChange();
+      if (mql.addEventListener) mql.addEventListener('change', onChange);
+      else mql.addListener(onChange);
+      return () => {
+        if (mql.removeEventListener) mql.removeEventListener('change', onChange);
+        else mql.removeListener(onChange);
+      };
+    }, [query]);
+
+    return matches;
+  };
+
   const [articles, setArticles] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
@@ -19,6 +42,7 @@ function NewsFeed() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
   const sentinelRef = useRef(null);
+  const isMobileOrTablet = useMediaQuery('(max-width: 768px)');
 
   // Check authentication status
   useEffect(() => {
@@ -177,29 +201,39 @@ function NewsFeed() {
 
   return (
     <div className="newsfeed" style={styles.container}>
-      <Header />
+      <Header
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleCategorySelect}
+        showCategoryDropdown={isMobileOrTablet}
+      />
       
       <div className="newsfeed__mainContent" style={styles.mainContent}>
 
         <div className="newsfeed__sidebar" style={styles.sidebar}>
 
-          {isAuthenticated && (
-            <div style={styles.createPostSection}>
-              <button 
-                style={styles.createPostButton}
-                onClick={() => navigate('/create-post')}
-              >
-                ✍️ Create New Post
-              </button>
-            </div>
-          )}
+          {/* On mobile/tablet, hide the body search + create section (header handles category/search UI) */}
+          {!isMobileOrTablet && (
+            <>
+              {isAuthenticated && (
+                <div style={styles.createPostSection}>
+                  <button
+                    style={styles.createPostButton}
+                    onClick={() => navigate('/create-post')}
+                  >
+                    ✍️ Create New Post
+                  </button>
+                </div>
+              )}
 
-          <SearchBar onSearch={handleSearch} />
-          <CategoryFilter 
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategorySelect={handleCategorySelect}
-          />
+              <SearchBar onSearch={handleSearch} />
+              <CategoryFilter
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategorySelect={handleCategorySelect}
+              />
+            </>
+          )}
         </div>
         
         <div className="newsfeed__content" style={styles.content}>
