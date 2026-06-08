@@ -9,12 +9,22 @@ import { verifyToken } from "./middleware/authMiddleware.js";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5000",
+    "https://your-vercel-app.vercel.app"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
-
+app.get("/", (req, res) => {
+  res.json({
+    status: "Backend Running"
+  });
+});
 
 // Protected route
 app.get("/api/protected", verifyToken, (req, res) => {
