@@ -57,7 +57,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     const fetchCurrentUserProfile = async () => {
       if (!currentUserId || !token) return;
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/profile/${currentUserId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile/${currentUserId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -83,7 +83,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     setLoading(true);
     const delayDebounceFn = setTimeout(async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/users/search?q=${encodeURIComponent(searchQuery)}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/users/search?q=${encodeURIComponent(searchQuery)}`);
         if (response.ok) {
           const data = await response.json();
           setResults(data);

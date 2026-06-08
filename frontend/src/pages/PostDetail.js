@@ -44,7 +44,7 @@ function PostDetail() {
           headers['Authorization'] = token;
         }
 
-        const response = await fetch(`http://localhost:5000/api/posts/${id}`, { headers });
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}`, { headers });
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error('Post not found');
@@ -75,7 +75,7 @@ function PostDetail() {
         hasViewed.current = true;
         setViewsCount(prev => prev + 1);
         try {
-          await fetch(`http://localhost:5000/api/posts/${id}/view`, {
+          await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}/view`, { 
             method: 'POST',
           });
         } catch (error) {
@@ -94,7 +94,7 @@ function PostDetail() {
     if (!isAuthenticated) return;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${id}/like`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': token
@@ -118,7 +118,7 @@ function PostDetail() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': token

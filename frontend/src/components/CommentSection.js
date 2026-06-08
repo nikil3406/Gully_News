@@ -28,7 +28,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments`);
         if (!response.ok) {
           throw new Error('Failed to load comments');
         }
@@ -52,11 +52,11 @@ function CommentSection({ postId, onCommentsCountChange }) {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': token ? `Bearer ${token}` : ''
         },
         body: JSON.stringify({ content: commentText })
       });
@@ -86,11 +86,12 @@ function CommentSection({ postId, onCommentsCountChange }) {
     if (!window.confirm("Are you sure you want to delete this comment?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments/${commentId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': token
+          'Authorization': token ? `Bearer ${token}` : ''
         }
+
       });
 
       if (!response.ok) {

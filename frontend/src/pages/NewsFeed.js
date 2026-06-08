@@ -65,7 +65,7 @@ function NewsFeed() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/posts/categories');
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/categories`);
         if (res.ok) {
           const cats = await res.json();
           setCategories(cats);
@@ -103,7 +103,7 @@ function NewsFeed() {
         params.append('cursor', cursorVal);
       }
 
-      const res = await fetch(`http://localhost:5000/api/posts?${params.toString()}`, { headers });
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts?${params.toString()}`, { headers });
       if (res.ok) {
         const data = await res.json();
         // Add delay for demo purposes to show loading state
@@ -172,7 +172,7 @@ function NewsFeed() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': token
