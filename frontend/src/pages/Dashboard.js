@@ -10,7 +10,7 @@ function Dashboard() {
     if (!token) {
       navigate("/");
     } else {
-      fetch("http://localhost:5000/api/protected", {
+      fetch(`${process.env.REACT_APP_API_URL}/api/protected`, {
         headers: {
           Authorization: token,
         },

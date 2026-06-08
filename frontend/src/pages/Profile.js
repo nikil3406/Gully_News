@@ -51,8 +51,9 @@ const Profile = () => {
       setError(null);
       try {
         const url = isOwnProfile 
-          ? 'http://localhost:5000/api/auth/profile' 
-          : `http://localhost:5000/api/auth/profile/${id}`;
+          ? `${process.env.REACT_APP_API_URL}/api/auth/profile` 
+          : `${process.env.REACT_APP_API_URL}/api/auth/profile/${id}`;
+
 
         const headers = {};
         if (token) {
@@ -99,8 +100,9 @@ const Profile = () => {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
         method: 'PUT',
+
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token
@@ -133,7 +135,7 @@ const Profile = () => {
     if (!token) return;
     setFollowLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/${userData.id}/follow`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/${userData.id}/follow`, {
         method: 'POST',
         headers: {
           'Authorization': token
