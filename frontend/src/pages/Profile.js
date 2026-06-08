@@ -93,8 +93,8 @@ const Profile = () => {
     // Only fetch if currentUserId is resolved OR if viewer is logged out (so currentUserId stays null)
     // This avoids double fetching or race conditions when resolving token on mount.
     fetchProfile();
-  }, [id, currentUserId, token, navigate]);
-
+  }, [id, currentUserId, token, navigate, isOwnProfile]);
+  
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setUpdateLoading(true);
