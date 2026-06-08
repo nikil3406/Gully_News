@@ -152,15 +152,13 @@ code {
 /* Text utilities */
 .text-clamp-2 {
   display: -webkit-box;
-  display: box;
-  -webkit-line-clamp: 2;
+  display: flex;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .text-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

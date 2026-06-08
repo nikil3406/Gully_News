@@ -27,7 +27,7 @@ function CreatePost() {
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const response = await fetch('${process.env.REACT_APP_API_URL}/api/posts/categories');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/categories`);
         // Wait, I didn't implement getCategories route yet. I'll need to add it.
         // For now, I'll use a hardcoded list or add the route.
         // I'll add the route to backend after this.
