@@ -176,11 +176,13 @@ function NewsFeed() {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="newsfeed" style={styles.container}>
       <Header />
       
-      <div style={styles.mainContent}>
-        <div style={styles.sidebar}>
+      <div className="newsfeed__mainContent" style={styles.mainContent}>
+
+        <div className="newsfeed__sidebar" style={styles.sidebar}>
+
           {isAuthenticated && (
             <div style={styles.createPostSection}>
               <button 
@@ -200,7 +202,7 @@ function NewsFeed() {
           />
         </div>
         
-        <div style={styles.content}>
+        <div className="newsfeed__content" style={styles.content}>
           {articles.length === 0 ? (
             <div style={styles.noResults}>
               <h3>No articles found</h3>
@@ -312,47 +314,5 @@ const styles = {
   },
 };
 
-// Responsive styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (max-width: 768px) {
-    [class*="mainContent"] {
-      flex-direction: column;
-      padding: 12px;
-      gap: 12px;
-    }
-    [class*="sidebar"] {
-      width: 100%;
-      position: relative;
-      top: auto;
-      display: block;
-      margin-bottom: 20px;
-    }
-    [class*="content"] {
-      width: 100%;
-    }
-  }
-
-  @media (max-width: 480px) {
-    [class*="mainContent"] {
-      padding: 8px;
-      gap: 8px;
-    }
-    [class*="createPostButton"] {
-      padding: 10px;
-      font-size: 13px;
-    }
-    [class*="noResults"] {
-      padding: 30px 16px;
-    }
-    [class*="sentinel"] {
-      margin: 20px 0;
-    }
-  }
-`;
-if (!document.querySelector('[data-newsfeed-styles]')) {
-  styleSheet.setAttribute('data-newsfeed-styles', 'true');
-  document.head.appendChild(styleSheet);
-}
-
 export default NewsFeed;
+

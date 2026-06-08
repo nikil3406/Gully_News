@@ -107,8 +107,8 @@ function Header() {
   };
 
   return (
-    <header style={styles.header}>
-      <div style={styles.container}>
+    <header className="header" style={styles.header}>
+      <div className="header__container" style={styles.container}>
         <div style={styles.logo}>
           <Link to="/" style={styles.logoLink}>
             📰 Gully News
@@ -116,7 +116,8 @@ function Header() {
         </div>
 
         {/* Search bar - hidden on mobile */}
-        <div style={styles.searchBarContainer} ref={searchRef}>
+        <div className="header__searchBarContainer" style={styles.searchBarContainer} ref={searchRef}>
+
           <div style={styles.searchBar}>
             <input
               type="text"
@@ -167,16 +168,18 @@ function Header() {
         </div>
 
         {/* Hamburger menu button - visible on mobile */}
-        <button 
+        <button
+          className="header__hamburger"
           style={styles.hamburger}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
+
           ☰
         </button>
 
         {/* Desktop navigation */}
-        <nav style={styles.nav}>
+        <nav className="header__nav" style={styles.nav}>
           {token ? (
             <div style={styles.userMenu}>
               {location.pathname !== '/' && (
@@ -223,7 +226,7 @@ function Header() {
 
       {/* Mobile navigation menu */}
       {mobileMenuOpen && (
-        <div style={styles.mobileMenu}>
+        <div className="header__mobileMenu" style={styles.mobileMenu}>
           <div style={styles.mobileMenuContent}>
             {token ? (
               <>
@@ -567,59 +570,8 @@ const styles = {
     color: '#333',
   },
 
-  // Media query styles handled through JavaScript injection
-  '@media (max-width: 768px)': {
-    searchBarContainer: {
-      display: 'none',
-    },
-    hamburger: {
-      display: 'block',
-    },
-    nav: {
-      display: 'none',
-    },
-    mobileMenu: {
-      display: 'block',
-    },
-  },
 };
 
-// Apply media query styles for mobile responsiveness
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (max-width: 768px) {
-    [class*="searchBarContainer"] {
-      display: none !important;
-    }
-    [class*="hamburger"] {
-      display: block !important;
-    }
-    [class*="nav"] {
-      display: none !important;
-    }
-    [class*="mobileMenu"] {
-      display: block !important;
-    }
-  }
-
-  @media (min-width: 769px) {
-    [class*="hamburger"] {
-      display: none !important;
-    }
-    [class*="mobileMenu"] {
-      display: none !important;
-    }
-    [class*="searchBarContainer"] {
-      display: flex !important;
-    }
-    [class*="nav"] {
-      display: flex !important;
-    }
-  }
-`;
-if (!document.querySelector('[data-header-styles]')) {
-  styleSheet.setAttribute('data-header-styles', 'true');
-  document.head.appendChild(styleSheet);
-}
-
 export default Header;
+
+

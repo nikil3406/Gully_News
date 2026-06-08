@@ -152,6 +152,7 @@ code {
 /* Text utilities */
 .text-clamp-2 {
   display: -webkit-box;
+  display: box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -180,6 +181,25 @@ code {
   }
 }
 
+/* CategoryFilter responsive behavior */
+.categoryfilter__dropdownWrap {
+  display: none; /* shown on mobile via media query */
+}
+
+.categoryfilter__desktopOnly {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .categoryfilter__dropdownWrap {
+    display: block;
+  }
+  .categoryfilter__desktopOnly {
+    display: none;
+  }
+}
+
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
@@ -197,4 +217,252 @@ code {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* =========================================================
+   App responsiveness (moved from JS-injected media hacks)
+   ========================================================= */
+
+/* Header */
+.header {
+  background-color: #fff;
+  border-bottom: 1px solid #e1e5e9;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header__searchBarContainer {
+  flex: 1 1 auto;
+  max-width: 400px;
+  min-width: 150px;
+  position: relative;
+  display: none; /* shown on desktop via media query below */
+}
+
+.header__hamburger {
+  display: none; /* shown on mobile via media query below */
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  margin: 0 -8px;
+  color: #333;
+  transition: color 0.2s;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Mobile menu */
+.header__mobileMenu {
+  display: none; /* shown when opened via inline conditional render */
+  background-color: #fff;
+  border-top: 1px solid #e1e5e9;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .header__searchBarContainer {
+    display: none;
+  }
+  .header__hamburger {
+    display: block;
+  }
+  .header__nav {
+    display: none;
+  }
+  .header__mobileMenu {
+    display: block;
+  }
+}
+
+/* NewsFeed layout */
+.newsfeed {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.newsfeed__mainContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.newsfeed__sidebar {
+  width: 280px;
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+  display: block;
+}
+
+.newsfeed__content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .newsfeed__mainContent {
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+  }
+  .newsfeed__sidebar {
+    width: 100%;
+    position: relative;
+    top: auto;
+    display: block;
+    margin-bottom: 20px;
+  }
+  .newsfeed__content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .newsfeed__mainContent {
+    padding: 8px;
+    gap: 8px;
+  }
+}
+
+/* SearchBar */
+.searchbar {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .searchbar {
+    margin-bottom: 12px;
+  }
+}
+
+/* ArticleCard */
+.articleCard {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.articleCard__image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.articleCard__content {
+  padding: 12px;
+}
+
+@media (min-width: 640px) {
+  .articleCard {
+    margin-bottom: 18px;
+  }
+  .articleCard__image {
+    height: 200px;
+  }
+}
+
+@media (min-width: 768px) {
+  .articleCard__image {
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .articleCard {
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .articleCard__image {
+    height: 150px;
+  }
+}
+
+/* PostDetail */
+.postdetail__page {
+  background-color: #f7fafc;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .postdetail__container {
+    padding: 16px 12px 30px;
+  }
+  .postdetail__articleCard {
+    padding: 16px;
+  }
+  .postdetail__title {
+    font-size: 20px;
+  }
+  .postdetail__mediaContainer {
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .postdetail__container {
+    padding: 12px 8px 24px;
+  }
+  .postdetail__articleCard {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+  }
+  .postdetail__title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .postdetail__articleContent {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .postdetail__mediaContainer {
+    max-height: 250px;
+    margin-bottom: 16px;
+  }
+  .postdetail__metaRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 12px;
+  }
+  .postdetail__statsRow {
+    gap: 6px;
+    font-size: 11px;
+  }
+  .postdetail__interactiveBar {
+    padding-top: 12px;
+    gap: 6px;
+  }
 }

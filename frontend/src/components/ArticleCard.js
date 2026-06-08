@@ -35,19 +35,23 @@ function ArticleCard({ article, currentUserId, onDelete }) {
   };
 
   return (
-    <div style={styles.card}>
+    <div className="articleCard" style={styles.card}>
       {article.image_url && (
         <img 
+          className="articleCard__image"
           src={article.image_url} 
           alt={article.title} 
           style={{...styles.image, cursor: 'pointer'}} 
           onClick={navigateToDetail}
         />
       )}
-      <div style={styles.content}>
-        <div style={styles.category}>{article.category}</div>
-        <h3 
-          style={{...styles.title, cursor: 'pointer'}} 
+
+      <div className="articleCard__content" style={styles.content}>
+        <div className="articleCard__category" style={styles.category}>{article.category}</div>
+        <h3
+          className="articleCard__title"
+          style={{...styles.title, cursor: 'pointer'}}
+
           onClick={navigateToDetail}
         >
           {article.title}
@@ -60,7 +64,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
               </>
             : article.content}
         </p>
-        <div style={styles.meta}>
+        <div className="articleCard__meta" style={styles.meta}>
           <div style={styles.authorInfo}>
             <span style={styles.author}>{article.author}</span>
             <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>
@@ -78,7 +82,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             </button>
           )}
         </div>
-        <div style={styles.stats}>
+        <div className="articleCard__stats" style={styles.stats}>
           <span style={styles.stat}>👁 {viewsCount}</span>
           {isAuthenticated ? (
             <button 
@@ -207,65 +211,5 @@ const styles = {
   }
 };
 
-// Responsive styles for different screen sizes
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (min-width: 640px) {
-    [class*="card"] {
-      margin-bottom: 18px;
-    }
-    [class*="image"] {
-      height: 200px;
-    }
-    [class*="content"] {
-      padding: 14px;
-    }
-    [class*="category"] {
-      font-size: 12px;
-    }
-    [class*="title"] {
-      font-size: 16px;
-    }
-    [class*="summary"] {
-      font-size: 14px;
-    }
-    [class*="stats"] {
-      font-size: 12px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    [class*="image"] {
-      height: 220px;
-    }
-    [class*="content"] {
-      padding: 15px;
-    }
-    [class*="title"] {
-      font-size: 18px;
-    }
-    [class*="summary"] {
-      font-size: 14px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    [class*="card"] {
-      border-radius: 6px;
-    }
-    [class*="image"] {
-      height: 150px;
-    }
-    [class*="authorInfo"] {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-    }
-  }
-`;
-if (!document.querySelector('[data-article-card-styles]')) {
-  styleSheet.setAttribute('data-article-card-styles', 'true');
-  document.head.appendChild(styleSheet);
-}
-
 export default ArticleCard;
+

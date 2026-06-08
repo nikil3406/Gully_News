@@ -1,16 +1,41 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
   return (
-    <div style={styles.sidebar}>
-      <h3 style={styles.title}>Categories</h3>
-      <div style={styles.categoryList}>
+    <div className="categoryfilter__sidebar" style={styles.sidebar}>
+      <h3 className="categoryfilter__title" style={styles.title}>Categories</h3>
+
+      {/* Mobile dropdown */}
+      <div className="categoryfilter__dropdownWrap">
+        <select
+          className="categoryfilter__dropdown"
+          value={selectedCategory ?? ''}
+          onChange={(e) => {
+            const val = e.target.value;
+            onCategorySelect(val === '' ? null : Number(val));
+          }}
+          aria-label="Filter by category"
+          style={styles.dropdown}
+        >
+          <option value="">📰 All News</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Desktop list (hidden on mobile) */}
+      <div className="categoryfilter__categoryList categoryfilter__desktopOnly" style={styles.categoryList}>
+
         <button
           style={!selectedCategory ? styles.activeCategory : styles.category}
           onClick={() => onCategorySelect(null)}
         >
           📰 All News
         </button>
+
         {categories.map((category) => (
           <button
             key={category.id}
@@ -21,15 +46,17 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
           </button>
         ))}
       </div>
-      
-      <div style={styles.trendingSection}>
-        <h4 style={styles.subtitle}>🔥 Trending Topics</h4>
-        <div style={styles.trendingList}>
-          <div style={styles.trendingItem}>#CommunityFestival</div>
-          <div style={styles.trendingItem}>#LocalSports</div>
-          <div style={styles.trendingItem}>#BusinessNews</div>
-          <div style={styles.trendingItem}>#Education</div>
-        </div>
+
+
+      <div className="categoryfilter__trendingSection categoryfilter__desktopOnly" style={styles.trendingSection}>
+
+        <h4 className="categoryfilter__subtitle" style={styles.subtitle}>🔥 Trending Topics</h4>
+
+
+          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#CommunityFestival</div>
+          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#LocalSports</div>
+          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#BusinessNews</div>
+          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#Education</div>
       </div>
     </div>
   );
@@ -60,6 +87,19 @@ const styles = {
   categoryList: {
     marginBottom: '20px',
   },
+  dropdownWrap: {
+    marginBottom: '20px',
+  },
+  dropdown: {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: '6px',
+    border: '1px solid #e1e5e9',
+    backgroundColor: '#fff',
+    fontSize: '13px',
+    color: '#333',
+  },
+
   category: {
     display: 'block',
     width: '100%',
@@ -96,6 +136,7 @@ const styles = {
     flexDirection: 'column',
     gap: '6px',
   },
+
   trendingItem: {
     backgroundColor: '#f8f9fa',
     padding: '7px 10px',
@@ -106,38 +147,5 @@ const styles = {
     transition: 'background-color 0.2s',
   },
 };
-
-// Responsive styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (max-width: 768px) {
-    [class*="sidebar"] {
-      padding: 12px;
-    }
-    [class*="trendingSection"] {
-      padding-top: 12px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    [class*="sidebar"] {
-      padding: 12px;
-      background-color: transparent;
-      box-shadow: none;
-      border-radius: 0;
-    }
-    [class*="title"] {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    [class*="categoryList"] {
-      margin-bottom: 16px;
-    }
-  }
-`;
-if (!document.querySelector('[data-categoryfilter-styles]')) {
-  styleSheet.setAttribute('data-categoryfilter-styles', 'true');
-  document.head.appendChild(styleSheet);
-}
 
 export default CategoryFilter;
