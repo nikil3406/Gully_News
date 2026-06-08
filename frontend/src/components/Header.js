@@ -119,6 +119,51 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
           </Link>
         </div>
 
+        {/* Desktop navigation */}
+        <nav className="header__nav" style={styles.nav}>
+          {token ? (
+            <div style={styles.userMenu}>
+              {location.pathname !== '/' && (
+                <Link to="/" style={styles.navLink}>Home</Link>
+              )}
+              {currentUserProfile && (
+                <div
+                  style={styles.profileAvatarContainer}
+                  onClick={() => navigate(`/profile/${currentUserId}`)}
+                  title="View Profile"
+                >
+                  {currentUserProfile.profile_image ? (
+                    <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
+                  ) : (
+                    <div style={{
+                      ...styles.profileAvatarDefault,
+                      backgroundColor: getUserColor(currentUserProfile.username)
+                    }}>
+                      {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Link to="/create-post" style={styles.navLink}>Create Post</Link>
+              <button
+                style={styles.logoutButton}
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  window.location.reload();
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div style={styles.authButtons}>
+              <Link to="/" style={styles.navLink}>Home</Link>
+              <Link to="/login" style={styles.navLink}>Login</Link>
+              <Link to="/register" style={styles.navButton}>Register</Link>
+            </div>
+          )}
+        </nav>
+
         {/* Search + category filter (desktop: search only, mobile: dropdown + search) */}
         <div className="header__searchBarContainer" style={styles.searchBarContainer} ref={searchRef}>
           <div style={styles.mobileSearchRow} className="header__mobileSearchRow">
@@ -190,64 +235,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               )}
             </div>
           )}
-        </div>
-
-
-        {/* Hamburger menu button - visible on mobile */}
-        <button
-          className="header__hamburger"
-          style={styles.hamburger}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-
-          ☰
-        </button>
-
-        {/* Desktop navigation */}
-        <nav className="header__nav" style={styles.nav}>
-          {token ? (
-            <div style={styles.userMenu}>
-              {location.pathname !== '/' && (
-                <Link to="/" style={styles.navLink}>Home</Link>
-              )}
-              {currentUserProfile && (
-                <div
-                  style={styles.profileAvatarContainer}
-                  onClick={() => navigate(`/profile/${currentUserId}`)}
-                  title="View Profile"
-                >
-                  {currentUserProfile.profile_image ? (
-                    <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
-                  ) : (
-                    <div style={{
-                      ...styles.profileAvatarDefault,
-                      backgroundColor: getUserColor(currentUserProfile.username)
-                    }}>
-                      {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
-                    </div>
-                  )}
-                </div>
-              )}
-              <Link to="/create-post" style={styles.navLink}>Create Post</Link>
-              <button
-                style={styles.logoutButton}
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  window.location.reload();
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div style={styles.authButtons}>
-              <Link to="/" style={styles.navLink}>Home</Link>
-              <Link to="/login" style={styles.navLink}>Login</Link>
-              <Link to="/register" style={styles.navButton}>Register</Link>
-            </div>
-          )}
-        </nav>
+        </div>       
       </div>
 
       {/* Mobile navigation menu */}
