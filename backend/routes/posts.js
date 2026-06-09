@@ -1,7 +1,7 @@
 import express from "express";
 import { createPost, getPosts, getPostById, getCategories, toggleLike, incrementView, deletePost } from "../controllers/postController.js";
 import { getComments, addComment, deleteComment } from "../controllers/commentController.js";
-import { verifyToken, optionalVerifyToken } from "../middleware/authMiddleware.js";
+import { verifyToken, optionalVerifyToken} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

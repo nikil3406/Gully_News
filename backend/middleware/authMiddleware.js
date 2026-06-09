@@ -30,3 +30,22 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
+export const optionalVerifyToken = (req, res, next) => {
+  const rawAuth = req.headers["authorization"];
+  const token = extractToken(rawAuth);
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    // If token is invalid, just proceed without user
+    next();
+  }
+};
+
+
