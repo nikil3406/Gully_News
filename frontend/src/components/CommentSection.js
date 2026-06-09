@@ -56,7 +56,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          ...(token ? { Authorization: token } : {})
         },
         body: JSON.stringify({ content: commentText })
       });
@@ -89,7 +89,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
+          ...(token ? { Authorization: token } : {})
         }
 
       });

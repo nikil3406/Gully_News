@@ -123,9 +123,6 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
         <nav className="header__nav" style={styles.nav}>
           {token ? (
             <div style={styles.userMenu}>
-              {location.pathname !== '/' && (
-                <Link to="/" style={styles.navLink}>Home</Link>
-              )}
               {currentUserProfile && (
                 <div
                   style={styles.profileAvatarContainer}
