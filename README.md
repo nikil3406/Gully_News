@@ -126,7 +126,4 @@ Comments:
 
 ---
 
-## License
-
-Add your license here if applicable.
 
