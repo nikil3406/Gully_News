@@ -211,7 +211,7 @@ function NewsFeed() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
 
         {/* Sidebar (Desktop only) */}
-        <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-fit">
+        <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-fit z-10 bg-slate-50">
           {isAuthenticated && (
             <div className="mb-4">
               <button
