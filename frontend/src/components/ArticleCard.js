@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Generate a consistent color from the author's username
+const getUserColor = (username) => {
+  if (!username) return '#3b82f6';
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 65%, 42%)`;
+};
+
 function ArticleCard({ article, currentUserId, onDelete }) {
   const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('token');
@@ -68,6 +79,14 @@ function ArticleCard({ article, currentUserId, onDelete }) {
         </p>
         <div className="flex justify-between items-center text-[10px] md:text-xs text-slate-400 border-b border-slate-100 pb-3 mb-3 flex-wrap gap-2">
           <div className="flex gap-3 items-center flex-wrap">
+            {/* Author avatar */}
+            <div
+              className="w-6 h-6 rounded-full text-white font-bold text-[10px] flex items-center justify-center select-none flex-shrink-0 uppercase shadow-xs"
+              style={{ backgroundColor: getUserColor(article.author) }}
+              title={article.author}
+            >
+              {article.author ? article.author[0] : '?'}
+            </div>
             <span className="font-semibold text-slate-700">{article.author}</span>
             <span className="text-slate-400">{new Date(article.created_at).toLocaleDateString()}</span>
           </div>

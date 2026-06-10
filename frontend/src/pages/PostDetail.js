@@ -3,6 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CommentSection from '../components/CommentSection';
 
+// Generate a consistent color from the author's username
+const getUserColor = (username) => {
+  if (!username) return '#3b82f6';
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 65%, 42%)`;
+};
+
 function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -191,9 +202,13 @@ function PostDetail() {
             
             <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center select-none shadow-xs border border-blue-500 uppercase flex-shrink-0">
-                  {post.author[0]}
-                </div>
+              <div
+                className="w-9 h-9 rounded-full text-white font-bold text-sm flex items-center justify-center select-none shadow-xs border-2 border-white uppercase flex-shrink-0"
+                style={{ backgroundColor: getUserColor(post.author) }}
+                title={post.author}
+              >
+                {post.author[0]}
+              </div>
                 <div>
                   <div className="font-bold text-xs md:text-sm text-slate-700 text-left">{post.author}</div>
                   <div className="text-[10px] md:text-xs text-slate-400 text-left">
