@@ -7,7 +7,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
   const isPostCreator = currentUserId && article.user_id === currentUserId;
   const [likesCount, setLikesCount] = useState(article.likes_count || 0);
   const [isLiked, setIsLiked] = useState(article.is_liked_by_user || false); 
- const [viewsCount] = useState(article.views_count || 0);
+  const [viewsCount] = useState(article.views_count || 0);
+
   const handleLike = async (e) => {
     e.stopPropagation(); // Prevent card navigation when liking
     if (!isAuthenticated) return;
@@ -34,43 +35,45 @@ function ArticleCard({ article, currentUserId, onDelete }) {
   };
 
   return (
-    <div className="articleCard" style={styles.card}>
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-300 overflow-hidden mb-4 md:mb-6 flex flex-col group">
       {article.image_url && (
         <img 
-          className="articleCard__image"
+          className="w-full h-48 sm:h-56 md:h-64 object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
           src={article.image_url} 
           alt={article.title} 
-          style={{...styles.image, cursor: 'pointer'}} 
           onClick={navigateToDetail}
         />
       )}
 
-      <div className="articleCard__content" style={styles.content}>
-        <div className="articleCard__category" style={styles.category}>{article.category}</div>
+      <div className="p-4 md:p-5 flex flex-col flex-grow">
+        <div className="text-[10px] md:text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 select-none text-left">{article.category}</div>
         <h3
-          className="articleCard__title"
-          style={{...styles.title, cursor: 'pointer'}}
-
+          className="text-base md:text-lg font-extrabold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors duration-200 cursor-pointer text-left"
           onClick={navigateToDetail}
         >
           {article.title}
         </h3>
-        <p style={styles.summary}>
+        <p className="text-xs md:text-sm text-slate-600 leading-relaxed mb-4 text-left">
           {article.content && article.content.length > 150 
             ? <>
                 {article.content.substring(0, 150)}...
-                <button style={styles.readMoreButton} onClick={navigateToDetail}>Read More</button>
+                <button 
+                  className="text-blue-600 hover:text-blue-700 font-bold ml-1 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center text-xs md:text-sm"
+                  onClick={navigateToDetail}
+                >
+                  Read More
+                </button>
               </>
             : article.content}
         </p>
-        <div className="articleCard__meta" style={styles.meta}>
-          <div style={styles.authorInfo}>
-            <span style={styles.author}>{article.author}</span>
-            <span style={styles.date}>{new Date(article.created_at).toLocaleDateString()}</span>
+        <div className="flex justify-between items-center text-[10px] md:text-xs text-slate-400 border-b border-slate-100 pb-3 mb-3 flex-wrap gap-2">
+          <div className="flex gap-3 items-center flex-wrap">
+            <span className="font-semibold text-slate-700">{article.author}</span>
+            <span className="text-slate-400">{new Date(article.created_at).toLocaleDateString()}</span>
           </div>
           {isPostCreator && onDelete && (
             <button 
-              style={styles.deleteButton}
+              className="text-red-500 hover:text-red-700 hover:bg-red-50 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-200 flex items-center gap-1"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(article.id);
@@ -81,19 +84,26 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             </button>
           )}
         </div>
-        <div className="articleCard__stats" style={styles.stats}>
-          <span style={styles.stat}>👁 {viewsCount}</span>
+        <div className="flex gap-2.5 text-xs text-slate-500 items-center flex-wrap select-none">
+          <span className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-full px-3 py-1">👁 {viewsCount}</span>
           {isAuthenticated ? (
             <button 
-              style={{...styles.interactiveButton, color: isLiked ? '#e0245e' : '#666'}} 
+              className={`flex items-center gap-1 border rounded-full px-3 py-1 bg-white cursor-pointer transition-colors text-[11px] md:text-xs font-medium select-none ${
+                isLiked 
+                  ? 'text-pink-600 border-pink-100 bg-pink-50/20 hover:bg-pink-50/50' 
+                  : 'text-slate-600 border-slate-200 hover:bg-slate-50 active:bg-slate-100'
+              }`}
               onClick={handleLike}
             >
               {isLiked ? '❤️' : '🤍'} {likesCount}
             </button>
           ) : (
-            <span style={styles.stat}>❤️ {likesCount}</span>
+            <span className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-full px-3 py-1">❤️ {likesCount}</span>
           )}
-          <button style={styles.interactiveButton} onClick={navigateToDetail}>
+          <button 
+            className="flex items-center gap-1 border border-slate-200 rounded-full px-3 py-1 bg-white hover:bg-slate-50 active:bg-slate-100 cursor-pointer transition-colors text-slate-600 select-none text-[11px] md:text-xs"
+            onClick={navigateToDetail}
+          >
             💬 {article.comments_count}
           </button>
         </div>
@@ -101,114 +111,6 @@ function ArticleCard({ article, currentUserId, onDelete }) {
     </div>
   );
 }
-
-const styles = {
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    overflow: 'hidden',
-    marginBottom: '16px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-  },
-  image: {
-    width: '100%',
-    height: '180px',
-    objectFit: 'cover',
-  },
-  content: {
-    padding: '12px',
-  },
-  category: {
-    color: '#007bff',
-    fontSize: '11px',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    marginBottom: '6px',
-    letterSpacing: '0.5px',
-  },
-  title: {
-    fontSize: '15px',
-    fontWeight: 'bold',
-    margin: '0 0 8px 0',
-    lineHeight: '1.3',
-  },
-  summary: {
-    color: '#666',
-    fontSize: '13px',
-    lineHeight: '1.5',
-    margin: '0 0 12px 0',
-  },
-  meta: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px',
-    fontSize: '11px',
-    color: '#999',
-    flexWrap: 'wrap',
-    gap: '8px',
-  },
-  authorInfo: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-  },
-  author: {
-    fontWeight: 'bold',
-  },
-  date: {
-    color: '#999',
-  },
-  deleteButton: {
-    background: 'none',
-    border: 'none',
-    color: '#dc3545',
-    cursor: 'pointer',
-    fontSize: '11px',
-    fontWeight: '600',
-    padding: '4px 6px',
-    transition: 'all 0.2s',
-    borderRadius: '3px',
-    whiteSpace: 'nowrap',
-  },
-  stats: {
-    display: 'flex',
-    gap: '10px',
-    fontSize: '11px',
-    color: '#666',
-    flexWrap: 'wrap',
-  },
-  stat: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '3px',
-  },
-  interactiveButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '3px',
-    padding: '4px 6px',
-    border: '1px solid #ddd',
-    borderRadius: '3px',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '11px',
-    color: '#666',
-    transition: 'all 0.2s',
-  },
-  readMoreButton: {
-    background: 'none',
-    border: 'none',
-    color: '#007bff',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    marginLeft: '3px',
-    padding: 0,
-    fontSize: '13px',
-  }
-};
 
 export default ArticleCard;
 

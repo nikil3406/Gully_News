@@ -3,7 +3,6 @@ import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
-
 import { useNavigate } from 'react-router-dom';
 
 function NewsFeed() {
@@ -108,7 +107,6 @@ function NewsFeed() {
         const data = await res.json();
         // Add delay for demo purposes to show loading state
         await new Promise(resolve => setTimeout(resolve, 500));
-        // data structure: { posts: [], nextCursor: "", hasMore: boolean }
         if (shouldAppend) {
           setArticles(prev => [...prev, ...data.posts]);
         } else {
@@ -172,7 +170,7 @@ function NewsFeed() {
 
     try {
       const token = localStorage.getItem('token');
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': token
@@ -180,7 +178,6 @@ function NewsFeed() {
       });
 
       if (response.ok) {
-        // Remove the deleted post from articles
         setArticles(prev => prev.filter(article => article.id !== postId));
       } else {
         alert('Failed to delete post');
@@ -193,14 +190,17 @@ function NewsFeed() {
 
   if (loading && articles.length === 0) {
     return (
-      <div style={styles.loading}>
-        <div>Loading Gully News...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-slate-500 animate-pulse font-medium">
+          <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <div>Loading Gully News...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="newsfeed" style={styles.container}>
+    <div className="min-h-screen bg-slate-50">
       <Header
         categories={categories}
         selectedCategory={selectedCategory}
@@ -208,57 +208,76 @@ function NewsFeed() {
         showCategoryDropdown={isMobileOrTablet}
       />
       
-      <div className="newsfeed__mainContent" style={styles.mainContent}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
 
-        <div className="newsfeed__sidebar" style={styles.sidebar}>
+        {/* Sidebar (Desktop only) */}
+        <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-fit">
+          {isAuthenticated && (
+            <div className="mb-4">
+              <button
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer text-center block select-none border-none"
+                onClick={() => navigate('/create-post')}
+              >
+                ✍️ Create New Post
+              </button>
+            </div>
+          )}
 
-          {/* On mobile/tablet, hide the body search + create section (header handles category/search UI) */}
-          {!isMobileOrTablet && (
-            <>
+          <SearchBar onSearch={handleSearch} />
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategorySelect={handleCategorySelect}
+          />
+        </div>
+        
+        {/* Main Content Feed */}
+        <div className="flex-grow min-w-0 flex flex-col">
+          
+          {/* Mobile search, category chips, and create button */}
+          {isMobileOrTablet && (
+            <div className="flex flex-col gap-3 mb-4 w-full">
               {isAuthenticated && (
-                <div style={styles.createPostSection}>
-                  <button
-                    style={styles.createPostButton}
-                    onClick={() => navigate('/create-post')}
-                  >
-                    ✍️ Create New Post
-                  </button>
-                </div>
+                <button
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer text-center block select-none border-none"
+                  onClick={() => navigate('/create-post')}
+                >
+                  ✍️ Create New Post
+                </button>
               )}
-
               <SearchBar onSearch={handleSearch} />
               <CategoryFilter
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategorySelect={handleCategorySelect}
               />
-            </>
+            </div>
           )}
-        </div>
-        
-        <div className="newsfeed__content" style={styles.content}>
+
           {articles.length === 0 ? (
-            <div style={styles.noResults}>
-              <h3>No articles found</h3>
-              <p>Try adjusting your search or filters</p>
+            <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
+              <h3 className="text-base font-extrabold text-slate-800 mb-1">No articles found</h3>
+              <p className="text-xs text-slate-500">Try adjusting your search or filters</p>
             </div>
           ) : (
             <>
-              {articles.map(article => (
-                <ArticleCard 
-                  key={article.id} 
-                  article={article} 
-                  currentUserId={currentUserId}
-                  onDelete={handleDeletePost}
-                />
-              ))}
+              <div className="flex flex-col">
+                {articles.map(article => (
+                  <ArticleCard 
+                    key={article.id} 
+                    article={article} 
+                    currentUserId={currentUserId}
+                    onDelete={handleDeletePost}
+                  />
+                ))}
+              </div>
               
               {hasMore && (
-                <div ref={sentinelRef} style={styles.sentinel}>
+                <div ref={sentinelRef} className="h-20 flex items-center justify-center my-8">
                   {loadingMore && (
-                    <div style={styles.loadingIndicator}>
-                      <div style={styles.spinner}></div>
-                      <p>Loading more articles...</p>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+                      <p className="text-xs text-slate-500">Loading more articles...</p>
                     </div>
                   )}
                 </div>
@@ -270,83 +289,6 @@ function NewsFeed() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f8f9fa',
-  },
-  mainContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '16px',
-    display: 'flex',
-    gap: '16px',
-  },
-  sidebar: {
-    width: '280px',
-    position: 'sticky',
-    top: '80px',
-    height: 'fit-content',
-    display: 'block',
-  },
-  content: {
-    flex: 1,
-    minWidth: 0,
-  },
-  loading: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    fontSize: '16px',
-  },
-  noResults: {
-    textAlign: 'center',
-    padding: '40px 20px',
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  },
-  createPostSection: {
-    marginBottom: '16px',
-  },
-  createPostButton: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    boxShadow: '0 2px 4px rgba(0,123,255,0.3)',
-  },
-  sentinel: {
-    height: '100px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: '30px 0',
-  },
-  loadingIndicator: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '20px',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #e9ecef',
-    borderTop: '4px solid #007bff',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  },
-};
 
 export default NewsFeed;
 

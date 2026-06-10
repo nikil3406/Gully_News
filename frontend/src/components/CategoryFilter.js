@@ -2,150 +2,59 @@ import React from 'react';
 
 function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
   return (
-    <div className="categoryfilter__sidebar" style={styles.sidebar}>
-      <h3 className="categoryfilter__title" style={styles.title}>Categories</h3>
+    <div className="md:bg-white md:rounded-2xl md:p-5 md:border md:border-slate-200/80 md:shadow-xs w-full">
+      <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-4 hidden md:block select-none text-left">
+        Categories
+      </h3>
 
-      {/* Mobile dropdown */}
-      <div className="categoryfilter__dropdownWrap">
-        <select
-          className="categoryfilter__dropdown"
-          value={selectedCategory ?? ''}
-          onChange={(e) => {
-            const val = e.target.value;
-            onCategorySelect(val === '' ? null : Number(val));
-          }}
-          aria-label="Filter by category"
-          style={styles.dropdown}
-        >
-          <option value="">📰 All News</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Desktop list (hidden on mobile) */}
-      <div className="categoryfilter__categoryList categoryfilter__desktopOnly" style={styles.categoryList}>
-
+      {/* Category List */}
+      <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-3 md:pb-0 scrollbar-none w-full -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
+        {/* All News Chip */}
         <button
-          style={!selectedCategory ? styles.activeCategory : styles.category}
           onClick={() => onCategorySelect(null)}
+          className={`flex-shrink-0 flex items-center px-4 py-2 md:py-2.5 text-xs md:text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer select-none text-left ${
+            !selectedCategory
+              ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100'
+              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+          }`}
         >
           📰 All News
         </button>
 
+        {/* Category Chips */}
         {categories.map((category) => (
           <button
             key={category.id}
-            style={selectedCategory === category.id ? styles.activeCategory : styles.category}
             onClick={() => onCategorySelect(category.id)}
+            className={`flex-shrink-0 flex items-center px-4 py-2 md:py-2.5 text-xs md:text-sm font-semibold rounded-full border transition-all duration-200 cursor-pointer select-none text-left ${
+              selectedCategory === category.id
+                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100'
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600'
+            }`}
           >
-            <span style={{ color: category.color }}>●</span> {category.name}
+            <span 
+              className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0" 
+              style={{ backgroundColor: category.color || '#94a3b8' }}
+            ></span>
+            {category.name}
           </button>
         ))}
       </div>
 
-
-      <div className="categoryfilter__trendingSection categoryfilter__desktopOnly" style={styles.trendingSection}>
-
-        <h4 className="categoryfilter__subtitle" style={styles.subtitle}>🔥 Trending Topics</h4>
-
-
-          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#CommunityFestival</div>
-          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#LocalSports</div>
-          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#BusinessNews</div>
-          <div className="categoryfilter__trendingItem" style={styles.trendingItem}>#Education</div>
+      {/* Trending Topics (Desktop only) */}
+      <div className="hidden md:block border-t border-slate-100 pt-5 mt-4">
+        <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-3 select-none text-left">
+          🔥 Trending Topics
+        </h4>
+        <div className="flex flex-col gap-2">
+          <div className="text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/50 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer text-left">#CommunityFestival</div>
+          <div className="text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/50 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer text-left">#LocalSports</div>
+          <div className="text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/50 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer text-left">#BusinessNews</div>
+          <div className="text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/50 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer text-left">#Education</div>
+        </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  sidebar: {
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    padding: '16px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    height: 'fit-content',
-  },
-  title: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    marginBottom: '12px',
-    color: '#333',
-    margin: '0 0 12px 0',
-  },
-  subtitle: {
-    fontSize: '13px',
-    fontWeight: 'bold',
-    marginBottom: '8px',
-    color: '#333',
-    margin: '0 0 8px 0',
-  },
-  categoryList: {
-    marginBottom: '20px',
-  },
-  dropdownWrap: {
-    marginBottom: '20px',
-  },
-  dropdown: {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '6px',
-    border: '1px solid #e1e5e9',
-    backgroundColor: '#fff',
-    fontSize: '13px',
-    color: '#333',
-  },
-
-  category: {
-    display: 'block',
-    width: '100%',
-    padding: '9px 10px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    textAlign: 'left',
-    cursor: 'pointer',
-    borderRadius: '4px',
-    marginBottom: '4px',
-    fontSize: '13px',
-    transition: 'background-color 0.2s',
-  },
-  activeCategory: {
-    display: 'block',
-    width: '100%',
-    padding: '9px 10px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    textAlign: 'left',
-    cursor: 'pointer',
-    borderRadius: '4px',
-    marginBottom: '4px',
-    fontSize: '13px',
-    fontWeight: 'bold',
-  },
-  trendingSection: {
-    borderTop: '1px solid #e1e5e9',
-    paddingTop: '16px',
-  },
-  trendingList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-
-  trendingItem: {
-    backgroundColor: '#f8f9fa',
-    padding: '7px 10px',
-    borderRadius: '4px',
-    fontSize: '11px',
-    color: '#666',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
-};
 
 export default CategoryFilter;

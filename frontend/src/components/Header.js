@@ -12,10 +12,6 @@ const getUserColor = (username) => {
 };
 
 function Header({ categories = [], selectedCategory, onCategorySelect, showCategoryDropdown = false }) {
-  const handleCategorySelect = (e) => {
-    const val = e.target.value;
-    onCategorySelect?.(val === '' ? null : Number(val));
-  };
   const token = localStorage.getItem('token');
   const location = useLocation();
   const navigate = useNavigate();
@@ -111,39 +107,110 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
   };
 
   return (
-    <header className="header" style={styles.header}>
-      <div className="header__container" style={styles.container}>
-        <div style={styles.logo}>
-          <Link to="/" style={styles.logoLink}>
-            📰 Gully News
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <Link to="/" className="text-xl font-extrabold tracking-tight text-blue-600 hover:text-blue-700 transition-colors duration-200 flex items-center gap-2">
+            <span>📰</span>
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Gully News</span>
           </Link>
         </div>
 
-        {/* Desktop navigation */}
-        <nav className="header__nav" style={styles.nav}>
+        {/* Desktop Search Bar (Reporters Search) */}
+        <div className="hidden md:block flex-1 max-w-md relative" ref={searchRef}>
+          <div className="relative flex items-center">
+            <span className="absolute left-3 text-slate-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search local reporters..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowDropdown(true)}
+              className="w-full pl-10 pr-10 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Search Dropdown */}
+          {showDropdown && searchQuery.trim() && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-80 overflow-y-auto z-50 divide-y divide-slate-100">
+              {loading ? (
+                <div className="p-4 text-center text-sm text-slate-500 animate-pulse">Searching reporters...</div>
+              ) : results.length > 0 ? (
+                results.map((u) => (
+                  <div
+                    key={u.id}
+                    className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors duration-150"
+                    onClick={() => handleUserClick(u.id)}
+                  >
+                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-slate-200">
+                      {u.profile_image ? (
+                        <img src={u.profile_image} alt={u.username} className="w-full h-full object-cover" />
+                      ) : (
+                        <div 
+                          className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
+                          style={{ backgroundColor: getUserColor(u.username) }}
+                        >
+                          {u.username ? u.username[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate text-left">{u.username}</p>
+                      <p className="text-xs text-slate-400 truncate text-left">
+                        {u.bio ? u.bio : `${u.followers_count || 0} followers • Reputation: ${u.reputation_score || 0}`}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-sm text-slate-500">No reporters found</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-4">
           {token ? (
-            <div style={styles.userMenu}>
+            <div className="flex items-center gap-3">
+              <Link 
+                to="/create-post" 
+                className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200 flex items-center gap-1.5"
+              >
+                <span>✍️</span> Create Post
+              </Link>
+              
               {currentUserProfile && (
-                <div
-                  style={styles.profileAvatarContainer}
+                <button
                   onClick={() => navigate(`/profile/${currentUserId}`)}
+                  className="w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-colors focus:outline-none cursor-pointer"
                   title="View Profile"
                 >
                   {currentUserProfile.profile_image ? (
-                    <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
+                    <img src={currentUserProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <div style={{
-                      ...styles.profileAvatarDefault,
-                      backgroundColor: getUserColor(currentUserProfile.username)
-                    }}>
+                    <div 
+                      className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
+                      style={{ backgroundColor: getUserColor(currentUserProfile.username) }}
+                    >
                       {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
                     </div>
                   )}
-                </div>
+                </button>
               )}
-              <Link to="/create-post" style={styles.navLink}>Create Post</Link>
+
               <button
-                style={styles.logoutButton}
+                className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-full transition-all duration-200 cursor-pointer"
                 onClick={() => {
                   localStorage.removeItem('token');
                   window.location.reload();
@@ -153,138 +220,166 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               </button>
             </div>
           ) : (
-            <div style={styles.authButtons}>
-              <Link to="/" style={styles.navLink}>Home</Link>
-              <Link to="/login" style={styles.navLink}>Login</Link>
-              <Link to="/register" style={styles.navButton}>Register</Link>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Home</Link>
+              <Link to="/login" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Login</Link>
+              <Link 
+                to="/register" 
+                className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200"
+              >
+                Register
+              </Link>
             </div>
           )}
         </nav>
 
-        {/* Search + category filter (desktop: search only, mobile: dropdown + search) */}
-        <div className="header__searchBarContainer" style={styles.searchBarContainer} ref={searchRef}>
-          <div style={styles.mobileSearchRow} className="header__mobileSearchRow">
-            {showCategoryDropdown && (
-              <div style={styles.mobileCategoryWrap} className="header__mobileCategoryWrap">
-                <select
-                  className="header__mobileCategoryDropdown"
-                  value={selectedCategory ?? ''}
-                  onChange={handleCategorySelect}
-                  aria-label="Filter by category"
-                  style={styles.mobileCategoryDropdown}
-                >
-                  <option value="">📰 All News</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {/* Mobile controls: Hamburger */}
+        <div className="flex md:hidden items-center">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors focus:outline-none cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? (
+              <span className="text-xl font-bold block w-6 h-6 leading-6 text-center">✕</span>
+            ) : (
+              <span className="text-xl font-bold block w-6 h-6 leading-6 text-center">☰</span>
             )}
-
-            <div style={styles.searchBar}>
-              <input
-                type="text"
-                placeholder="Search local reporters..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setShowDropdown(true)}
-                style={styles.searchInput}
-              />
-              <button style={styles.searchButton}>🔍</button>
-            </div>
-          </div>
-
-          {showDropdown && searchQuery.trim() && (
-            <div style={styles.dropdown}>
-              {loading ? (
-                <div style={styles.dropdownMessage}>Searching reporters...</div>
-              ) : results.length > 0 ? (
-                results.map((u) => (
-                  <div
-                    key={u.id}
-                    style={styles.dropdownItem}
-                    onClick={() => handleUserClick(u.id)}
-                  >
-                    <div style={styles.avatarContainer}>
-                      {u.profile_image ? (
-                        <img src={u.profile_image} alt={u.username} style={styles.avatar} />
-                      ) : (
-                        <div style={{
-                          ...styles.defaultAvatar,
-                          backgroundColor: getUserColor(u.username)
-                        }}>
-                          {u.username ? u.username[0].toUpperCase() : 'U'}
-                        </div>
-                      )}
-                    </div>
-                    <div style={styles.userInfo}>
-                      <span style={styles.username}>{u.username}</span>
-                      <span style={styles.userBio}>
-                        {u.bio ? (u.bio.length > 50 ? `${u.bio.slice(0, 50)}...` : u.bio) : `${u.followers_count || 0} followers • Reputation: ${u.reputation_score || 0}`}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div style={styles.dropdownMessage}>No reporters found</div>
-              )}
-            </div>
-          )}
-        </div>       
+          </button>
+        </div>
       </div>
 
-      {/* Mobile navigation menu */}
+      {/* Mobile Menu Slide-down Drawer */}
       {mobileMenuOpen && (
-        <div className="header__mobileMenu" style={styles.mobileMenu}>
-          <div style={styles.mobileMenuContent}>
+        <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 flex flex-col gap-4 animate-fadeIn">
+          
+          {/* Mobile Search Input (Reporters search inside Mobile Menu) */}
+          <div className="relative flex items-center" ref={searchRef}>
+            <span className="absolute left-3 text-slate-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search local reporters..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 text-slate-400 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
+            
+            {showDropdown && searchQuery.trim() && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50 divide-y divide-slate-100">
+                {loading ? (
+                  <div className="p-3 text-center text-xs text-slate-500">Searching...</div>
+                ) : results.length > 0 ? (
+                  results.map((u) => (
+                    <div
+                      key={u.id}
+                      className="flex items-center gap-2 p-2 hover:bg-slate-50 cursor-pointer transition-colors"
+                      onClick={() => handleUserClick(u.id)}
+                    >
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                        {u.profile_image ? (
+                          <img src={u.profile_image} alt={u.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <div 
+                            className="w-full h-full text-white flex items-center justify-center text-xs font-bold uppercase"
+                            style={{ backgroundColor: getUserColor(u.username) }}
+                          >
+                            {u.username ? u.username[0].toUpperCase() : 'U'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-slate-800 truncate text-left">{u.username}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-center text-xs text-slate-500">No reporters found</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
             {token ? (
               <>
-                {location.pathname !== '/' && (
-                  <Link to="/" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Home</Link>
-                )}
+                <Link 
+                  to="/" 
+                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                  onClick={handleNavLinkClick}
+                >
+                  🏠 Home
+                </Link>
                 {currentUserProfile && (
                   <div
-                    style={styles.mobileProfileContainer}
+                    className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition-colors cursor-pointer"
                     onClick={() => {
                       navigate(`/profile/${currentUserId}`);
                       handleNavLinkClick();
                     }}
                   >
-                    <div style={styles.mobileProfileAvatar}>
+                    <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-200">
                       {currentUserProfile.profile_image ? (
-                        <img src={currentUserProfile.profile_image} alt="Profile" style={styles.profileAvatar} />
+                        <img src={currentUserProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <div style={{
-                          ...styles.profileAvatarDefault,
-                          backgroundColor: getUserColor(currentUserProfile.username),
-                          width: '32px',
-                          height: '32px'
-                        }}>
+                        <div 
+                          className="w-full h-full text-white flex items-center justify-center text-[10px] font-bold uppercase"
+                          style={{ backgroundColor: getUserColor(currentUserProfile.username) }}
+                        >
                           {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
                         </div>
                       )}
                     </div>
-                    <span style={styles.mobileProfileName}>{currentUserProfile.username}</span>
+                    <span>Profile ({currentUserProfile.username})</span>
                   </div>
                 )}
-                <Link to="/create-post" style={styles.mobileNavLink} onClick={handleNavLinkClick}>📝 Create Post</Link>
+                <Link 
+                  to="/create-post" 
+                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                  onClick={handleNavLinkClick}
+                >
+                  📝 Create Post
+                </Link>
                 <button
-                  style={styles.mobileLogoutButton}
+                  className="w-full text-left px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
                   onClick={() => {
                     localStorage.removeItem('token');
                     window.location.reload();
                   }}
                 >
-                  Logout
+                  🚪 Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Home</Link>
-                <Link to="/login" style={styles.mobileNavLink} onClick={handleNavLinkClick}>Login</Link>
-                <Link to="/register" style={styles.mobileNavButtonLink} onClick={handleNavLinkClick}>Register</Link>
+                <Link 
+                  to="/" 
+                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                  onClick={handleNavLinkClick}
+                >
+                  🏠 Home
+                </Link>
+                <Link 
+                  to="/login" 
+                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                  onClick={handleNavLinkClick}
+                >
+                  🔑 Login
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="mt-2 w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-md transition-all"
+                  onClick={handleNavLinkClick}
+                >
+                  Create Account
+                </Link>
               </>
             )}
           </div>
@@ -293,310 +388,6 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     </header>
   );
 }
-
-const styles = {
-  header: {
-    backgroundColor: '#fff',
-    borderBottom: '1px solid #e1e5e9',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-  },
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '12px 16px'
-  },
-  logo: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  logoLink: {
-    textDecoration: 'none',
-    color: '#007bff',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: 'inherit',
-  },
-  searchBarContainer: {
-    flex: '1 1 auto',
-    maxWidth: '520px',
-    minWidth: '150px',
-    position: 'relative',
-    display: 'block',
-  },
-  mobileSearchRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    width: '100%',
-  },
-  mobileCategoryWrap: {
-    flex: '0 0 auto',
-    display: 'block',
-  },
-  mobileCategoryDropdown: {
-    padding: '8px 10px',
-    border: '1px solid #ddd',
-    borderRadius: '20px',
-    backgroundColor: '#fff',
-    fontSize: '13px',
-    color: '#333',
-    outline: 'none',
-    maxWidth: '150px',
-  },
-  searchBar: {
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-  },
-  searchInput: {
-    flex: 1,
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '20px 0 0 20px',
-    outline: 'none',
-    fontSize: '13px',
-    transition: 'border-color 0.2s',
-  },
-  searchButton: {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderLeft: 'none',
-    borderRadius: '0 20px 20px 0',
-    backgroundColor: '#f8f9fa',
-    cursor: 'pointer',
-    fontSize: '16px',
-    transition: 'background-color 0.2s',
-  },
-  dropdown: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    marginTop: '6px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.08)',
-    border: '1px solid #e1e5e9',
-    maxHeight: '300px',
-    overflowY: 'auto',
-    zIndex: 1001,
-  },
-  dropdownMessage: {
-    padding: '12px',
-    textAlign: 'center',
-    color: '#888',
-    fontSize: '13px',
-  },
-  dropdownItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '10px 12px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    borderBottom: '1px solid #f1f3f5',
-  },
-  avatarContainer: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  defaultAvatar: {
-    width: '100%',
-    height: '100%',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: 'bold',
-  },
-  userInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  username: {
-    fontWeight: '600',
-    color: '#333',
-    fontSize: '13px',
-    margin: 0,
-    textAlign: 'left',
-  },
-  userBio: {
-    fontSize: '11px',
-    color: '#888',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    marginTop: '2px',
-    textAlign: 'left',
-  },
-  hamburger: {
-    display: 'none',
-    background: 'none',
-    border: 'none',
-    fontSize: '24px',
-    cursor: 'pointer',
-    padding: '8px',
-    margin: '0 -8px',
-    color: '#333',
-    transition: 'color 0.2s',
-  },
-  nav: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexShrink: 0,
-  },
-  navLink: {
-    textDecoration: 'none',
-    color: '#333',
-    padding: '8px 12px',
-    fontSize: '13px',
-    transition: 'color 0.2s',
-    whiteSpace: 'nowrap',
-    borderRadius: '4px',
-  },
-  navButton: {
-    textDecoration: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    padding: '6px 14px',
-    borderRadius: '4px',
-    fontSize: '13px',
-    border: 'none',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
-  logoutButton: {
-    backgroundColor: '#dc3545',
-    color: '#fff',
-    padding: '6px 14px',
-    borderRadius: '4px',
-    fontSize: '13px',
-    border: 'none',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
-  userMenu: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  profileAvatarContainer: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    cursor: 'pointer',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    flexShrink: 0,
-    border: '2px solid #e1e5e9',
-  },
-  profileAvatar: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  profileAvatarDefault: {
-    width: '100%',
-    height: '100%',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '14px',
-    fontWeight: 'bold',
-  },
-  authButtons: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  },
-  mobileMenu: {
-    display: 'none',
-    backgroundColor: '#fff',
-    borderTop: '1px solid #e1e5e9',
-    position: 'absolute',
-    width: '100%',
-    left: 0,
-    top: '100%',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    zIndex: 999,
-  },
-  mobileMenuContent: {
-    padding: '12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  mobileNavLink: {
-    textDecoration: 'none',
-    color: '#333',
-    padding: '10px 12px',
-    fontSize: '14px',
-    borderRadius: '4px',
-    display: 'block',
-    transition: 'background-color 0.2s',
-  },
-  mobileNavButtonLink: {
-    textDecoration: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    padding: '10px 12px',
-    borderRadius: '4px',
-    fontSize: '14px',
-    display: 'block',
-    textAlign: 'center',
-  },
-  mobileLogoutButton: {
-    backgroundColor: '#dc3545',
-    color: '#fff',
-    padding: '10px 12px',
-    borderRadius: '4px',
-    fontSize: '14px',
-    border: 'none',
-    cursor: 'pointer',
-    width: '100%',
-  },
-  mobileProfileContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px',
-    borderRadius: '4px',
-    backgroundColor: '#f8f9fa',
-    cursor: 'pointer',
-  },
-  mobileProfileAvatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  mobileProfileName: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
-  },
-
-};
 
 export default Header;
 

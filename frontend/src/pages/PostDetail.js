@@ -139,11 +139,11 @@ function PostDetail() {
 
   if (loading) {
     return (
-      <div style={styles.page}>
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header />
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <span style={styles.loadingText}>Fetching article...</span>
+        <div className="flex-grow flex flex-col items-center justify-center py-24 gap-3 text-slate-500 animate-pulse font-medium">
+          <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <span>Fetching article...</span>
         </div>
       </div>
     );
@@ -151,12 +151,15 @@ function PostDetail() {
 
   if (error || !post) {
     return (
-      <div style={styles.page}>
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header />
-        <div style={styles.errorContainer}>
-          <h2 style={styles.errorTitle}>Error Loading Post</h2>
-          <p style={styles.errorText}>{error || 'Post details could not be found.'}</p>
-          <button style={styles.backButton} onClick={() => navigate('/')}>
+        <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs max-w-md mx-auto mt-12">
+          <h2 className="text-lg font-bold text-red-600 mb-2">Error Loading Post</h2>
+          <p className="text-sm text-slate-500 mb-4">{error || 'Post details could not be found.'}</p>
+          <button 
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors cursor-pointer text-xs md:text-sm border-none shadow-md shadow-blue-100" 
+            onClick={() => navigate('/')}
+          >
             ← Return to Feed
           </button>
         </div>
@@ -165,28 +168,35 @@ function PostDetail() {
   }
 
   return (
-    <div style={styles.page}>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
-      <div style={styles.container}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
         {/* Navigation / Back Button */}
-        <button style={styles.backButtonLink} onClick={() => navigate('/')}>
+        <button 
+          className="text-xs md:text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors duration-200 mb-4 inline-flex items-center gap-1 bg-transparent border-none cursor-pointer p-0" 
+          onClick={() => navigate('/')}
+        >
           ← Back to News Feed
         </button>
 
         {/* Full Article Layout */}
-        <article style={styles.articleCard}>
-          <div style={styles.articleHeader}>
-            <span style={styles.category}>{post.category}</span>
-            <h1 style={styles.title}>{post.title}</h1>
+        <article className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 md:p-6 mb-6">
+          <div className="mb-4">
+            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 font-extrabold text-[10px] md:text-xs rounded-full uppercase tracking-wider mb-3 select-none text-left">
+              {post.category}
+            </span>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-800 leading-tight mb-4 text-left">
+              {post.title}
+            </h1>
             
-            <div style={styles.metaRow}>
-              <div style={styles.authorInfo}>
-                <div style={styles.authorAvatar}>
-                  {post.author[0].toUpperCase()}
+            <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center select-none shadow-xs border border-blue-500 uppercase flex-shrink-0">
+                  {post.author[0]}
                 </div>
                 <div>
-                  <div style={styles.authorName}>{post.author}</div>
-                  <div style={styles.publishDate}>
+                  <div className="font-bold text-xs md:text-sm text-slate-700 text-left">{post.author}</div>
+                  <div className="text-[10px] md:text-xs text-slate-400 text-left">
                     {new Date(post.created_at).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'long',
@@ -196,44 +206,49 @@ function PostDetail() {
                 </div>
               </div>
               
-              <div style={styles.statsRow}>
-                <span style={styles.statItem}>👁 {viewsCount} Views</span>
-                <span style={styles.statItem}>💬 {commentsCount} Comments</span>
+              <div className="flex gap-2 items-center flex-wrap select-none">
+                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">👁 {viewsCount} Views</span>
+                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">💬 {commentsCount} Comments</span>
               </div>
             </div>
           </div>
 
-          {/* Media representation */}
+          {/* Image Representation */}
           {post.image_url && (
-            <div style={styles.mediaContainer}>
-              <img src={post.image_url} alt={post.title} style={styles.image} />
+            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200/80 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
+              <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
 
+          {/* Video Representation */}
           {post.video_url && (
-            <div style={styles.mediaContainer}>
-              <video src={post.video_url} controls style={styles.video} />
+            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200/80 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
+              <video src={post.video_url} controls className="w-full h-full object-cover focus:outline-none" />
             </div>
           )}
 
           {/* Body Content */}
-          <div style={styles.articleContent}>
+          <div className="text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-wrap break-words mb-6 text-left">
             {post.content}
           </div>
 
           {/* Interactive Stats Bar */}
-          <div style={styles.interactiveBar}>
+          <div className="border-t border-slate-100 pt-4 flex gap-3 flex-wrap">
             {isAuthenticated ? (
               <>
                 <button 
-                  style={{...styles.likeButton, color: isLiked ? '#e0245e' : '#4a5568', borderColor: isLiked ? '#fed7d7' : '#e2e8f0', backgroundColor: isLiked ? '#fff5f5' : '#fff'}} 
+                  className={`px-4 py-2 text-xs md:text-sm font-bold border rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none ${
+                    isLiked 
+                      ? 'text-pink-600 border-pink-100 bg-pink-50/20 hover:bg-pink-50' 
+                      : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'
+                  }`}
                   onClick={handleLike}
                 >
                   {isLiked ? '❤️ Liked' : '🤍 Like'} • {likesCount}
                 </button>
                 {currentUserId && post && post.user_id === currentUserId && (
                   <button 
-                    style={styles.deleteButton}
+                    className="px-4 py-2 text-xs md:text-sm font-bold border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 text-red-600 rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none"
                     onClick={handleDeletePost}
                     title="Delete this post"
                   >
@@ -242,7 +257,7 @@ function PostDetail() {
                 )}
               </>
             ) : (
-              <div style={styles.likeBadge}>
+              <div className="px-4 py-2 text-xs md:text-sm font-bold bg-slate-50 border border-slate-200 rounded-full text-slate-600 select-none">
                 ❤️ Likes • {likesCount}
               </div>
             )}
@@ -250,7 +265,7 @@ function PostDetail() {
         </article>
 
         {/* Dedicated comments section taking up the bottom page area */}
-        <div style={styles.commentsWrapper}>
+        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
           <CommentSection 
             postId={id} 
             onCommentsCountChange={setCommentsCount} 
@@ -259,301 +274,6 @@ function PostDetail() {
       </div>
     </div>
   );
-}
-
-const styles = {
-  page: {
-    backgroundColor: '#f7fafc',
-    minHeight: '100vh',
-  },
-  container: {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '20px 16px 40px 16px',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '60vh',
-    gap: '12px',
-  },
-  loadingText: {
-    fontSize: '14px',
-    color: '#4a5568',
-    fontWeight: '500',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #edf2f7',
-    borderTop: '4px solid #3182ce',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-  },
-  errorContainer: {
-    textAlign: 'center',
-    padding: '30px 20px',
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    marginTop: '40px',
-  },
-  errorTitle: {
-    color: '#e53e3e',
-    fontSize: '18px',
-    marginBottom: '8px',
-  },
-  errorText: {
-    color: '#718096',
-    marginBottom: '16px',
-    fontSize: '13px',
-  },
-  backButton: {
-    backgroundColor: '#3182ce',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: 'bold',
-  },
-  backButtonLink: {
-    background: 'none',
-    border: 'none',
-    color: '#4a5568',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    marginBottom: '16px',
-    padding: 0,
-    display: 'inline-flex',
-    alignItems: 'center',
-    transition: 'color 0.2s',
-  },
-  articleCard: {
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    padding: '20px',
-    marginBottom: '16px',
-  },
-  articleHeader: {
-    marginBottom: '20px',
-  },
-  category: {
-    backgroundColor: '#ebf8ff',
-    color: '#2b6cb0',
-    fontSize: '10px',
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    padding: '4px 8px',
-    borderRadius: '16px',
-    display: 'inline-block',
-    marginBottom: '10px',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: '#1a202c',
-    margin: '0 0 16px 0',
-    lineHeight: '1.3',
-    wordBreak: 'break-word',
-  },
-  metaRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '12px',
-    borderBottom: '1px solid #edf2f7',
-    paddingBottom: '16px',
-  },
-  authorInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  authorAvatar: {
-    width: '36px',
-    height: '36px',
-    backgroundColor: '#3182ce',
-    color: '#fff',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    flexShrink: 0,
-  },
-  authorName: {
-    fontWeight: 'bold',
-    color: '#2d3748',
-    fontSize: '13px',
-  },
-  publishDate: {
-    color: '#718096',
-    fontSize: '11px',
-  },
-  statsRow: {
-    display: 'flex',
-    gap: '10px',
-    fontSize: '12px',
-    color: '#718096',
-    flexWrap: 'wrap',
-  },
-  statItem: {
-    backgroundColor: '#f7fafc',
-    padding: '4px 10px',
-    borderRadius: '6px',
-    border: '1px solid #edf2f7',
-  },
-  mediaContainer: {
-    width: '100%',
-    maxHeight: '350px',
-    overflow: 'hidden',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  articleContent: {
-    fontSize: '14px',
-    color: '#2d3748',
-    lineHeight: '1.7',
-    whiteSpace: 'pre-wrap',
-    marginBottom: '24px',
-    wordBreak: 'break-word',
-  },
-  interactiveBar: {
-    borderTop: '1px solid #edf2f7',
-    paddingTop: '16px',
-    display: 'flex',
-    gap: '10px',
-    justifyContent: 'flex-start',
-    flexWrap: 'wrap',
-  },
-  likeButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    borderRadius: '18px',
-    border: '1px solid',
-    fontWeight: '600',
-    fontSize: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  likeBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    backgroundColor: '#f7fafc',
-    border: '1px solid #e2e8f0',
-    color: '#4a5568',
-    padding: '6px 14px',
-    borderRadius: '18px',
-    fontWeight: '600',
-    fontSize: '12px',
-  },
-  deleteButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    padding: '6px 14px',
-    borderRadius: '18px',
-    border: '1px solid #fca5a5',
-    backgroundColor: '#fef2f2',
-    color: '#dc2626',
-    fontWeight: '600',
-    fontSize: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  commentsWrapper: {
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    overflow: 'hidden',
-  }
-};
-
-// Responsive styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (max-width: 768px) {
-    [class*="container"] {
-      padding: 16px 12px 30px;
-    }
-    [class*="articleCard"] {
-      padding: 16px;
-    }
-    [class*="title"] {
-      font-size: 20px;
-    }
-    [class*="mediaContainer"] {
-      max-height: 280px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    [class*="container"] {
-      padding: 12px 8px 24px;
-    }
-    [class*="articleCard"] {
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-    }
-    [class*="title"] {
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-    [class*="articleContent"] {
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-    [class*="mediaContainer"] {
-      max-height: 250px;
-      margin-bottom: 16px;
-    }
-    [class*="metaRow"] {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-      padding-bottom: 12px;
-    }
-    [class*="statsRow"] {
-      gap: 6px;
-      font-size: 11px;
-    }
-    [class*="interactiveBar"] {
-      padding-top: 12px;
-      gap: 6px;
-    }
-    [class*="likeButton"],
-    [class*="deleteButton"],
-    [class*="likeBadge"] {
-      padding: 5px 12px;
-      font-size: 11px;
-    }
-  }
-`;
-if (!document.querySelector('[data-postdetail-styles]')) {
-  styleSheet.setAttribute('data-postdetail-styles', 'true');
-  document.head.appendChild(styleSheet);
 }
 
 export default PostDetail;

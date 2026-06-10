@@ -54,7 +54,6 @@ const Profile = () => {
           ? `${process.env.REACT_APP_API_URL}/api/auth/profile` 
           : `${process.env.REACT_APP_API_URL}/api/auth/profile/${id}`;
 
-
         const headers = {};
         if (token) {
           headers['Authorization'] = token;
@@ -91,8 +90,6 @@ const Profile = () => {
       }
     };
 
-    // Only fetch if currentUserId is resolved OR if viewer is logged out (so currentUserId stays null)
-    // This avoids double fetching or race conditions when resolving token on mount.
     fetchProfile();
   }, [id, currentUserId, token, navigate, isOwnProfile]);
   
@@ -102,7 +99,6 @@ const Profile = () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
         method: 'PUT',
-
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token
@@ -159,60 +155,91 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div style={styles.loading}>Loading profile...</div>;
-  if (error) return <div style={styles.error}>Error: {error}</div>;
-  if (!userData) return <div style={styles.error}>User not found</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-slate-500 animate-pulse font-medium">
+          <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <div>Loading profile...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !userData) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center py-8 px-6 bg-white border border-slate-200 rounded-2xl shadow-xs max-w-sm w-full">
+          <p className="text-red-500 font-bold mb-4">⚠️ {error || 'User not found'}</p>
+          <button 
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs shadow-md cursor-pointer border-none"
+            onClick={() => navigate('/')}
+          >
+            Go to Feed
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={styles.page}>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
-      <div style={styles.container}>
-        <div style={styles.profileHeader}>
-          <div style={styles.profileInfo}>
-            <div style={styles.avatarContainer}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+        
+        {/* Profile Card Banner */}
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 flex-1 w-full">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border border-slate-200 flex-shrink-0 shadow-sm">
               {userData.profile_image ? (
-                <img src={userData.profile_image} alt={userData.username} style={styles.avatar} />
+                <img src={userData.profile_image} alt={userData.username} className="w-full h-full object-cover" />
               ) : (
-                <div style={{
-                  ...styles.defaultAvatar,
-                  backgroundColor: getUserColor(userData.username)
-                }}>
+                <div 
+                  className="w-full h-full text-white flex items-center justify-center text-4xl font-extrabold uppercase select-none"
+                  style={{ backgroundColor: getUserColor(userData.username) }}
+                >
                   {userData.username ? userData.username[0].toUpperCase() : 'U'}
                 </div>
               )}
             </div>
-            <div style={styles.textInfo}>
-              <h1 style={styles.username}>{userData.username}</h1>
-              {isOwnProfile && <p style={styles.email}>{userData.email}</p>}
-              <p style={styles.bio}>{userData.bio || "No bio added yet."}</p>
-              <div style={styles.statsRow}>
-                <div style={styles.statItem}>
-                  <span style={styles.statValue}>{userData.reputation_score || 0}</span>
-                  <span style={styles.statLabel}>Reputation</span>
+            
+            <div className="flex flex-col gap-1 text-center sm:text-left flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-tight truncate">{userData.username}</h1>
+              {isOwnProfile && <p className="text-xs md:text-sm text-slate-400 font-medium">{userData.email}</p>}
+              <p className="text-xs md:text-sm text-slate-600 leading-relaxed my-2 max-w-lg break-words">{userData.bio || "No bio added yet."}</p>
+              
+              <div className="flex gap-6 justify-center sm:justify-start mt-2 select-none">
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-lg font-extrabold text-blue-600">{userData.reputation_score || 0}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reputation</span>
                 </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statValue}>{userData.followers_count || 0}</span>
-                  <span style={styles.statLabel}>Followers</span>
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-lg font-extrabold text-blue-600">{userData.followers_count || 0}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Followers</span>
                 </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statValue}>{posts.length}</span>
-                  <span style={styles.statLabel}>Articles</span>
+                <div className="flex flex-col items-center sm:items-start">
+                  <span className="text-lg font-extrabold text-blue-600">{posts.length}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Articles</span>
                 </div>
               </div>
             </div>
           </div>
           
-          <div style={styles.actionContainer}>
+          <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto mt-4 sm:mt-0 justify-center">
             {isOwnProfile ? (
-              <button style={styles.editButton} onClick={() => setIsEditing(true)}>Edit Profile</button>
+              <button 
+                className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-full font-bold text-xs md:text-sm text-slate-700 transition-colors duration-200 cursor-pointer shadow-xs select-none"
+                onClick={() => setIsEditing(true)}
+              >
+                ⚙️ Edit Profile
+              </button>
             ) : token ? (
               <button 
-                style={{
-                  ...styles.followButton,
-                  backgroundColor: userData.is_following ? '#e1e5e9' : '#007bff',
-                  color: userData.is_following ? '#333' : '#fff',
-                  border: userData.is_following ? '1px solid #ccc' : 'none'
-                }}
+                className={`px-5 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 cursor-pointer shadow-sm select-none border-none ${
+                  userData.is_following 
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100 hover:shadow-lg'
+                }`}
                 onClick={handleFollowToggle}
                 disabled={followLoading}
               >
@@ -220,7 +247,7 @@ const Profile = () => {
               </button>
             ) : (
               <button 
-                style={styles.followButtonDisabled}
+                className="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-full font-bold text-xs md:text-sm text-slate-600 transition-colors cursor-pointer flex items-center gap-1 select-none"
                 onClick={() => navigate('/login')}
               >
                 🔑 Log in to Follow
@@ -229,64 +256,65 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Edit Profile Modal */}
         {isEditing && (
-          <div style={styles.modalOverlay}>
-            <div style={styles.modal}>
-              <h2 style={styles.modalTitle}>Edit Profile</h2>
-              <form onSubmit={handleUpdateProfile}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Username</label>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto animate-scaleUp">
+              <h2 className="text-lg font-bold text-slate-800 mb-4 text-left border-b border-slate-100 pb-2">Edit Profile</h2>
+              <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Username</label>
                   <input
                     type="text"
-                    style={styles.input}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     placeholder="Username"
                     required
                   />
                 </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Email</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Email</label>
                   <input
                     type="email"
-                    style={styles.input}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     value={editEmail}
                     onChange={(e) => setEditEmail(e.target.value)}
                     placeholder="Email"
                     required
                   />
                 </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Profile Image URL</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Profile Image URL</label>
                   <input
                     type="text"
-                    style={styles.input}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                     value={editProfileImage}
                     onChange={(e) => setEditProfileImage(e.target.value)}
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Bio</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Bio</label>
                   <textarea
-                    style={styles.textarea}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
                     placeholder="Tell us about yourself..."
                     rows="4"
                   />
                 </div>
-                <div style={styles.modalActions}>
+                <div className="flex justify-end gap-3 mt-4 border-t border-slate-100 pt-4">
                   <button 
                     type="button" 
-                    style={styles.cancelButton}
+                    className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full font-bold text-xs md:text-sm text-slate-700 transition-colors cursor-pointer select-none"
                     onClick={() => setIsEditing(false)}
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
-                    style={styles.saveButton}
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full font-bold text-xs md:text-sm text-white transition-colors cursor-pointer shadow-md shadow-blue-100 border-none select-none"
                     disabled={updateLoading}
                   >
                     {updateLoading ? 'Saving...' : 'Save Changes'}
@@ -297,21 +325,24 @@ const Profile = () => {
           </div>
         )}
 
-        <div style={styles.contentSection}>
-          <h2 style={styles.sectionTitle}>
+        <div className="mt-6">
+          <h2 className="text-lg font-extrabold text-slate-800 mb-4 text-left border-b border-slate-100 pb-2 select-none">
             {isOwnProfile ? 'Your Articles' : `${userData.username}'s Articles`}
           </h2>
           {posts.length > 0 ? (
-            <div style={styles.postsGrid}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               {posts.map(post => (
                 <ArticleCard key={post.id} article={post} />
               ))}
             </div>
           ) : (
-            <div style={styles.noPosts}>
-              <p>{isOwnProfile ? "You haven't published any articles yet." : "This reporter hasn't published any articles yet."}</p>
+            <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
+              <p className="text-xs sm:text-sm text-slate-500 mb-4">{isOwnProfile ? "You haven't published any articles yet." : "This reporter hasn't published any articles yet."}</p>
               {isOwnProfile && (
-                <button style={styles.createButton} onClick={() => navigate('/create-post')}>
+                <button 
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs md:text-sm shadow-md cursor-pointer border-none" 
+                  onClick={() => navigate('/create-post')}
+                >
                   Create Your First Post
                 </button>
               )}
@@ -322,357 +353,5 @@ const Profile = () => {
     </div>
   );
 };
-
-const styles = {
-  page: {
-    backgroundColor: '#f4f7f6',
-    minHeight: '100vh',
-  },
-  container: {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    padding: '20px 16px',
-  },
-  profileHeader: {
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    padding: '24px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-    marginBottom: '24px',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  profileInfo: {
-    display: 'flex',
-    gap: '20px',
-    flex: 1,
-    minWidth: '0',
-  },
-  avatarContainer: {
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%',
-    overflow: 'hidden',
-    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-    flexShrink: 0,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  defaultAvatar: {
-    width: '100%',
-    height: '100%',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '40px',
-    fontWeight: 'bold',
-  },
-  textInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-    textAlign: 'left',
-    flex: 1,
-    minWidth: '0',
-  },
-  username: {
-    fontSize: '24px',
-    margin: 0,
-    color: '#1a1a1a',
-    fontWeight: 'bold',
-    wordBreak: 'break-word',
-  },
-  email: {
-    color: '#666',
-    margin: 0,
-    fontSize: '13px',
-  },
-  bio: {
-    fontSize: '14px',
-    color: '#444',
-    margin: '8px 0',
-    maxWidth: '500px',
-    lineHeight: '1.5',
-    wordBreak: 'break-word',
-  },
-  statsRow: {
-    display: 'flex',
-    gap: '20px',
-    marginTop: '12px',
-    flexWrap: 'wrap',
-  },
-  statItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#007bff',
-  },
-  statLabel: {
-    fontSize: '11px',
-    color: '#888',
-    textTransform: 'uppercase',
-  },
-  actionContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    flexShrink: 0,
-  },
-  editButton: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    transition: 'all 0.2s',
-  },
-  followButton: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: 'bold',
-    transition: 'all 0.2s',
-  },
-  followButtonDisabled: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #e1e5e9',
-    backgroundColor: '#f8f9fa',
-    color: '#666',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    transition: 'all 0.2s',
-  },
-  contentSection: {
-    marginTop: '20px',
-  },
-  sectionTitle: {
-    fontSize: '20px',
-    marginBottom: '16px',
-    color: '#1a1a1a',
-    textAlign: 'left',
-  },
-  postsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '16px',
-  },
-  noPosts: {
-    textAlign: 'center',
-    padding: '40px 20px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-  },
-  createButton: {
-    marginTop: '16px',
-    padding: '10px 20px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 'bold',
-  },
-  loading: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    fontSize: '16px',
-    color: '#666',
-  },
-  error: {
-    color: '#dc3545',
-    textAlign: 'center',
-    marginTop: '40px',
-    fontSize: '16px',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2000,
-    padding: '16px',
-  },
-  modal: {
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    padding: '24px',
-    width: '100%',
-    maxWidth: '480px',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-    maxHeight: '90vh',
-    overflow: 'auto',
-  },
-  modalTitle: {
-    fontSize: '20px',
-    marginBottom: '16px',
-    color: '#1a1a1a',
-    textAlign: 'left',
-  },
-  formGroup: {
-    marginBottom: '16px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '6px',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#444',
-    textAlign: 'left',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    fontSize: '14px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    fontSize: '14px',
-    outline: 'none',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-  },
-  modalActions: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    marginTop: '24px',
-  },
-  cancelButton: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: '1px solid #ddd',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-  },
-  saveButton: {
-    padding: '8px 16px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    transition: 'background-color 0.2s',
-  }
-};
-
-// Responsive styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @media (max-width: 768px) {
-    [class*="container"] {
-      padding: 16px 12px;
-    }
-    [class*="profileHeader"] {
-      padding: 20px;
-      flex-direction: column;
-    }
-    [class*="profileInfo"] {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    [class*="avatarContainer"] {
-      width: 90px;
-      height: 90px;
-    }
-    [class*="username"] {
-      font-size: 20px;
-    }
-    [class*="postsGrid"] {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-  }
-
-  @media (max-width: 480px) {
-    [class*="container"] {
-      padding: 12px 8px;
-    }
-    [class*="profileHeader"] {
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    [class*="profileInfo"] {
-      gap: 12px;
-    }
-    [class*="avatarContainer"] {
-      width: 80px;
-      height: 80px;
-    }
-    [class*="defaultAvatar"] {
-      font-size: 32px;
-    }
-    [class*="username"] {
-      font-size: 18px;
-    }
-    [class*="email"] {
-      font-size: 12px;
-    }
-    [class*="bio"] {
-      font-size: 13px;
-    }
-    [class*="statsRow"] {
-      gap: 16px;
-    }
-    [class*="sectionTitle"] {
-      font-size: 18px;
-    }
-    [class*="postsGrid"] {
-      grid-template-columns: 1fr;
-    }
-    [class*="modal"] {
-      padding: 20px;
-    }
-    [class*="actionContainer"] {
-      flex-direction: column;
-      width: 100%;
-      gap: 8px;
-    }
-    [class*="editButton"],
-    [class*="followButton"],
-    [class*="followButtonDisabled"] {
-      width: 100%;
-    }
-  }
-`;
-if (!document.querySelector('[data-profile-styles]')) {
-  styleSheet.setAttribute('data-profile-styles', 'true');
-  document.head.appendChild(styleSheet);
-}
 
 export default Profile;

@@ -91,7 +91,6 @@ function CommentSection({ postId, onCommentsCountChange }) {
         headers: {
           ...(token ? { Authorization: token } : {})
         }
-
       });
 
       if (!response.ok) {
@@ -111,28 +110,13 @@ function CommentSection({ postId, onCommentsCountChange }) {
     }
   };
 
-  // Generate dynamic colorful avatar initials
-  const getAvatarStyle = (name) => {
+  // Generate dynamic color hue based on username
+  const getAvatarHue = (name) => {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const h = Math.abs(hash) % 360;
-    return {
-      backgroundColor: `hsl(${h}, 65%, 55%)`,
-      color: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '36px',
-      height: '36px',
-      borderRadius: '50%',
-      fontSize: '14px',
-      fontWeight: 'bold',
-      textTransform: 'uppercase',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-      flexShrink: 0
-    };
+    return Math.abs(hash) % 360;
   };
 
   // Format relative time helper
@@ -152,51 +136,54 @@ function CommentSection({ postId, onCommentsCountChange }) {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h4 style={styles.headerTitle}>Discussion ({comments.length})</h4>
+    <div className="bg-slate-50/50 border-t border-slate-200/80 p-4 md:p-6 rounded-b-2xl animate-fadeIn">
+      <div className="mb-4 border-b border-slate-200/60 pb-2 flex justify-between items-center">
+        <h4 className="text-sm font-extrabold text-slate-800">Discussion ({comments.length})</h4>
       </div>
 
-      {error && <div style={styles.errorMessage}>⚠️ {error}</div>}
+      {error && <div className="bg-red-50 text-red-700 border-l-4 border-red-500 p-3 rounded-r-lg text-xs md:text-sm mb-4">⚠️ {error}</div>}
 
       {/* Comments List */}
-      <div style={styles.commentsList}>
+      <div className="flex flex-col gap-4 max-h-[350px] overflow-y-auto mb-6 pr-2 scrollbar-thin">
         {loading ? (
-          <div style={styles.loadingState}>
-            <div style={styles.spinner}></div>
-            <span style={styles.loadingText}>Loading conversation...</span>
+          <div className="flex items-center justify-center gap-2 py-8">
+            <div className="w-5 h-5 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <span className="text-xs md:text-sm text-slate-500">Loading conversation...</span>
           </div>
         ) : comments.length === 0 ? (
-          <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>💬</span>
-            <p style={styles.emptyText}>No comments yet. Start the conversation!</p>
+          <div className="text-center py-8 text-slate-400 flex flex-col items-center justify-center">
+            <span className="text-2xl mb-1.5 opacity-60">💬</span>
+            <p className="text-xs md:text-sm">No comments yet. Start the conversation!</p>
           </div>
         ) : (
           comments.map(comment => (
-            <div key={comment.id} style={styles.commentItem}>
+            <div key={comment.id} className="flex gap-3 items-start animate-slideUp">
               {comment.profile_image ? (
                 <img 
                   src={comment.profile_image} 
                   alt={comment.author} 
-                  style={styles.avatarImage} 
+                  className="w-9 h-9 rounded-full object-cover shadow-xs flex-shrink-0 border border-slate-200" 
                 />
               ) : (
-                <div style={getAvatarStyle(comment.author)}>
+                <div 
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0 text-white shadow-xs border border-white/20 select-none"
+                  style={{ backgroundColor: `hsl(${getAvatarHue(comment.author)}, 65%, 55%)` }}
+                >
                   {comment.author[0].toUpperCase()}
                 </div>
               )}
               
-              <div style={styles.commentBubble}>
-                <div style={styles.commentHeader}>
-                  <span style={styles.commentAuthor}>{comment.author}</span>
-                  <span style={styles.commentTime}>{formatRelativeTime(comment.created_at)}</span>
+              <div className="bg-white border border-slate-200/80 rounded-2xl px-4 py-3 flex-1 shadow-xs relative">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-xs md:text-sm text-slate-800">{comment.author}</span>
+                  <span className="text-[10px] md:text-xs text-slate-400">{formatRelativeTime(comment.created_at)}</span>
                 </div>
-                <p style={styles.commentContent}>{comment.content}</p>
+                <p className="text-xs md:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-left">{comment.content}</p>
                 
                 {isAuthenticated && currentUserId.current === comment.user_id && (
                   <button 
                     onClick={() => handleDelete(comment.id)} 
-                    style={styles.deleteButton}
+                    className="text-[10px] md:text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer border-none bg-transparent mt-2 inline-flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity"
                     title="Delete your comment"
                   >
                     🗑️ Delete
@@ -209,11 +196,11 @@ function CommentSection({ postId, onCommentsCountChange }) {
       </div>
 
       {/* Add Comment Input */}
-      <div style={styles.formContainer}>
+      <div className="border-t border-slate-200/60 pt-4">
         {isAuthenticated ? (
-          <form onSubmit={handleSubmit} style={styles.form}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <textarea
-              style={styles.textarea}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none text-xs md:text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
               placeholder="Share your thoughts locally..."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
@@ -221,10 +208,10 @@ function CommentSection({ postId, onCommentsCountChange }) {
               disabled={submitting}
               required
             />
-            <div style={styles.formFooter}>
+            <div className="flex justify-end">
               <button 
                 type="submit" 
-                style={styles.submitButton}
+                className="px-4 py-2 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer"
                 disabled={submitting || !commentText.trim()}
               >
                 {submitting ? 'Posting...' : 'Post Comment 🚀'}
@@ -232,10 +219,12 @@ function CommentSection({ postId, onCommentsCountChange }) {
             </div>
           </form>
         ) : (
-          <div style={styles.authPrompt}>
-            <p style={styles.authPromptText}>Join the discussion in your community!</p>
-            <div style={styles.authActions}>
-              <Link to="/login" style={styles.authLink}>Login to comment</Link>
+          <div className="bg-blue-50/20 border border-dashed border-blue-200/60 rounded-2xl p-4 text-center">
+            <p className="text-xs md:text-sm text-blue-700 font-semibold mb-3">Join the discussion in your community!</p>
+            <div className="flex justify-center">
+              <Link to="/login" className="px-5 py-2 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-md shadow-blue-100 transition-all duration-200 text-decoration-none">
+                Login to comment
+              </Link>
             </div>
           </div>
         )}
@@ -243,208 +232,5 @@ function CommentSection({ postId, onCommentsCountChange }) {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    backgroundColor: '#fafbfc',
-    borderTop: '1px solid #edf2f7',
-    padding: '20px',
-    borderRadius: '0 0 8px 8px',
-    animation: 'fadeIn 0.3s ease',
-  },
-  header: {
-    marginBottom: '15px',
-    borderBottom: '1px solid #edf2f7',
-    paddingBottom: '8px',
-  },
-  headerTitle: {
-    margin: 0,
-    fontSize: '15px',
-    color: '#2d3748',
-    fontWeight: 'bold',
-  },
-  commentsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '15px',
-    maxHeight: '350px',
-    overflowY: 'auto',
-    marginBottom: '20px',
-    paddingRight: '5px',
-  },
-  commentItem: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-start',
-    animation: 'slideUp 0.25s ease-out',
-  },
-  avatarImage: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-    flexShrink: 0
-  },
-  commentBubble: {
-    backgroundColor: '#fff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '12px',
-    padding: '12px 16px',
-    flex: 1,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-    position: 'relative',
-    transition: 'all 0.2s',
-  },
-  commentHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '6px',
-  },
-  commentAuthor: {
-    fontWeight: '600',
-    fontSize: '13px',
-    color: '#2d3748',
-  },
-  commentTime: {
-    fontSize: '11px',
-    color: '#a0aec0',
-  },
-  commentContent: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#4a5568',
-    lineHeight: '1.5',
-    whiteSpace: 'pre-wrap',
-  },
-  deleteButton: {
-    background: 'none',
-    border: 'none',
-    color: '#e53e3e',
-    fontSize: '11px',
-    cursor: 'pointer',
-    padding: '4px 0 0 0',
-    marginTop: '6px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '2px',
-    opacity: 0.7,
-    transition: 'opacity 0.2s',
-    fontWeight: '500',
-  },
-  errorMessage: {
-    backgroundColor: '#fff5f5',
-    color: '#c53030',
-    padding: '10px 12px',
-    borderRadius: '6px',
-    fontSize: '13px',
-    marginBottom: '15px',
-    borderLeft: '4px solid #f56565',
-  },
-  loadingState: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '30px 0',
-  },
-  loadingText: {
-    fontSize: '13px',
-    color: '#718096',
-  },
-  spinner: {
-    width: '18px',
-    height: '18px',
-    border: '2px solid #e2e8f0',
-    borderTop: '2px solid #3182ce',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '30px 10px',
-    color: '#718096',
-  },
-  emptyIcon: {
-    fontSize: '24px',
-    display: 'block',
-    marginBottom: '8px',
-    opacity: 0.6
-  },
-  emptyText: {
-    margin: 0,
-    fontSize: '13px',
-  },
-  formContainer: {
-    borderTop: '1px solid #edf2f7',
-    paddingTop: '15px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: '1px solid #cbd5e0',
-    fontSize: '13px',
-    fontFamily: 'inherit',
-    outline: 'none',
-    resize: 'none',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-    ':focus': {
-      borderColor: '#3182ce',
-      boxShadow: '0 0 0 3px rgba(66, 153, 225, 0.15)',
-    }
-  },
-  formFooter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  submitButton: {
-    backgroundColor: '#3182ce',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 4px rgba(49, 130, 206, 0.2)',
-  },
-  authPrompt: {
-    backgroundColor: '#ebf8ff',
-    border: '1px dashed #bee3f8',
-    borderRadius: '8px',
-    padding: '15px',
-    textAlign: 'center',
-  },
-  authPromptText: {
-    margin: '0 0 10px 0',
-    fontSize: '13px',
-    color: '#2b6cb0',
-    fontWeight: '500',
-  },
-  authActions: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  authLink: {
-    textDecoration: 'none',
-    backgroundColor: '#3182ce',
-    color: '#fff',
-    padding: '6px 16px',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '600',
-    boxShadow: '0 2px 4px rgba(49, 130, 206, 0.15)',
-    transition: 'all 0.2s',
-  }
-};
 
 export default CommentSection;
