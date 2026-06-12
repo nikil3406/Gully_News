@@ -155,6 +155,24 @@ const Profile = () => {
     }
   };
 
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': token }
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Failed to delete post');
+      }
+      // Remove the deleted post from local state immediately
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -332,7 +350,12 @@ const Profile = () => {
           {posts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               {posts.map(post => (
-                <ArticleCard key={post.id} article={post} />
+                <ArticleCard
+                  key={post.id}
+                  article={post}
+                  currentUserId={currentUserId}
+                  onDelete={isOwnProfile ? handleDeletePost : undefined}
+                />
               ))}
             </div>
           ) : (

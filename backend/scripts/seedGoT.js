@@ -10,48 +10,56 @@ const characters = [
     email: 'jon@gmail.com',
     password: 'jon',
     bio: 'Lord Commander of the Night\'s Watch. Knows nothing, apparently.',
+    profile_image: 'https://www.bing.com/th/id/OIP._cXG2RIophr2kLgqwI_EKAHaEK?w=193&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Daenerys Targaryen',
     email: 'daenerys@gmail.com',
     password: 'daenerys',
     bio: 'Mother of Dragons. Breaker of Chains. Queen of the Andals.',
+    profile_image: 'https://www.bing.com/th/id/OIP.7nOPy1Q1x80LdOo9vALZSgHaHa?w=193&h=193&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Tyrion Lannister',
     email: 'tyrion@gmail.com',
     password: 'tyrion',
     bio: 'I drink and I know things. Hand of the Queen.',
+    profile_image: 'https://www.bing.com/th/id/OIP.hYRjh6XcjIs0d94yY-AjvwHaHa?w=193&h=193&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Arya Stark',
     email: 'arya@gmail.com',
     password: 'arya',
     bio: 'A girl has no name. Faceless assassin from Winterfell.',
+    profile_image: 'https://www.bing.com/th/id/OIP.QMSkWZHFL44xBGuibKNJiwHaEK?w=193&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Cersei Lannister',
     email: 'cersei@gmail.com',
     password: 'cersei',
     bio: 'Queen of the Seven Kingdoms. A Lannister always pays her debts.',
+    profile_image: 'https://www.bing.com/th/id/OIP.iFT8HYJ0LopvEy-C0rJO6AHaHK?w=193&h=187&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Sansa Stark',
     email: 'sansa@gmail.com',
     password: 'sansa',
     bio: 'Lady of Winterfell. The North remembers.',
+    profile_image: 'https://www.bing.com/th/id/OIP.Bir2PDRCA-XuEwL_hTSiHQHaEo?w=193&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Jaime Lannister',
     email: 'jaime@gmail.com',
     password: 'jaime',
     bio: 'The Kingslayer. Knight of the Kingsguard.',
+    profile_image: 'https://www.bing.com/th/id/OIP.RpeO8Ov5SPabfMK4VpN-owHaE8?w=193&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
   {
     username: 'Ned Stark',
     email: 'ned@gmail.com',
     password: 'ned',
     bio: 'Warden of the North. Winter is coming.',
+    profile_image: 'https://www.bing.com/th/id/OIP.PWoVJ4f5R8P7PkKpKhHyDAHaEK?w=193&h=135&c=8&rs=1&qlt=90&o=6&dpr=1.6&pid=3.1&rm=2',
   },
 ];
 
@@ -166,11 +174,14 @@ const seed = async () => {
     for (const char of characters) {
       const hash = await bcrypt.hash(char.password, SALT_ROUNDS);
       const res = await pool.query(
-        `INSERT INTO users (username, email, password_hash, bio)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (email) DO UPDATE SET username = EXCLUDED.username, bio = EXCLUDED.bio
+        `INSERT INTO users (username, email, password_hash, bio, profile_image)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (email) DO UPDATE
+           SET username = EXCLUDED.username,
+               bio = EXCLUDED.bio,
+               profile_image = EXCLUDED.profile_image
          RETURNING id, username`,
-        [char.username, char.email, hash, char.bio]
+        [char.username, char.email, hash, char.bio, char.profile_image]
       );
       const user = res.rows[0];
       userIds[char.username] = user.id;

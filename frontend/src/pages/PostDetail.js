@@ -202,9 +202,22 @@ function PostDetail() {
             
             <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-wrap gap-4">
               <div className="flex items-center gap-3">
+              {/* Author avatar — real photo or color initial fallback */}
+              {post.author_image ? (
+                <img
+                  src={post.author_image}
+                  alt={post.author}
+                  title={post.author}
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-xs border-2 border-white"
+                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                />
+              ) : null}
               <div
-                className="w-9 h-9 rounded-full text-white font-bold text-sm flex items-center justify-center select-none shadow-xs border-2 border-white uppercase flex-shrink-0"
-                style={{ backgroundColor: getUserColor(post.author) }}
+                className="w-9 h-9 rounded-full text-white font-bold text-sm items-center justify-center select-none shadow-xs border-2 border-white uppercase flex-shrink-0"
+                style={{
+                  backgroundColor: getUserColor(post.author),
+                  display: post.author_image ? 'none' : 'flex',
+                }}
                 title={post.author}
               >
                 {post.author[0]}

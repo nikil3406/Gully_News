@@ -74,7 +74,7 @@ export const getPosts = async (req, res) => {
     const whereClauseStr = whereClauses.length > 0 ? "WHERE " + whereClauses.join(" AND ") : "";
 
     const query = `
-      SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+      SELECT p.*, COALESCE(u.username, u.email) as author, u.profile_image as author_image, c.name as category,
              EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1) as is_liked_by_user
       FROM posts p 
       LEFT JOIN users u ON p.user_id = u.id 
@@ -118,7 +118,7 @@ export const getPostById = async (req, res) => {
   const userId = req.user ? req.user.userId : null;
   try {
     const post = await pool.query(
-      `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
+      `SELECT p.*, COALESCE(u.username, u.email) as author, u.profile_image as author_image, c.name as category,
               EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $2) as is_liked_by_user
        FROM posts p 
        JOIN users u ON p.user_id = u.id 

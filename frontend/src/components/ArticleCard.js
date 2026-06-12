@@ -79,10 +79,22 @@ function ArticleCard({ article, currentUserId, onDelete }) {
         </p>
         <div className="flex justify-between items-center text-[10px] md:text-xs text-slate-400 border-b border-slate-100 pb-3 mb-3 flex-wrap gap-2">
           <div className="flex gap-3 items-center flex-wrap">
-            {/* Author avatar */}
+            {/* Author avatar — real photo or color initial fallback */}
+            {article.author_image ? (
+              <img
+                src={article.author_image}
+                alt={article.author}
+                title={article.author}
+                className="w-6 h-6 rounded-full object-cover flex-shrink-0 shadow-xs border border-slate-200"
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+              />
+            ) : null}
             <div
-              className="w-6 h-6 rounded-full text-white font-bold text-[10px] flex items-center justify-center select-none flex-shrink-0 uppercase shadow-xs"
-              style={{ backgroundColor: getUserColor(article.author) }}
+              className="w-6 h-6 rounded-full text-white font-bold text-[10px] items-center justify-center select-none flex-shrink-0 uppercase shadow-xs"
+              style={{
+                backgroundColor: getUserColor(article.author),
+                display: article.author_image ? 'none' : 'flex',
+              }}
               title={article.author}
             >
               {article.author ? article.author[0] : '?'}
