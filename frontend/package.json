@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "concurrently \"npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind-compiled.css --watch\" \"react-scripts start\"",
-    "build": "npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind-compiled.css && react-scripts build",
+    "build": "npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind-compiled.css --minify && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
