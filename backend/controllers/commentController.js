@@ -61,6 +61,17 @@ export const addComment = async (req, res) => {
       [newCommentId]
     );
 
+    try {
+      const updatedPost = await pool.query("SELECT comments_count FROM posts WHERE id = $1", [id]);
+      const io = req.app.get("io");
+      if (io && updatedPost.rows.length > 0) {
+        io.to(`post_${id}`).emit("comment_added", fullComment.rows[0]);
+        io.emit("post_comments_updated", { id: parseInt(id, 10), comments_count: updatedPost.rows[0].comments_count });
+      }
+    } catch (errSocket) {
+      console.error("Error emitting comment_added event:", errSocket);
+    }
+
     res.status(201).json(fullComment.rows[0]);
   } catch (err) {
     console.error("Error adding comment:", err);
@@ -99,6 +110,17 @@ export const deleteComment = async (req, res) => {
       "UPDATE posts SET comments_count = GREATEST(0, comments_count - 1) WHERE id = $1",
       [id]
     );
+
+    try {
+      const updatedPost = await pool.query("SELECT comments_count FROM posts WHERE id = $1", [id]);
+      const io = req.app.get("io");
+      if (io && updatedPost.rows.length > 0) {
+        io.to(`post_${id}`).emit("comment_deleted", { commentId: parseInt(commentId, 10) });
+        io.emit("post_comments_updated", { id: parseInt(id, 10), comments_count: updatedPost.rows[0].comments_count });
+      }
+    } catch (errSocket) {
+      console.error("Error emitting comment_deleted event:", errSocket);
+    }
 
     res.json({ message: "Comment deleted successfully" });
   } catch (err) {

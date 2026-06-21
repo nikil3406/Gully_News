@@ -6,8 +6,41 @@ import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://gully-news.vercel.app"
+    ],
+    credentials: true
+  }
+});
+
+io.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
+  
+  socket.on("join_post", (postId) => {
+    socket.join(`post_${postId}`);
+    console.log(`Socket ${socket.id} joined room post_${postId}`);
+  });
+
+  socket.on("leave_post", (postId) => {
+    socket.leave(`post_${postId}`);
+    console.log(`Socket ${socket.id} left room post_${postId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+  });
+});
+
+app.set("io", io);
 
 app.use(cors({
   origin: [
@@ -47,6 +80,6 @@ app.get("/api/protected", verifyToken, (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

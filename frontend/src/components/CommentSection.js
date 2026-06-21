@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { socket } from '../socket';
 
 function CommentSection({ postId, onCommentsCountChange }) {
   const [comments, setComments] = useState([]);
@@ -44,6 +45,27 @@ function CommentSection({ postId, onCommentsCountChange }) {
     fetchComments();
   }, [postId]);
 
+  useEffect(() => {
+    const handleCommentAdded = (newComment) => {
+      setComments(prev => {
+        if (prev.some(c => c.id === newComment.id)) return prev;
+        return [...prev, newComment];
+      });
+    };
+
+    const handleCommentDeleted = ({ commentId }) => {
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    };
+
+    socket.on("comment_added", handleCommentAdded);
+    socket.on("comment_deleted", handleCommentDeleted);
+
+    return () => {
+      socket.off("comment_added", handleCommentAdded);
+      socket.off("comment_deleted", handleCommentDeleted);
+    };
+  }, [postId]);
+
   // Handle posting a comment
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,14 +88,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
         throw new Error(errData.message || 'Failed to post comment');
       }
 
-      const newComment = await response.json();
-      setComments(prev => [...prev, newComment]);
       setCommentText('');
-      
-      // Notify parent component to increment count
-      if (onCommentsCountChange) {
-        onCommentsCountChange(prev => prev + 1);
-      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -96,14 +111,6 @@ function CommentSection({ postId, onCommentsCountChange }) {
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.message || 'Failed to delete comment');
-      }
-
-      // Remove from local state
-      setComments(prev => prev.filter(c => c.id !== commentId));
-      
-      // Notify parent component to decrement count
-      if (onCommentsCountChange) {
-        onCommentsCountChange(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
       alert(err.message);

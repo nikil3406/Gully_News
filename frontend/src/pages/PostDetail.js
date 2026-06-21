@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CommentSection from '../components/CommentSection';
+import { socket } from '../socket';
 
 // Generate a consistent color from the author's username
 const getUserColor = (username) => {
@@ -79,6 +80,41 @@ function PostDetail() {
     fetchPost();
   }, [id]);
 
+  useEffect(() => {
+    socket.connect();
+    socket.emit("join_post", parseInt(id, 10));
+
+    const handleLikesUpdated = (data) => {
+      if (data.id === parseInt(id, 10)) {
+        setLikesCount(data.likes_count);
+      }
+    };
+
+    const handleViewsUpdated = (data) => {
+      if (data.id === parseInt(id, 10)) {
+        setViewsCount(data.views_count);
+      }
+    };
+
+    const handleCommentsUpdated = (data) => {
+      if (data.id === parseInt(id, 10)) {
+        setCommentsCount(data.comments_count);
+      }
+    };
+
+    socket.on("post_likes_updated", handleLikesUpdated);
+    socket.on("post_views_updated", handleViewsUpdated);
+    socket.on("post_comments_updated", handleCommentsUpdated);
+
+    return () => {
+      socket.emit("leave_post", parseInt(id, 10));
+      socket.off("post_likes_updated", handleLikesUpdated);
+      socket.off("post_views_updated", handleViewsUpdated);
+      socket.off("post_comments_updated", handleCommentsUpdated);
+      socket.disconnect();
+    };
+  }, [id]);
+
   // Increment view on load
   useEffect(() => {
     const incrementView = async () => {
@@ -114,7 +150,6 @@ function PostDetail() {
       if (response.ok) {
         const data = await response.json();
         setIsLiked(data.liked);
-        setLikesCount(prev => data.liked ? prev + 1 : prev - 1);
       }
     } catch (error) {
       console.error("Failed to toggle like", error);

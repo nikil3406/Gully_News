@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Generate a consistent color from the author's username
@@ -18,7 +18,15 @@ function ArticleCard({ article, currentUserId, onDelete }) {
   const isPostCreator = currentUserId && article.user_id === currentUserId;
   const [likesCount, setLikesCount] = useState(article.likes_count || 0);
   const [isLiked, setIsLiked] = useState(article.is_liked_by_user || false); 
-  const [viewsCount] = useState(article.views_count || 0);
+  const [viewsCount, setViewsCount] = useState(article.views_count || 0);
+
+  useEffect(() => {
+    setLikesCount(article.likes_count || 0);
+  }, [article.likes_count]);
+
+  useEffect(() => {
+    setViewsCount(article.views_count || 0);
+  }, [article.views_count]);
 
   const handleLike = async (e) => {
     e.stopPropagation(); // Prevent card navigation when liking
@@ -34,7 +42,6 @@ function ArticleCard({ article, currentUserId, onDelete }) {
       if (response.ok) {
         const data = await response.json();
         setIsLiked(data.liked);
-        setLikesCount(prev => data.liked ? prev + 1 : prev - 1);
       }
     } catch (error) {
       console.error("Failed to toggle like", error);

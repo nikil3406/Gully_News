@@ -4,6 +4,7 @@ import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '../socket';
 
 function NewsFeed() {
   const useMediaQuery = (query) => {
@@ -42,6 +43,61 @@ function NewsFeed() {
   const navigate = useNavigate();
   const sentinelRef = useRef(null);
   const isMobileOrTablet = useMediaQuery('(max-width: 768px)');
+
+  const filtersRef = useRef({ selectedCategory, searchTerm });
+  useEffect(() => {
+    filtersRef.current = { selectedCategory, searchTerm };
+  }, [selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    socket.connect();
+
+    const handlePostCreated = (newPost) => {
+      const { selectedCategory: currentCat, searchTerm: currentSearch } = filtersRef.current;
+      const matchesCategory = !currentCat || parseInt(newPost.category_id, 10) === parseInt(currentCat, 10);
+      const matchesSearch = !currentSearch || 
+        (newPost.title && newPost.title.toLowerCase().includes(currentSearch.toLowerCase())) ||
+        (newPost.content && newPost.content.toLowerCase().includes(currentSearch.toLowerCase()));
+
+      if (matchesCategory && matchesSearch) {
+        setArticles(prev => {
+          if (prev.some(p => p.id === newPost.id)) return prev;
+          return [newPost, ...prev];
+        });
+      }
+    };
+
+    const handlePostDeleted = (deletedPostId) => {
+      setArticles(prev => prev.filter(p => p.id !== deletedPostId));
+    };
+
+    const handleLikesUpdated = ({ id, likes_count }) => {
+      setArticles(prev => prev.map(p => p.id === id ? { ...p, likes_count } : p));
+    };
+
+    const handleViewsUpdated = ({ id, views_count }) => {
+      setArticles(prev => prev.map(p => p.id === id ? { ...p, views_count } : p));
+    };
+
+    const handleCommentsUpdated = ({ id, comments_count }) => {
+      setArticles(prev => prev.map(p => p.id === id ? { ...p, comments_count } : p));
+    };
+
+    socket.on("post_created", handlePostCreated);
+    socket.on("post_deleted", handlePostDeleted);
+    socket.on("post_likes_updated", handleLikesUpdated);
+    socket.on("post_views_updated", handleViewsUpdated);
+    socket.on("post_comments_updated", handleCommentsUpdated);
+
+    return () => {
+      socket.off("post_created", handlePostCreated);
+      socket.off("post_deleted", handlePostDeleted);
+      socket.off("post_likes_updated", handleLikesUpdated);
+      socket.off("post_views_updated", handleViewsUpdated);
+      socket.off("post_comments_updated", handleCommentsUpdated);
+      socket.disconnect();
+    };
+  }, []);
 
   // Check authentication status
   useEffect(() => {

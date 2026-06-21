@@ -18,6 +18,25 @@ export const createPost = async (req, res) => {
       ]
     );
 
+    // Fetch details for socket emission (joins author and category)
+    try {
+      const postWithDetails = await pool.query(
+        `SELECT p.*, COALESCE(u.username, u.email) as author, u.profile_image as author_image, c.name as category,
+                false as is_liked_by_user
+         FROM posts p 
+         LEFT JOIN users u ON p.user_id = u.id 
+         LEFT JOIN categories c ON p.category_id = c.id 
+         WHERE p.id = $1`,
+        [newPost.rows[0].id]
+      );
+      const io = req.app.get("io");
+      if (io && postWithDetails.rows.length > 0) {
+        io.emit("post_created", postWithDetails.rows[0]);
+      }
+    } catch (errSocket) {
+      console.error("Error emitting socket event for createPost:", errSocket);
+    }
+
     res.status(201).json(newPost.rows[0]);
   } catch (err) {
     console.error("Error creating post:", err);
@@ -159,17 +178,30 @@ export const toggleLike = async (req, res) => {
       [userId, id]
     );
 
+    let liked = false;
     if (likeCheck.rows.length > 0) {
       // Unlike
       await pool.query("DELETE FROM likes WHERE user_id = $1 AND post_id = $2", [userId, id]);
       await pool.query("UPDATE posts SET likes_count = likes_count - 1 WHERE id = $1", [id]);
-      res.json({ liked: false });
+      liked = false;
     } else {
       // Like
       await pool.query("INSERT INTO likes (user_id, post_id) VALUES ($1, $2)", [userId, id]);
       await pool.query("UPDATE posts SET likes_count = likes_count + 1 WHERE id = $1", [id]);
-      res.json({ liked: true });
+      liked = true;
     }
+
+    try {
+      const updatedPost = await pool.query("SELECT likes_count FROM posts WHERE id = $1", [id]);
+      const io = req.app.get("io");
+      if (io && updatedPost.rows.length > 0) {
+        io.emit("post_likes_updated", { id: parseInt(id, 10), likes_count: updatedPost.rows[0].likes_count });
+      }
+    } catch (errSocket) {
+      console.error("Error emitting post_likes_updated:", errSocket);
+    }
+
+    res.json({ liked });
   } catch (err) {
     console.error("Error toggling like:", err);
     res.status(500).json({ error: err.message });
@@ -180,6 +212,17 @@ export const incrementView = async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query("UPDATE posts SET views_count = views_count + 1 WHERE id = $1", [id]);
+
+    try {
+      const updatedPost = await pool.query("SELECT views_count FROM posts WHERE id = $1", [id]);
+      const io = req.app.get("io");
+      if (io && updatedPost.rows.length > 0) {
+        io.emit("post_views_updated", { id: parseInt(id, 10), views_count: updatedPost.rows[0].views_count });
+      }
+    } catch (errSocket) {
+      console.error("Error emitting post_views_updated:", errSocket);
+    }
+
     res.json({ message: "View incremented" });
   } catch (err) {
     console.error("Error incrementing view:", err);
@@ -214,6 +257,15 @@ export const deletePost = async (req, res) => {
 
     // Delete the post
     await pool.query("DELETE FROM posts WHERE id = $1", [id]);
+
+    try {
+      const io = req.app.get("io");
+      if (io) {
+        io.emit("post_deleted", parseInt(id, 10));
+      }
+    } catch (errSocket) {
+      console.error("Error emitting socket event for deletePost:", errSocket);
+    }
 
     res.json({ message: "Post deleted successfully" });
   } catch (err) {
