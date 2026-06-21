@@ -3,12 +3,12 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import cookieParser from "cookie-parser";
 import pool from "./db.js";
 
 const app = express();
@@ -26,7 +26,7 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
-  
+
   socket.on("join_post", (postId) => {
     socket.join(`post_${postId}`);
     console.log(`Socket ${socket.id} joined room post_${postId}`);
@@ -78,7 +78,6 @@ app.get("/", (req, res) => {
     status: "Backend Running"
   });
 });
-
 
 app.get("/test-db", async (req, res) => {
   try {
