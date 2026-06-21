@@ -8,6 +8,8 @@ import postRoutes from "./routes/posts.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
+import pool from "./db.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -51,6 +53,22 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+// Auto-create refresh_tokens table on startup
+try {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT NOT NULL UNIQUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  console.log("Database table 'refresh_tokens' verified.");
+} catch (dbErr) {
+  console.error("Failed to verify/create 'refresh_tokens' table:", dbErr);
+}
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
@@ -60,7 +78,7 @@ app.get("/", (req, res) => {
     status: "Backend Running"
   });
 });
-import pool from "./db.js";
+
 
 app.get("/test-db", async (req, res) => {
   try {

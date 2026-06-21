@@ -54,13 +54,34 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { userId: userData.id },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "15m" }
     );
 
-    res.json({ token });
+    const refreshTokenSecret = process.env.JWT_REFRESH_SECRET || (process.env.JWT_SECRET + "_refresh");
+    const refreshToken = jwt.sign(
+      { userId: userData.id },
+      refreshTokenSecret,
+      { expiresIn: "7d" }
+    );
+
+    // Save refresh token in DB
+    await pool.query(
+      "INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)",
+      [userData.id, refreshToken]
+    );
+
+    // Set refresh token inside secure HTTP-Only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" || false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.json({ token: accessToken });
 
   } catch (err) {
     console.error("Login error:", err);
@@ -237,4 +258,59 @@ export const getUserProfileById = async (req, res) => {
     console.error("Get user profile by id error:", err);
     res.status(500).json({ error: err.message });
   }
+};
+
+export const refresh = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token not provided" });
+  }
+
+  try {
+    const refreshTokenSecret = process.env.JWT_REFRESH_SECRET || (process.env.JWT_SECRET + "_refresh");
+    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+
+    // Verify token exists in database
+    const dbTokenResult = await pool.query(
+      "SELECT * FROM refresh_tokens WHERE token = $1 AND user_id = $2",
+      [refreshToken, decoded.userId]
+    );
+
+    if (dbTokenResult.rows.length === 0) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.json({ token: newAccessToken });
+  } catch (err) {
+    console.error("Refresh error:", err);
+    res.status(403).json({ message: "Invalid or expired refresh token" });
+  }
+};
+
+export const logout = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (refreshToken) {
+    try {
+      await pool.query("DELETE FROM refresh_tokens WHERE token = $1", [refreshToken]);
+    } catch (err) {
+      console.error("Logout database error:", err);
+    }
+  }
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production" || false,
+    sameSite: "lax"
+  });
+
+  res.json({ message: "Logged out successfully" });
 };

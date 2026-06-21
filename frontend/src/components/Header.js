@@ -211,7 +211,12 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
 
               <button
                 className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-full transition-all duration-200 cursor-pointer"
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+                      method: 'POST', credentials: 'include'
+                    });
+                  } catch (_) {}
                   localStorage.removeItem('token');
                   window.location.reload();
                 }}
@@ -349,7 +354,12 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 </Link>
                 <button
                   className="w-full text-left px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2 transition-colors cursor-pointer border-none bg-transparent"
-                  onClick={() => {
+                  onClick={async () => {
+                    try {
+                      await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+                        method: 'POST', credentials: 'include'
+                      });
+                    } catch (_) {}
                     localStorage.removeItem('token');
                     window.location.reload();
                   }}

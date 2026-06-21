@@ -27,7 +27,12 @@ function Dashboard() {
       <p>You are logged in ✅</p>
 
       <button
-        onClick={() => {
+        onClick={async () => {
+          try {
+            await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+              method: 'POST', credentials: 'include'
+            });
+          } catch (_) {}
           localStorage.removeItem("token");
           navigate("/");
         }}
