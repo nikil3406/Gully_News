@@ -191,17 +191,21 @@ export const toggleLike = async (req, res) => {
       liked = true;
     }
 
+    let currentLikesCount = null;
     try {
       const updatedPost = await pool.query("SELECT likes_count FROM posts WHERE id = $1", [id]);
-      const io = req.app.get("io");
-      if (io && updatedPost.rows.length > 0) {
-        io.emit("post_likes_updated", { id: parseInt(id, 10), likes_count: updatedPost.rows[0].likes_count });
+      if (updatedPost.rows.length > 0) {
+        currentLikesCount = updatedPost.rows[0].likes_count;
+        const io = req.app.get("io");
+        if (io) {
+          io.emit("post_likes_updated", { id: parseInt(id, 10), likes_count: currentLikesCount });
+        }
       }
     } catch (errSocket) {
       console.error("Error emitting post_likes_updated:", errSocket);
     }
 
-    res.json({ liked });
+    res.json({ liked, likes_count: currentLikesCount });
   } catch (err) {
     console.error("Error toggling like:", err);
     res.status(500).json({ error: err.message });
