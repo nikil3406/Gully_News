@@ -42,6 +42,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
       if (response.ok) {
         const data = await response.json();
         setIsLiked(data.liked);
+        setLikesCount(prev => data.liked ? prev + 1 : prev - 1);
       }
     } catch (error) {
       console.error("Failed to toggle like", error);

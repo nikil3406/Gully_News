@@ -88,6 +88,12 @@ function CommentSection({ postId, onCommentsCountChange }) {
         throw new Error(errData.message || 'Failed to post comment');
       }
 
+      const newComment = await response.json();
+      // Add comment immediately from API response as fallback when socket is unavailable
+      setComments(prev => {
+        if (prev.some(c => c.id === newComment.id)) return prev;
+        return [...prev, newComment];
+      });
       setCommentText('');
     } catch (err) {
       setError(err.message);
