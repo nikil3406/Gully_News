@@ -86,45 +86,44 @@ export const createPost = async (req, res) => {
       country || null
     ];
 
-    const baseColumns = [
+    const columnsSql = [
       'user_id', 'title', 'content', 'image_url', 'video_url', 'category_id', 'location_id'
     ];
-
-    const locationColumnsList = [
-      'latitude', 'longitude', 'city', 'state', 'country'
-    ];
-
-    const availableColumns = [];
-    const availableValues = [];
-
-    baseColumns.forEach((column, index) => {
-      availableColumns.push(column);
-      availableValues.push(insertValues[index]);
-    });
+    const values = insertValues.slice(0, 7);
 
     if (locationColumns.latitude && locationColumns.longitude) {
-      locationColumnsList.forEach((column) => {
-        availableColumns.push(column);
-        availableValues.push(insertValues[baseColumns.length + locationColumnsList.indexOf(column)]);
-      });
+      columnsSql.push('latitude', 'longitude');
+      values.push(lat, lng);
+    }
+
+    if (locationColumns.city) {
+      columnsSql.push('city');
+      values.push(city || null);
+    }
+
+    if (locationColumns.state) {
+      columnsSql.push('state');
+      values.push(state || null);
+    }
+
+    if (locationColumns.country) {
+      columnsSql.push('country');
+      values.push(country || null);
     }
 
     if (isPostgisAvailable && locationColumns.location_geom) {
-      availableColumns.push('location_geom');
-      availableValues.push(
+      columnsSql.push('location_geom');
+      values.push(
         lat !== null && lng !== null
           ? `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`
           : null
       );
     }
 
-    const placeholders = availableValues.map((_, index) => `$${index + 1}`).join(', ');
-    const columnsSql = availableColumns.join(', ');
+    const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
+    const sql = `INSERT INTO posts (${columnsSql.join(', ')}) VALUES (${placeholders}) RETURNING *`;
 
-    newPost = await pool.query(
-      `INSERT INTO posts (${columnsSql}) VALUES (${placeholders}) RETURNING *`,
-      availableValues
-    );
+    newPost = await pool.query(sql, values);
 
     // Fetch details for socket emission (joins author and category)
     try {
