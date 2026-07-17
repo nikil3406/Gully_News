@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import L from 'leaflet';
+import { getPostPayload } from '../utils/postLocation';
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -73,6 +74,19 @@ function CreatePost() {
       const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
       markerInstanceRef.current = marker;
 
+      const updateLocationState = (lat, lng, city = '', state = '', country = '') => {
+        if (mapInstanceRef.current === map) {
+          setFormData(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            city,
+            state,
+            country
+          }));
+        }
+      };
+
       const reverseGeocode = async (lat, lng) => {
         try {
           const response = await fetch(
@@ -91,19 +105,13 @@ function CreatePost() {
             const state = address.state || '';
             const country = address.country || '';
             
-            if (mapInstanceRef.current === map) {
-              setFormData(prev => ({
-                ...prev,
-                latitude: lat,
-                longitude: lng,
-                city,
-                state,
-                country
-              }));
-            }
+            updateLocationState(lat, lng, city, state, country);
+          } else {
+            updateLocationState(lat, lng);
           }
         } catch (err) {
           console.error('Error reverse geocoding:', err);
+          updateLocationState(lat, lng);
         }
       };
 
@@ -134,6 +142,7 @@ function CreatePost() {
         if (mapInstanceRef.current === map) {
           const { lat, lng } = e.latlng;
           marker.setLatLng([lat, lng]);
+          updateLocationState(lat, lng);
           reverseGeocode(lat, lng);
         }
       });
@@ -142,6 +151,7 @@ function CreatePost() {
       marker.on('dragend', () => {
         if (mapInstanceRef.current === map) {
           const { lat, lng } = marker.getLatLng();
+          updateLocationState(lat, lng);
           reverseGeocode(lat, lng);
         }
       });
@@ -155,6 +165,17 @@ function CreatePost() {
       }
     };
   }, []);
+
+  const updateLocationState = (lat, lng, city = '', state = '', country = '') => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      city,
+      state,
+      country
+    }));
+  };
 
   const reverseGeocode = async (lat, lng) => {
     try {
@@ -174,17 +195,13 @@ function CreatePost() {
         const state = address.state || '';
         const country = address.country || '';
         
-        setFormData(prev => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng,
-          city,
-          state,
-          country
-        }));
+        updateLocationState(lat, lng, city, state, country);
+      } else {
+        updateLocationState(lat, lng);
       }
     } catch (err) {
       console.error('Error reverse geocoding:', err);
+      updateLocationState(lat, lng);
     }
   };
 
@@ -237,13 +254,25 @@ function CreatePost() {
 
     const token = localStorage.getItem('token');
     try {
+      const fallbackLocation = {
+        latitude: formData.latitude || 12.9716,
+        longitude: formData.longitude || 77.5946,
+      };
+      const markerLocation = mapInstanceRef.current && markerInstanceRef.current
+        ? {
+            latitude: markerInstanceRef.current.getLatLng().lat,
+            longitude: markerInstanceRef.current.getLatLng().lng,
+          }
+        : null;
+      const payload = getPostPayload(formData, fallbackLocation, markerLocation);
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
