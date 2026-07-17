@@ -123,7 +123,15 @@ export const createPost = async (req, res) => {
     const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
     const sql = `INSERT INTO posts (${columnsSql.join(', ')}) VALUES (${placeholders}) RETURNING *`;
 
-    newPost = await pool.query(sql, values);
+    try {
+      newPost = await pool.query(sql, values);
+    } catch (insertErr) {
+      console.error('Create post insert failed', { sql, values, error: insertErr.message });
+      if (insertErr.code === '42703') {
+        return res.status(400).json({ error: 'The database schema for posts is missing one of the expected columns.' });
+      }
+      throw insertErr;
+    }
 
     // Fetch details for socket emission (joins author and category)
     try {
@@ -147,7 +155,7 @@ export const createPost = async (req, res) => {
     res.status(201).json(newPost.rows[0]);
   } catch (err) {
     console.error("Error creating post:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || 'Failed to create post' });
   }
 };
 
