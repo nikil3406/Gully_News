@@ -1,4 +1,5 @@
 -- Core Tables for Gully News
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- 1. users
 CREATE TABLE IF NOT EXISTS users (
@@ -39,6 +40,12 @@ CREATE TABLE IF NOT EXISTS posts (
     video_url TEXT,
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
     location_id INT REFERENCES locations(id) ON DELETE SET NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    city VARCHAR(255),
+    state VARCHAR(255),
+    country VARCHAR(255),
+    location_geom GEOGRAPHY(Point, 4326),
     ai_score FLOAT DEFAULT 0.0,
     ai_status VARCHAR(50) DEFAULT 'review', -- approved/rejected/review
     moderation_reason TEXT,
@@ -49,6 +56,8 @@ CREATE TABLE IF NOT EXISTS posts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_posts_location_geom ON posts USING gist(location_geom);
 
 -- 5. comments
 CREATE TABLE IF NOT EXISTS comments (

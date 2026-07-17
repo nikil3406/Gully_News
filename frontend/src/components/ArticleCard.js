@@ -65,7 +65,19 @@ function ArticleCard({ article, currentUserId, onDelete }) {
       )}
 
       <div className="p-4 md:p-5 flex flex-col flex-grow">
-        <div className="text-[10px] md:text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 select-none text-left">{article.category}</div>
+        <div className="flex flex-wrap items-center gap-2 mb-2 select-none">
+          <div className="text-[10px] md:text-xs font-bold text-blue-600 uppercase tracking-wider">{article.category}</div>
+          {article.city && (
+            <div className="text-[10px] md:text-xs font-medium text-slate-500 bg-slate-100 border border-slate-200/50 rounded-full px-2 py-0.5">
+              🏢 {article.city}
+            </div>
+          )}
+          {article.distance_km !== undefined && article.distance_km !== null && (
+            <div className="text-[10px] md:text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
+              📍 {parseFloat(article.distance_km).toFixed(1)} km away
+            </div>
+          )}
+        </div>
         <h3
           className="text-base md:text-lg font-extrabold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors duration-200 cursor-pointer text-left"
           onClick={navigateToDetail}

@@ -1,22 +1,86 @@
 import pool from "../db.js";
 
+let hasPostgis = null;
+const checkPostgis = async () => {
+  if (hasPostgis !== null) return hasPostgis;
+  try {
+    const res = await pool.query("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'postgis') AS has_postgis;");
+    hasPostgis = res.rows[0].has_postgis;
+  } catch (err) {
+    hasPostgis = false;
+  }
+  return hasPostgis;
+};
+
 export const createPost = async (req, res) => {
-  const { title, content, image_url, video_url, category_id, location_id } = req.body;
+  const { title, content, image_url, video_url, category_id, location_id, latitude, longitude, city, state, country } = req.body;
   const user_id = req.user.userId;
 
+  const lat = latitude !== undefined && latitude !== null && latitude !== "" ? parseFloat(latitude) : null;
+  const lng = longitude !== undefined && longitude !== null && longitude !== "" ? parseFloat(longitude) : null;
+
+  if ((lat !== null && lng === null) || (lat === null && lng !== null)) {
+    return res.status(400).json({ error: "Both latitude and longitude must be provided together." });
+  }
+  if (lat !== null && (lat < -90 || lat > 90)) {
+    return res.status(400).json({ error: "Latitude must be between -90 and 90." });
+  }
+  if (lng !== null && (lng < -180 || lng > 180)) {
+    return res.status(400).json({ error: "Longitude must be between -180 and 180." });
+  }
+
   try {
-    const newPost = await pool.query(
-      "INSERT INTO posts (user_id, title, content, image_url, video_url, category_id, location_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [
-        user_id, 
-        title, 
-        content, 
-        image_url || null, 
-        video_url || null, 
-        category_id ? parseInt(category_id) : null, 
-        location_id ? parseInt(location_id) : null
-      ]
-    );
+    const isPostgisAvailable = await checkPostgis();
+    let newPost;
+
+    if (isPostgisAvailable) {
+      newPost = await pool.query(
+        `INSERT INTO posts (
+          user_id, title, content, image_url, video_url, category_id, location_id,
+          latitude, longitude, city, state, country, location_geom
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+          CASE WHEN $8 IS NOT NULL AND $9 IS NOT NULL THEN ST_SetSRID(ST_MakePoint($9, $8), 4326)::geography ELSE NULL END
+        ) RETURNING *`,
+        [
+          user_id,
+          title,
+          content,
+          image_url || null,
+          video_url || null,
+          category_id ? parseInt(category_id) : null,
+          location_id ? parseInt(location_id) : null,
+          lat,
+          lng,
+          city || null,
+          state || null,
+          country || null
+        ]
+      );
+    } else {
+      newPost = await pool.query(
+        `INSERT INTO posts (
+          user_id, title, content, image_url, video_url, category_id, location_id,
+          latitude, longitude, city, state, country
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        ) RETURNING *`,
+        [
+          user_id,
+          title,
+          content,
+          image_url || null,
+          video_url || null,
+          category_id ? parseInt(category_id) : null,
+          location_id ? parseInt(location_id) : null,
+          lat,
+          lng,
+          city || null,
+          state || null,
+          country || null
+        ]
+      );
+    }
 
     // Fetch details for socket emission (joins author and category)
     try {
@@ -274,6 +338,144 @@ export const deletePost = async (req, res) => {
     res.json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error("Error deleting post:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getNearbyPosts = async (req, res) => {
+  const userId = req.user ? req.user.userId : null;
+  const { latitude, longitude, radius = 50, cursor, limit = 5 } = req.query;
+
+  if (latitude === undefined || longitude === undefined || latitude === "" || longitude === "") {
+    return res.status(400).json({ error: "Latitude and longitude are required query parameters." });
+  }
+
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  const rad = parseFloat(radius);
+  const parsedLimit = parseInt(limit, 10) || 5;
+  const queryLimit = parsedLimit + 1;
+
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    return res.status(400).json({ error: "Invalid latitude. Must be between -90 and 90." });
+  }
+  if (isNaN(lng) || lng < -180 || lng > 180) {
+    return res.status(400).json({ error: "Invalid longitude. Must be between -180 and 180." });
+  }
+  if (isNaN(rad) || rad <= 0) {
+    return res.status(400).json({ error: "Invalid radius. Must be a positive number." });
+  }
+
+  try {
+    const isPostgisAvailable = await checkPostgis();
+    let query = "";
+    let queryParams = [];
+
+    let cursorDistance = null;
+    let cursorId = null;
+
+    if (cursor) {
+      try {
+        const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
+        cursorDistance = parseFloat(decoded.distance_km);
+        cursorId = parseInt(decoded.id, 10);
+      } catch (err) {
+        console.error("Invalid cursor format for nearby posts:", err);
+      }
+    }
+
+    if (isPostgisAvailable) {
+      let cteQuery = `
+        WITH nearby_posts AS (
+          SELECT p.*, COALESCE(u.username, u.email) as author, u.profile_image as author_image, c.name as category,
+                 (ST_Distance(p.location_geom, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) / 1000.0) as distance_km,
+                 EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $3) as is_liked_by_user
+          FROM posts p
+          LEFT JOIN users u ON p.user_id = u.id
+          LEFT JOIN categories c ON p.category_id = c.id
+          WHERE ST_DWithin(p.location_geom, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography, $4 * 1000.0)
+        )
+      `;
+      if (cursorDistance !== null && !isNaN(cursorDistance) && cursorId !== null && !isNaN(cursorId)) {
+        query = `${cteQuery}
+          SELECT * FROM nearby_posts
+          WHERE (distance_km > $5 OR (distance_km = $5 AND id > $6))
+          ORDER BY distance_km ASC, id ASC
+          LIMIT $7
+        `;
+        queryParams = [lat, lng, userId, rad, cursorDistance, cursorId, queryLimit];
+      } else {
+        query = `${cteQuery}
+          SELECT * FROM nearby_posts
+          ORDER BY distance_km ASC, id ASC
+          LIMIT $5
+        `;
+        queryParams = [lat, lng, userId, rad, queryLimit];
+      }
+    } else {
+      const latDelta = rad / 111.0;
+      const lngDelta = rad / (111.0 * Math.cos(lat * Math.PI / 180.0));
+      const minLat = lat - latDelta;
+      const maxLat = lat + latDelta;
+      const minLng = lng - lngDelta;
+      const maxLng = lng + lngDelta;
+
+      let cteQuery = `
+        WITH nearby_posts AS (
+          SELECT p.*, COALESCE(u.username, u.email) as author, u.profile_image as author_image, c.name as category,
+                 (6371.0 * acos(least(1.0, greatest(-1.0, cos(radians(p.latitude)) * cos(radians($1)) * cos(radians($2) - radians(p.longitude)) + sin(radians(p.latitude)) * sin(radians($1)))))) as distance_km,
+                 EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $3) as is_liked_by_user
+          FROM posts p
+          LEFT JOIN users u ON p.user_id = u.id
+          LEFT JOIN categories c ON p.category_id = c.id
+          WHERE p.latitude BETWEEN $4 AND $5
+            AND p.longitude BETWEEN $6 AND $7
+        )
+      `;
+
+      if (cursorDistance !== null && !isNaN(cursorDistance) && cursorId !== null && !isNaN(cursorId)) {
+        query = `${cteQuery}
+          SELECT * FROM nearby_posts
+          WHERE distance_km <= $8
+            AND (distance_km > $9 OR (distance_km = $9 AND id > $10))
+          ORDER BY distance_km ASC, id ASC
+          LIMIT $11
+        `;
+        queryParams = [lat, lng, userId, minLat, maxLat, minLng, maxLng, rad, cursorDistance, cursorId, queryLimit];
+      } else {
+        query = `${cteQuery}
+          SELECT * FROM nearby_posts
+          WHERE distance_km <= $8
+          ORDER BY distance_km ASC, id ASC
+          LIMIT $9
+        `;
+        queryParams = [lat, lng, userId, minLat, maxLat, minLng, maxLng, rad, queryLimit];
+      }
+    }
+
+    const result = await pool.query(query, queryParams);
+    const rows = result.rows;
+
+    const hasMore = rows.length > parsedLimit;
+    const posts = hasMore ? rows.slice(0, parsedLimit) : rows;
+
+    let nextCursor = null;
+    if (posts.length > 0 && hasMore) {
+      const lastPost = posts[posts.length - 1];
+      const cursorObj = {
+        distance_km: lastPost.distance_km,
+        id: lastPost.id
+      };
+      nextCursor = Buffer.from(JSON.stringify(cursorObj)).toString("base64");
+    }
+
+    res.json({
+      posts,
+      nextCursor,
+      hasMore
+    });
+  } catch (err) {
+    console.error("Error fetching nearby posts:", err);
     res.status(500).json({ error: err.message });
   }
 };

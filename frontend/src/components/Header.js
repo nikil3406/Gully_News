@@ -109,7 +109,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        
+
         {/* Logo */}
         <div className="flex-shrink-0">
           <Link to="/" className="text-xl font-extrabold tracking-tight text-blue-600 hover:text-blue-700 transition-colors duration-200 flex items-center gap-2">
@@ -131,7 +131,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               className="w-full pl-10 pr-10 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
               >
@@ -156,7 +156,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                       {u.profile_image ? (
                         <img src={u.profile_image} alt={u.username} className="w-full h-full object-cover" />
                       ) : (
-                        <div 
+                        <div
                           className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
                           style={{ backgroundColor: getUserColor(u.username) }}
                         >
@@ -179,17 +179,21 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
           )}
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-1.5 mr-2">
+            <Link to="/" className={`px-3 py-2 text-sm font-semibold transition-colors ${location.pathname === '/' ? 'text-blue-600 bg-blue-50/50 rounded-xl' : 'text-slate-600 hover:text-slate-900'}`}>Home</Link>
+            <Link to="/nearby" className={`px-3 py-2 text-sm font-semibold transition-colors ${location.pathname === '/nearby' ? 'text-blue-600 bg-blue-50/50 rounded-xl' : 'text-slate-600 hover:text-slate-900'}`}>📍 Nearby</Link>
+          </div>
+
           {token ? (
             <div className="flex items-center gap-3">
-              <Link 
-                to="/create-post" 
+              <Link
+                to="/create-post"
                 className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200 flex items-center gap-1.5"
               >
                 <span>✍️</span> Create Post
               </Link>
-              
+
               {currentUserProfile && (
                 <button
                   onClick={() => navigate(`/profile/${currentUserId}`)}
@@ -199,7 +203,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                   {currentUserProfile.profile_image ? (
                     <img src={currentUserProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <div 
+                    <div
                       className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
                       style={{ backgroundColor: getUserColor(currentUserProfile.username) }}
                     >
@@ -216,7 +220,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                     await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
                       method: 'POST', credentials: 'include'
                     });
-                  } catch (_) {}
+                  } catch (_) { }
                   localStorage.removeItem('token');
                   window.location.reload();
                 }}
@@ -226,10 +230,9 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Link to="/" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Home</Link>
               <Link to="/login" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Login</Link>
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200"
               >
                 Register
@@ -257,7 +260,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
       {/* Mobile Menu Slide-down Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 flex flex-col gap-4 animate-fadeIn">
-          
+
           {/* Mobile Search Input (Reporters search inside Mobile Menu) */}
           <div className="relative flex items-center" ref={searchRef}>
             <span className="absolute left-3 text-slate-400">🔍</span>
@@ -269,14 +272,14 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               className="w-full pl-10 pr-10 py-2 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 text-slate-400 text-xs cursor-pointer"
               >
                 ✕
               </button>
             )}
-            
+
             {showDropdown && searchQuery.trim() && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto z-50 divide-y divide-slate-100">
                 {loading ? (
@@ -292,7 +295,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                         {u.profile_image ? (
                           <img src={u.profile_image} alt={u.username} className="w-full h-full object-cover" />
                         ) : (
-                          <div 
+                          <div
                             className="w-full h-full text-white flex items-center justify-center text-xs font-bold uppercase"
                             style={{ backgroundColor: getUserColor(u.username) }}
                           >
@@ -315,12 +318,19 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
           <div className="flex flex-col gap-2">
             {token ? (
               <>
-                <Link 
-                  to="/" 
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                <Link
+                  to="/"
+                  className={`px-3 py-2 text-sm font-medium rounded-xl flex items-center gap-2 transition-colors ${location.pathname === '/' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                   onClick={handleNavLinkClick}
                 >
                   🏠 Home
+                </Link>
+                <Link
+                  to="/nearby"
+                  className={`px-3 py-2 text-sm font-medium rounded-xl flex items-center gap-2 transition-colors ${location.pathname === '/nearby' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  onClick={handleNavLinkClick}
+                >
+                  📍 Nearby News
                 </Link>
                 {currentUserProfile && (
                   <div
@@ -334,7 +344,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                       {currentUserProfile.profile_image ? (
                         <img src={currentUserProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <div 
+                        <div
                           className="w-full h-full text-white flex items-center justify-center text-[10px] font-bold uppercase"
                           style={{ backgroundColor: getUserColor(currentUserProfile.username) }}
                         >
@@ -342,11 +352,11 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                         </div>
                       )}
                     </div>
-                    <span>Profile ({currentUserProfile.username})</span>
+                    <span>{currentUserProfile.username}</span>
                   </div>
                 )}
-                <Link 
-                  to="/create-post" 
+                <Link
+                  to="/create-post"
                   className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
                   onClick={handleNavLinkClick}
                 >
@@ -359,7 +369,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                       await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
                         method: 'POST', credentials: 'include'
                       });
-                    } catch (_) {}
+                    } catch (_) { }
                     localStorage.removeItem('token');
                     window.location.reload();
                   }}
@@ -369,22 +379,29 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               </>
             ) : (
               <>
-                <Link 
-                  to="/" 
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                <Link
+                  to="/"
+                  className={`px-3 py-2 text-sm font-medium rounded-xl flex items-center gap-2 transition-colors ${location.pathname === '/' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
                   onClick={handleNavLinkClick}
                 >
                   🏠 Home
                 </Link>
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/nearby"
+                  className={`px-3 py-2 text-sm font-medium rounded-xl flex items-center gap-2 transition-colors ${location.pathname === '/nearby' ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-700 hover:bg-slate-50'}`}
+                  onClick={handleNavLinkClick}
+                >
+                  📍 Nearby News
+                </Link>
+                <Link
+                  to="/login"
                   className="px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
                   onClick={handleNavLinkClick}
                 >
                   🔑 Login
                 </Link>
-                <Link 
-                  to="/register" 
+                <Link
+                  to="/register"
                   className="mt-2 w-full text-center px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-md transition-all"
                   onClick={handleNavLinkClick}
                 >
