@@ -253,6 +253,12 @@ function CreatePost() {
     setError('');
 
     const token = localStorage.getItem('token');
+    if (!token) {
+      setError('You must be logged in to create a post.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const fallbackLocation = {
         latitude: formData.latitude || 12.9716,
@@ -270,8 +276,9 @@ function CreatePost() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 

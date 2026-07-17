@@ -1,6 +1,8 @@
 import pool from "../db.js";
 
 let hasPostgis = null;
+let hasLocationColumns = null;
+
 const checkPostgis = async () => {
   if (hasPostgis !== null) return hasPostgis;
   try {
@@ -10,6 +12,41 @@ const checkPostgis = async () => {
     hasPostgis = false;
   }
   return hasPostgis;
+};
+
+const checkLocationColumns = async () => {
+  if (hasLocationColumns !== null) return hasLocationColumns;
+
+  try {
+    const res = await pool.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'posts'
+    `);
+
+    const columns = new Set(res.rows.map(row => row.column_name.toLowerCase()));
+    hasLocationColumns = {
+      latitude: columns.has('latitude'),
+      longitude: columns.has('longitude'),
+      city: columns.has('city'),
+      state: columns.has('state'),
+      country: columns.has('country'),
+      location_geom: columns.has('location_geom'),
+      location_id: columns.has('location_id')
+    };
+  } catch (err) {
+    hasLocationColumns = {
+      latitude: false,
+      longitude: false,
+      city: false,
+      state: false,
+      country: false,
+      location_geom: false,
+      location_id: false
+    };
+  }
+
+  return hasLocationColumns;
 };
 
 export const createPost = async (req, res) => {
@@ -31,56 +68,63 @@ export const createPost = async (req, res) => {
 
   try {
     const isPostgisAvailable = await checkPostgis();
+    const locationColumns = await checkLocationColumns();
     let newPost;
 
-    if (isPostgisAvailable) {
-      newPost = await pool.query(
-        `INSERT INTO posts (
-          user_id, title, content, image_url, video_url, category_id, location_id,
-          latitude, longitude, city, state, country, location_geom
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-          CASE WHEN $8 IS NOT NULL AND $9 IS NOT NULL THEN ST_SetSRID(ST_MakePoint($9, $8), 4326)::geography ELSE NULL END
-        ) RETURNING *`,
-        [
-          user_id,
-          title,
-          content,
-          image_url || null,
-          video_url || null,
-          category_id ? parseInt(category_id) : null,
-          location_id ? parseInt(location_id) : null,
-          lat,
-          lng,
-          city || null,
-          state || null,
-          country || null
-        ]
-      );
-    } else {
-      newPost = await pool.query(
-        `INSERT INTO posts (
-          user_id, title, content, image_url, video_url, category_id, location_id,
-          latitude, longitude, city, state, country
-        ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
-        ) RETURNING *`,
-        [
-          user_id,
-          title,
-          content,
-          image_url || null,
-          video_url || null,
-          category_id ? parseInt(category_id) : null,
-          location_id ? parseInt(location_id) : null,
-          lat,
-          lng,
-          city || null,
-          state || null,
-          country || null
-        ]
+    const insertValues = [
+      user_id,
+      title,
+      content,
+      image_url || null,
+      video_url || null,
+      category_id ? parseInt(category_id) : null,
+      location_id ? parseInt(location_id) : null,
+      lat,
+      lng,
+      city || null,
+      state || null,
+      country || null
+    ];
+
+    const baseColumns = [
+      'user_id', 'title', 'content', 'image_url', 'video_url', 'category_id', 'location_id'
+    ];
+
+    const locationColumnsList = [
+      'latitude', 'longitude', 'city', 'state', 'country'
+    ];
+
+    const availableColumns = [];
+    const availableValues = [];
+
+    baseColumns.forEach((column, index) => {
+      availableColumns.push(column);
+      availableValues.push(insertValues[index]);
+    });
+
+    if (locationColumns.latitude && locationColumns.longitude) {
+      locationColumnsList.forEach((column) => {
+        availableColumns.push(column);
+        availableValues.push(insertValues[baseColumns.length + locationColumnsList.indexOf(column)]);
+      });
+    }
+
+    if (isPostgisAvailable && locationColumns.location_geom) {
+      availableColumns.push('location_geom');
+      availableValues.push(
+        lat !== null && lng !== null
+          ? `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`
+          : null
       );
     }
+
+    const placeholders = availableValues.map((_, index) => `$${index + 1}`).join(', ');
+    const columnsSql = availableColumns.join(', ');
+
+    newPost = await pool.query(
+      `INSERT INTO posts (${columnsSql}) VALUES (${placeholders}) RETURNING *`,
+      availableValues
+    );
 
     // Fetch details for socket emission (joins author and category)
     try {
