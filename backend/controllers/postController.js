@@ -135,17 +135,41 @@ export const createPost = async (req, res) => {
       values.push(country || null);
     }
 
+    // location_geom must be inlined as a SQL expression — it cannot be a bound $N parameter
+    // because ST_SetSRID/ST_MakePoint are SQL functions, not plain values.
+    let geomExpression = null;
     if (isPostgisAvailable && locationColumns.location_geom) {
       columnsSql.push('location_geom');
-      values.push(
-        lat !== null && lng !== null
-          ? `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`
-          : null
-      );
+      if (lat !== null && lng !== null) {
+        // We'll use the already-parameterized lat/lng indices in the SQL expression.
+        // lat and lng are already in the values array via the latitude/longitude block above,
+        // but to be safe we track their $N positions here.
+        const latIndex = values.indexOf(lat) + 1; // 1-based
+        const lngIndex = values.indexOf(lng) + 1;
+        if (latIndex > 0 && lngIndex > 0) {
+          geomExpression = `ST_SetSRID(ST_MakePoint($${lngIndex}, $${latIndex}), 4326)::geography`;
+        } else {
+          // lat/lng not yet in values (e.g. latitude/longitude columns don't exist in DB)
+          // push them now just for the geometry calculation
+          values.push(lng, lat);
+          const lngIdx = values.length - 1;
+          const latIdx = values.length;
+          geomExpression = `ST_SetSRID(ST_MakePoint($${lngIdx}, $${latIdx}), 4326)::geography`;
+        }
+      } else {
+        geomExpression = 'NULL';
+      }
     }
 
     const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-    const sql = `INSERT INTO posts (${columnsSql.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+    // Replace the last placeholder with the inlined geometry expression if needed
+    let valuesClause = placeholders;
+    if (geomExpression !== null) {
+      const parts = placeholders.split(', ');
+      parts[parts.length - 1] = geomExpression;
+      valuesClause = parts.join(', ');
+    }
+    const sql = `INSERT INTO posts (${columnsSql.join(', ')}) VALUES (${valuesClause}) RETURNING *`;
 
     try {
       newPost = await pool.query(sql, values);
