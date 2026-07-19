@@ -3,6 +3,23 @@ import pool from "../db.js";
 let hasPostgis = null;
 let hasLocationColumns = null;
 
+const normalizeNumber = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = typeof value === "number" ? value : parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeInteger = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = typeof value === "number" ? value : parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeOptionalText = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  return value;
+};
+
 const checkPostgis = async () => {
   if (hasPostgis !== null) return hasPostgis;
   try {
@@ -53,8 +70,8 @@ export const createPost = async (req, res) => {
   const { title, content, image_url, video_url, category_id, location_id, latitude, longitude, city, state, country } = req.body;
   const user_id = req.user.userId;
 
-  const lat = latitude !== undefined && latitude !== null && latitude !== "" ? parseFloat(latitude) : null;
-  const lng = longitude !== undefined && longitude !== null && longitude !== "" ? parseFloat(longitude) : null;
+  const lat = normalizeNumber(latitude);
+  const lng = normalizeNumber(longitude);
 
   if ((lat !== null && lng === null) || (lat === null && lng !== null)) {
     return res.status(400).json({ error: "Both latitude and longitude must be provided together." });
@@ -75,15 +92,15 @@ export const createPost = async (req, res) => {
       user_id,
       title,
       content,
-      image_url || null,
-      video_url || null,
-      category_id ? parseInt(category_id) : null,
-      location_id ? parseInt(location_id) : null,
+      normalizeOptionalText(image_url),
+      normalizeOptionalText(video_url),
+      normalizeInteger(category_id),
+      normalizeInteger(location_id),
       lat,
       lng,
-      city || null,
-      state || null,
-      country || null
+      normalizeOptionalText(city),
+      normalizeOptionalText(state),
+      normalizeOptionalText(country)
     ];
 
     const columnsSql = [

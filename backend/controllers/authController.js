@@ -1,6 +1,7 @@
 import pool from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { getAccessTokenSecret, getRefreshTokenSecret } from "../middleware/authMiddleware.js";
 
 export const register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -56,14 +57,13 @@ export const login = async (req, res) => {
 
     const accessToken = jwt.sign(
       { userId: userData.id },
-      process.env.JWT_SECRET,
+      getAccessTokenSecret(),
       { expiresIn: "15m" }
     );
 
-    const refreshTokenSecret = process.env.JWT_REFRESH_SECRET || (process.env.JWT_SECRET + "_refresh");
     const refreshToken = jwt.sign(
       { userId: userData.id },
-      refreshTokenSecret,
+      getRefreshTokenSecret(),
       { expiresIn: "7d" }
     );
 
@@ -269,8 +269,7 @@ export const refresh = async (req, res) => {
   }
 
   try {
-    const refreshTokenSecret = process.env.JWT_REFRESH_SECRET || (process.env.JWT_SECRET + "_refresh");
-    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+    const decoded = jwt.verify(refreshToken, getRefreshTokenSecret());
 
     // Verify token exists in database
     const dbTokenResult = await pool.query(
@@ -285,7 +284,7 @@ export const refresh = async (req, res) => {
     // Generate new access token
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
-      process.env.JWT_SECRET,
+      getAccessTokenSecret(),
       { expiresIn: "15m" }
     );
 
