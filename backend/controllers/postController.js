@@ -104,9 +104,16 @@ export const createPost = async (req, res) => {
     ];
 
     const columnsSql = [
-      'user_id', 'title', 'content', 'image_url', 'video_url', 'category_id', 'location_id'
+      'user_id', 'title', 'content', 'image_url', 'video_url', 'category_id'
     ];
-    const values = insertValues.slice(0, 7);
+    const values = insertValues.slice(0, 6);
+
+    // Only include location_id if provided (avoids FK/NOT NULL constraint errors)
+    const normLocId = normalizeInteger(location_id);
+    if (normLocId !== null) {
+      columnsSql.push('location_id');
+      values.push(normLocId);
+    }
 
     if (locationColumns.latitude && locationColumns.longitude) {
       columnsSql.push('latitude', 'longitude');
