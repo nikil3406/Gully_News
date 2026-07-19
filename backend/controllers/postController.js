@@ -115,9 +115,15 @@ export const createPost = async (req, res) => {
       values.push(normLocId);
     }
 
+    // Track lat/lng positions explicitly so we can reference them in the geometry expression
+    let latParamIdx = null;
+    let lngParamIdx = null;
+
     if (locationColumns.latitude && locationColumns.longitude) {
       columnsSql.push('latitude', 'longitude');
       values.push(lat, lng);
+      latParamIdx = values.length - 1; // 1-based $N for lat (lat was pushed second-to-last)
+      lngParamIdx = values.length;     // 1-based $N for lng (lng was pushed last)
     }
 
     if (locationColumns.city) {
@@ -135,40 +141,34 @@ export const createPost = async (req, res) => {
       values.push(country || null);
     }
 
-    // location_geom must be inlined as a SQL expression — it cannot be a bound $N parameter
-    // because ST_SetSRID/ST_MakePoint are SQL functions, not plain values.
+    // location_geom must be inlined as a SQL expression — ST_SetSRID/ST_MakePoint are SQL
+    // functions and cannot be passed as bound $N parameters.
+    // NOTE: location_geom is an EXTRA column with no corresponding entry in `values`,
+    // so the expression must be APPENDED after the regular $N placeholders.
     let geomExpression = null;
     if (isPostgisAvailable && locationColumns.location_geom) {
       columnsSql.push('location_geom');
       if (lat !== null && lng !== null) {
-        // We'll use the already-parameterized lat/lng indices in the SQL expression.
-        // lat and lng are already in the values array via the latitude/longitude block above,
-        // but to be safe we track their $N positions here.
-        const latIndex = values.indexOf(lat) + 1; // 1-based
-        const lngIndex = values.indexOf(lng) + 1;
-        if (latIndex > 0 && lngIndex > 0) {
-          geomExpression = `ST_SetSRID(ST_MakePoint($${lngIndex}, $${latIndex}), 4326)::geography`;
+        if (latParamIdx !== null) {
+          // Reuse the already-bound lat/lng $N parameters
+          geomExpression = `ST_SetSRID(ST_MakePoint($${lngParamIdx}, $${latParamIdx}), 4326)::geography`;
         } else {
-          // lat/lng not yet in values (e.g. latitude/longitude columns don't exist in DB)
-          // push them now just for the geometry calculation
+          // latitude/longitude columns don't exist — add lat/lng only for the geometry
           values.push(lng, lat);
-          const lngIdx = values.length - 1;
-          const latIdx = values.length;
-          geomExpression = `ST_SetSRID(ST_MakePoint($${lngIdx}, $${latIdx}), 4326)::geography`;
+          const lngN = values.length - 1; // 1-based
+          const latN = values.length;     // 1-based
+          geomExpression = `ST_SetSRID(ST_MakePoint($${lngN}, $${latN}), 4326)::geography`;
         }
       } else {
         geomExpression = 'NULL';
       }
     }
 
-    const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-    // Replace the last placeholder with the inlined geometry expression if needed
-    let valuesClause = placeholders;
-    if (geomExpression !== null) {
-      const parts = placeholders.split(', ');
-      parts[parts.length - 1] = geomExpression;
-      valuesClause = parts.join(', ');
-    }
+    // Build the VALUES clause: regular $N params first, then append geom expression if needed
+    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+    const valuesClause = geomExpression !== null
+      ? `${placeholders}, ${geomExpression}`
+      : placeholders;
     const sql = `INSERT INTO posts (${columnsSql.join(', ')}) VALUES (${valuesClause}) RETURNING *`;
 
     try {
