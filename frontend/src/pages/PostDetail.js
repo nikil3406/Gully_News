@@ -259,7 +259,17 @@ function PostDetail() {
                 {post.author[0]}
               </div>
                 <div>
-                  <div className="font-bold text-xs md:text-sm text-slate-700 text-left">{post.author}</div>
+                  {post.user_id ? (
+                    <button
+                      type="button"
+                      className="font-bold text-xs md:text-sm text-slate-700 text-left hover:text-blue-600 hover:underline transition-colors cursor-pointer bg-transparent border-none p-0"
+                      onClick={() => navigate(`/profile/${post.user_id}`)}
+                    >
+                      {post.author}
+                    </button>
+                  ) : (
+                    <div className="font-bold text-xs md:text-sm text-slate-700 text-left">{post.author}</div>
+                  )}
                   <div className="text-[10px] md:text-xs text-slate-400 text-left">
                     {new Date(post.created_at).toLocaleDateString(undefined, {
                       year: 'numeric',

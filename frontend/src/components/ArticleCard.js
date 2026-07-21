@@ -53,6 +53,13 @@ function ArticleCard({ article, currentUserId, onDelete }) {
     navigate(`/post/${article.id}`);
   };
 
+  const handleOpenProfile = (e, userId) => {
+    e.stopPropagation();
+    if (userId) {
+      navigate(`/profile/${userId}`);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-300 overflow-hidden mb-4 md:mb-6 flex flex-col group">
       {article.image_url && (
@@ -119,7 +126,17 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             >
               {article.author ? article.author[0] : '?'}
             </div>
-            <span className="font-semibold text-slate-700">{article.author}</span>
+            {article.user_id ? (
+              <button
+                type="button"
+                className="font-semibold text-slate-700 hover:text-blue-600 hover:underline transition-colors cursor-pointer bg-transparent border-none p-0"
+                onClick={(e) => handleOpenProfile(e, article.user_id)}
+              >
+                {article.author}
+              </button>
+            ) : (
+              <span className="font-semibold text-slate-700">{article.author}</span>
+            )}
             <span className="text-slate-400">{new Date(article.created_at).toLocaleDateString()}</span>
           </div>
           {isPostCreator && onDelete && (

@@ -103,6 +103,11 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const followCheck = await pool.query(
+      "SELECT 1 FROM followers WHERE follower_id = $1 AND following_id = $2",
+      [userId, userId]
+    );
+
     const postsResult = await pool.query(
       `SELECT p.*, COALESCE(u.username, u.email) as author, c.name as category,
               EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = $1) as is_liked_by_user
@@ -115,7 +120,10 @@ export const getProfile = async (req, res) => {
     );
 
     res.json({
-      user: userResult.rows[0],
+      user: {
+        ...userResult.rows[0],
+        is_following: false
+      },
       posts: postsResult.rows
     });
 
