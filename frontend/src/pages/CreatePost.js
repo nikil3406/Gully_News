@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import L from 'leaflet';
 import { getPostPayload } from '../utils/postLocation';
+import { fetchCategories, createPost } from '../services/postService';
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -45,18 +46,15 @@ function CreatePost() {
     }
 
     // Fetch categories
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/categories`);
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
-        }
+        const data = await fetchCategories();
+        setCategories(data || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
       }
     };
-    fetchCategories();
+    loadCategories();
   }, [navigate]);
 
   useEffect(() => {
@@ -272,24 +270,10 @@ function CreatePost() {
         : null;
       const payload = getPostPayload(formData, fallbackLocation, markerLocation);
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        navigate('/');
-      } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to create post');
-      }
+      await createPost(payload);
+      navigate('/');
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

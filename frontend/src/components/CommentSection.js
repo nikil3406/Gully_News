@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { socket } from '../socket';
+import { fetchComments as getCommentsApi, addComment as addCommentApi, deleteComment as deleteCommentApi } from '../services/commentService';
+import { formatRelativeTime } from '../utils/dateFormatter';
 
 function CommentSection({ postId, onCommentsCountChange }) {
   const [comments, setComments] = useState([]);
@@ -25,15 +27,11 @@ function CommentSection({ postId, onCommentsCountChange }) {
 
   // Fetch comments on mount or when postId changes
   useEffect(() => {
-    const fetchComments = async () => {
+    const loadComments = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments`);
-        if (!response.ok) {
-          throw new Error('Failed to load comments');
-        }
-        const data = await response.json();
+        const data = await getCommentsApi(postId);
         setComments(data);
       } catch (err) {
         setError(err.message);
@@ -42,7 +40,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
       }
     };
 
-    fetchComments();
+    loadComments();
   }, [postId]);
 
   useEffect(() => {
@@ -74,22 +72,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: token } : {})
-        },
-        body: JSON.stringify({ content: commentText })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Failed to post comment');
-      }
-
-      const newComment = await response.json();
-      // Add comment immediately from API response as fallback when socket is unavailable
+      const newComment = await addCommentApi(postId, commentText);
       setComments(prev => {
         if (prev.some(c => c.id === newComment.id)) return prev;
         return [...prev, newComment];
@@ -107,17 +90,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
     if (!window.confirm("Are you sure you want to delete this comment?")) return;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token ? { Authorization: token } : {})
-        }
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Failed to delete comment');
-      }
+      await deleteCommentApi(postId, commentId);
     } catch (err) {
       alert(err.message);
     }
@@ -130,22 +103,6 @@ function CommentSection({ postId, onCommentsCountChange }) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
     return Math.abs(hash) % 360;
-  };
-
-  // Format relative time helper
-  const formatRelativeTime = (dateString) => {
-    const now = new Date();
-    const past = new Date(dateString);
-    const diffMs = now - past;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return past.toLocaleDateString();
   };
 
   return (

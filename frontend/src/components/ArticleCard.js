@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toggleLikePost } from '../services/postService';
+import { formatDate } from '../utils/dateFormatter';
 
 // Generate a consistent color from the author's username
 const getUserColor = (username) => {
@@ -32,18 +34,9 @@ function ArticleCard({ article, currentUserId, onDelete }) {
     e.stopPropagation(); // Prevent card navigation when liking
     if (!isAuthenticated) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${article.id}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': token
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setIsLiked(data.liked);
-        if (data.likes_count !== null) setLikesCount(data.likes_count);
-      }
+      const data = await toggleLikePost(article.id);
+      setIsLiked(data.liked);
+      if (data.likes_count !== null) setLikesCount(data.likes_count);
     } catch (error) {
       console.error("Failed to toggle like", error);
     }
@@ -137,7 +130,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             ) : (
               <span className="font-semibold text-slate-700">{article.author}</span>
             )}
-            <span className="text-slate-400">{new Date(article.created_at).toLocaleDateString()}</span>
+            <span className="text-slate-400">{formatDate(article.created_at)}</span>
           </div>
           {isPostCreator && onDelete && (
             <button 

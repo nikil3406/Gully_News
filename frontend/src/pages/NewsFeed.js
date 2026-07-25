@@ -5,6 +5,7 @@ import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../socket';
+import { fetchPosts, fetchCategories, deletePost } from '../services/postService';
 
 function NewsFeed() {
   const useMediaQuery = (query) => {
@@ -118,18 +119,15 @@ function NewsFeed() {
 
   // Fetch categories once on mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/categories`);
-        if (res.ok) {
-          const cats = await res.json();
-          setCategories(cats);
-        }
+        const cats = await fetchCategories();
+        setCategories(cats || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
       }
     };
-    fetchCategories();
+    loadCategories();
   }, []);
 
   const fetchArticles = useCallback(async (cursorVal = null, shouldAppend = false) => {
@@ -140,37 +138,22 @@ function NewsFeed() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = token;
-      }
+      const data = await fetchPosts({
+        cursor: cursorVal,
+        limit: 5,
+        categoryId: selectedCategory,
+        search: searchTerm,
+      });
 
-      const params = new URLSearchParams();
-      params.append('limit', '5');
-      if (selectedCategory) {
-        params.append('category_id', selectedCategory.toString());
+      // Add delay for demo purposes to show loading state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (shouldAppend) {
+        setArticles(prev => [...prev, ...(data.posts || [])]);
+      } else {
+        setArticles(data.posts || []);
       }
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      if (cursorVal) {
-        params.append('cursor', cursorVal);
-      }
-
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts?${params.toString()}`, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        // Add delay for demo purposes to show loading state
-        await new Promise(resolve => setTimeout(resolve, 500));
-        if (shouldAppend) {
-          setArticles(prev => [...prev, ...data.posts]);
-        } else {
-          setArticles(data.posts);
-        }
-        setNextCursor(data.nextCursor);
-        setHasMore(data.hasMore);
-      }
+      setNextCursor(data.nextCursor);
+      setHasMore(data.hasMore);
     } catch (err) {
       console.error('Error fetching articles:', err);
     } finally {
@@ -225,22 +208,11 @@ function NewsFeed() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token
-        }
-      });
-
-      if (response.ok) {
-        setArticles(prev => prev.filter(article => article.id !== postId));
-      } else {
-        alert('Failed to delete post');
-      }
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      alert('Error deleting post');
+      await deletePost(postId);
+      setArticles(prev => prev.filter(article => article.id !== postId));
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      alert(err.message || 'Failed to delete post.');
     }
   };
 

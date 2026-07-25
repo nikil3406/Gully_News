@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { login } from "../services/authService";
 
 function Login() {
   const navigate = useNavigate();
@@ -16,14 +16,10 @@ function Login() {
     }
     setLoading(true);
     try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/auth/login`,
-        { email, password }
-      );
-      localStorage.setItem("token", res.data.token);
+      await login(email, password);
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid credentials");
+      alert(err.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }

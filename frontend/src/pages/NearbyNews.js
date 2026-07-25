@@ -5,6 +5,7 @@ import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../socket';
+import { fetchPosts, fetchNearbyPosts, fetchCategories, deletePost } from '../services/postService';
 
 // Client-side Haversine helper to compute distance for socket/real-time posts
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -189,18 +190,15 @@ function NearbyNews() {
 
   // Fetch categories
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/categories`);
-        if (res.ok) {
-          const cats = await res.json();
-          setCategories(cats);
-        }
+        const cats = await fetchCategories();
+        setCategories(cats || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
       }
     };
-    fetchCategories();
+    loadCategories();
   }, []);
 
   // Fetch articles based on permission state
@@ -212,45 +210,31 @@ function NearbyNews() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = token;
-      }
-
-      const params = new URLSearchParams();
-      params.append('limit', '5');
-      if (selectedCategory) {
-        params.append('category_id', selectedCategory.toString());
-      }
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      if (cursorVal) {
-        params.append('cursor', cursorVal);
-      }
-
-      let url = `${process.env.REACT_APP_API_URL}/api/posts?${params.toString()}`;
-
-      // If Geolocation is granted, hit nearby API
+      let data;
       if (geoPermissionState === 'granted' && userCoords) {
-        params.append('latitude', userCoords.latitude.toString());
-        params.append('longitude', userCoords.longitude.toString());
-        params.append('radius', radius.toString());
-        url = `${process.env.REACT_APP_API_URL}/api/news/nearby?${params.toString()}`;
+        data = await fetchNearbyPosts({
+          latitude: userCoords.latitude,
+          longitude: userCoords.longitude,
+          radius,
+          cursor: cursorVal,
+          limit: 5,
+        });
+      } else {
+        data = await fetchPosts({
+          cursor: cursorVal,
+          limit: 5,
+          categoryId: selectedCategory,
+          search: searchTerm,
+        });
       }
 
-      const res = await fetch(url, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        if (shouldAppend) {
-          setArticles(prev => [...prev, ...data.posts]);
-        } else {
-          setArticles(data.posts);
-        }
-        setNextCursor(data.nextCursor);
-        setHasMore(data.hasMore);
+      if (shouldAppend) {
+        setArticles(prev => [...prev, ...(data.posts || [])]);
+      } else {
+        setArticles(data.posts || []);
       }
+      setNextCursor(data.nextCursor);
+      setHasMore(data.hasMore);
     } catch (err) {
       console.error('Error fetching articles:', err);
     } finally {
@@ -261,7 +245,6 @@ function NearbyNews() {
 
   // Refetch when filters or coordinates change
   useEffect(() => {
-    // Only fetch if geolocating is finished (or if permission is denied/error)
     if (geoPermissionState !== 'prompt') {
       fetchArticles(null, false);
     }
@@ -308,22 +291,11 @@ function NearbyNews() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token
-        }
-      });
-
-      if (response.ok) {
-        setArticles(prev => prev.filter(article => article.id !== postId));
-      } else {
-        alert('Failed to delete post');
-      }
+      await deletePost(postId);
+      setArticles(prev => prev.filter(article => article.id !== postId));
     } catch (error) {
       console.error('Error deleting post:', error);
-      alert('Error deleting post');
+      alert(error.message || 'Error deleting post');
     }
   };
 

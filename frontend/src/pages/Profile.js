@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
+import { getProfile, getUserProfileById, updateProfile, toggleFollowUser } from '../services/authService';
+import { deletePost } from '../services/postService';
 
 const getUserColor = (username) => {
   if (!username) return '#007bff';
@@ -46,38 +48,23 @@ const Profile = () => {
   const isOwnProfile = !id || (currentUserId && parseInt(id) === currentUserId);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const url = isOwnProfile 
-          ? `${process.env.REACT_APP_API_URL}/api/auth/profile` 
-          : `${process.env.REACT_APP_API_URL}/api/auth/profile/${id}`;
-
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = token;
-        }
-
         if (isOwnProfile && !token) {
           navigate('/login');
           return;
         }
 
-        const response = await fetch(url, { headers });
+        const data = isOwnProfile
+          ? await getProfile()
+          : await getUserProfileById(id);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('User not found');
-          }
-          throw new Error('Failed to fetch profile');
-        }
-
-        const data = await response.json();
         setUserData(data.user);
-        setPosts(data.posts);
-        
-        if (isOwnProfile) {
+        setPosts(data.posts || []);
+
+        if (isOwnProfile && data.user) {
           setEditUsername(data.user.username || '');
           setEditEmail(data.user.email || '');
           setEditBio(data.user.bio || '');
@@ -90,33 +77,20 @@ const Profile = () => {
       }
     };
 
-    fetchProfile();
+    fetchProfileData();
   }, [id, currentUserId, token, navigate, isOwnProfile]);
-  
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
-        body: JSON.stringify({
-          username: editUsername,
-          email: editEmail,
-          bio: editBio,
-          profile_image: editProfileImage
-        })
+      const updatedUser = await updateProfile({
+        username: editUsername,
+        email: editEmail,
+        bio: editBio,
+        profile_image: editProfileImage
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update profile');
-      }
-
-      const updatedUser = await response.json();
       setUserData(updatedUser);
       setIsEditing(false);
       alert('Profile updated successfully!');
@@ -128,21 +102,11 @@ const Profile = () => {
   };
 
   const handleFollowToggle = async () => {
-    if (!token) return;
+    if (!token || !userData) return;
     setFollowLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/${userData.id}/follow`, {
-        method: 'POST',
-        headers: {
-          'Authorization': token
-        }
-      });
+      const data = await toggleFollowUser(userData.id);
 
-      if (!response.ok) {
-        throw new Error('Failed to follow/unfollow user');
-      }
-
-      const data = await response.json();
       setUserData(prev => ({
         ...prev,
         is_following: data.followed,
@@ -158,18 +122,10 @@ const Profile = () => {
   const handleDeletePost = async (postId) => {
     if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.')) return;
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${postId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': token }
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Failed to delete post');
-      }
-      // Remove the deleted post from local state immediately
+      await deletePost(postId);
       setPosts(prev => prev.filter(p => p.id !== postId));
     } catch (err) {
-      alert(err.message);
+      alert(err.message || 'Failed to delete post');
     }
   };
 
@@ -189,7 +145,7 @@ const Profile = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="text-center py-8 px-6 bg-white border border-slate-200 rounded-2xl shadow-xs max-w-sm w-full">
           <p className="text-red-500 font-bold mb-4">⚠️ {error || 'User not found'}</p>
-          <button 
+          <button
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs shadow-md cursor-pointer border-none"
             onClick={() => navigate('/')}
           >
@@ -204,7 +160,7 @@ const Profile = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
-        
+
         {/* Profile Card Banner */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 flex-1 w-full">
@@ -212,7 +168,7 @@ const Profile = () => {
               {userData.profile_image ? (
                 <img src={userData.profile_image} alt={userData.username} className="w-full h-full object-cover" />
               ) : (
-                <div 
+                <div
                   className="w-full h-full text-white flex items-center justify-center text-4xl font-extrabold uppercase select-none"
                   style={{ backgroundColor: getUserColor(userData.username) }}
                 >
@@ -220,12 +176,12 @@ const Profile = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex flex-col gap-1 text-center sm:text-left flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-tight truncate">{userData.username}</h1>
               {isOwnProfile && <p className="text-xs md:text-sm text-slate-400 font-medium">{userData.email}</p>}
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed my-2 max-w-lg break-words">{userData.bio || "No bio added yet."}</p>
-              
+
               <div className="flex gap-6 justify-center sm:justify-start mt-2 select-none">
                 <div className="flex flex-col items-center sm:items-start">
                   <span className="text-lg font-extrabold text-blue-600">{userData.reputation_score || 0}</span>
@@ -242,29 +198,28 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto mt-4 sm:mt-0 justify-center">
             {isOwnProfile ? (
-              <button 
+              <button
                 className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-full font-bold text-xs md:text-sm text-slate-700 transition-colors duration-200 cursor-pointer shadow-xs select-none"
                 onClick={() => setIsEditing(true)}
               >
                 ⚙️ Edit Profile
               </button>
             ) : token ? (
-              <button 
-                className={`px-5 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 cursor-pointer shadow-sm select-none border-none ${
-                  userData.is_following 
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' 
+              <button
+                className={`px-5 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 cursor-pointer shadow-sm select-none border-none ${userData.is_following
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
                     : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100 hover:shadow-lg'
-                }`}
+                  }`}
                 onClick={handleFollowToggle}
                 disabled={followLoading}
               >
                 {followLoading ? '...' : userData.is_following ? '✓ Following' : 'Follow'}
               </button>
             ) : (
-              <button 
+              <button
                 className="px-4 py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-full font-bold text-xs md:text-sm text-slate-600 transition-colors cursor-pointer flex items-center gap-1 select-none"
                 onClick={() => navigate('/login')}
               >
@@ -323,15 +278,15 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex justify-end gap-3 mt-4 border-t border-slate-100 pt-4">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-full font-bold text-xs md:text-sm text-slate-700 transition-colors cursor-pointer select-none"
                     onClick={() => setIsEditing(false)}
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full font-bold text-xs md:text-sm text-white transition-colors cursor-pointer shadow-md shadow-blue-100 border-none select-none"
                     disabled={updateLoading}
                   >
@@ -362,8 +317,8 @@ const Profile = () => {
             <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
               <p className="text-xs sm:text-sm text-slate-500 mb-4">{isOwnProfile ? "You haven't published any articles yet." : "This reporter hasn't published any articles yet."}</p>
               {isOwnProfile && (
-                <button 
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs md:text-sm shadow-md cursor-pointer border-none" 
+                <button
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs md:text-sm shadow-md cursor-pointer border-none"
                   onClick={() => navigate('/create-post')}
                 >
                   Create Your First Post

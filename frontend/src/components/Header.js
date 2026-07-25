@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { getUserProfileById, searchUsers } from '../services/authService';
 
 const getUserColor = (username) => {
   if (!username) return '#007bff';
@@ -53,13 +54,8 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     const fetchCurrentUserProfile = async () => {
       if (!currentUserId || !token) return;
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile/${currentUserId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
+        const data = await getUserProfileById(currentUserId);
+        if (data && data.user) {
           setCurrentUserProfile(data.user);
         }
       } catch (err) {
@@ -79,11 +75,8 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     setLoading(true);
     const delayDebounceFn = setTimeout(async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/users/search?q=${encodeURIComponent(searchQuery)}`);
-        if (response.ok) {
-          const data = await response.json();
-          setResults(data);
-        }
+        const data = await searchUsers(searchQuery);
+        setResults(data || []);
       } catch (err) {
         console.error('Error searching users:', err);
       } finally {

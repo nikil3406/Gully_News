@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CommentSection from '../components/CommentSection';
 import { socket } from '../socket';
+import { fetchPostById, incrementPostView, toggleLikePost, deletePost } from '../services/postService';
+import { formatDate } from '../utils/dateFormatter';
 
 // Generate a consistent color from the author's username
 const getUserColor = (username) => {
@@ -46,25 +48,11 @@ function PostDetail() {
 
   // Fetch post details
   useEffect(() => {
-    const fetchPost = async () => {
+    const loadPost = async () => {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        const headers = {};
-        if (token) {
-          headers['Authorization'] = token;
-        }
-
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}`, { headers });
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Post not found');
-          }
-          throw new Error('Failed to load article');
-        }
-        
-        const data = await response.json();
+        const data = await fetchPostById(id);
         setPost(data);
         setLikesCount(data.likes_count || 0);
         setIsLiked(data.is_liked_by_user || false);
@@ -77,7 +65,7 @@ function PostDetail() {
       }
     };
 
-    fetchPost();
+    loadPost();
   }, [id]);
 
   useEffect(() => {
@@ -117,14 +105,12 @@ function PostDetail() {
 
   // Increment view on load
   useEffect(() => {
-    const incrementView = async () => {
+    const registerView = async () => {
       if (!hasViewed.current) {
         hasViewed.current = true;
         setViewsCount(prev => prev + 1);
         try {
-          await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}/view`, { 
-            method: 'POST',
-          });
+          await incrementPostView(id);
         } catch (error) {
           console.error("Failed to increment view", error);
         }
@@ -132,7 +118,7 @@ function PostDetail() {
     };
 
     if (post) {
-      incrementView();
+      registerView();
     }
   }, [id, post]);
 
@@ -140,18 +126,9 @@ function PostDetail() {
   const handleLike = async () => {
     if (!isAuthenticated) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}/like`, {
-        method: 'POST',
-        headers: {
-          'Authorization': token
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setIsLiked(data.liked);
-        if (data.likes_count !== null) setLikesCount(data.likes_count);
-      }
+      const data = await toggleLikePost(id);
+      setIsLiked(data.liked);
+      if (data.likes_count !== null) setLikesCount(data.likes_count);
     } catch (error) {
       console.error("Failed to toggle like", error);
     }
@@ -164,23 +141,12 @@ function PostDetail() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': token
-        }
-      });
-
-      if (response.ok) {
-        alert('Post deleted successfully');
-        navigate('/');
-      } else {
-        alert('Failed to delete post');
-      }
+      await deletePost(id);
+      alert('Post deleted successfully');
+      navigate('/');
     } catch (error) {
       console.error('Error deleting post:', error);
-      alert('Error deleting post');
+      alert(error.message || 'Failed to delete post');
     }
   };
 
@@ -203,8 +169,8 @@ function PostDetail() {
         <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs max-w-md mx-auto mt-12">
           <h2 className="text-lg font-bold text-red-600 mb-2">Error Loading Post</h2>
           <p className="text-sm text-slate-500 mb-4">{error || 'Post details could not be found.'}</p>
-          <button 
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors cursor-pointer text-xs md:text-sm border-none shadow-md shadow-blue-100" 
+          <button
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors cursor-pointer text-xs md:text-sm border-none shadow-md shadow-blue-100"
             onClick={() => navigate('/')}
           >
             ← Return to Feed
@@ -219,8 +185,8 @@ function PostDetail() {
       <Header />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
         {/* Navigation / Back Button */}
-        <button 
-          className="text-xs md:text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors duration-200 mb-4 inline-flex items-center gap-1 bg-transparent border-none cursor-pointer p-0" 
+        <button
+          className="text-xs md:text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors duration-200 mb-4 inline-flex items-center gap-1 bg-transparent border-none cursor-pointer p-0"
           onClick={() => navigate('/')}
         >
           ← Back to News Feed
@@ -235,29 +201,29 @@ function PostDetail() {
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-800 leading-tight mb-4 text-left">
               {post.title}
             </h1>
-            
+
             <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 flex-wrap gap-4">
               <div className="flex items-center gap-3">
-              {/* Author avatar — real photo or color initial fallback */}
-              {post.author_image ? (
-                <img
-                  src={post.author_image}
-                  alt={post.author}
+                {/* Author avatar — real photo or color initial fallback */}
+                {post.author_image ? (
+                  <img
+                    src={post.author_image}
+                    alt={post.author}
+                    title={post.author}
+                    className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-xs border-2 border-white"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                  />
+                ) : null}
+                <div
+                  className="w-9 h-9 rounded-full text-white font-bold text-sm items-center justify-center select-none shadow-xs border-2 border-white uppercase flex-shrink-0"
+                  style={{
+                    backgroundColor: getUserColor(post.author),
+                    display: post.author_image ? 'none' : 'flex',
+                  }}
                   title={post.author}
-                  className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-xs border-2 border-white"
-                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                />
-              ) : null}
-              <div
-                className="w-9 h-9 rounded-full text-white font-bold text-sm items-center justify-center select-none shadow-xs border-2 border-white uppercase flex-shrink-0"
-                style={{
-                  backgroundColor: getUserColor(post.author),
-                  display: post.author_image ? 'none' : 'flex',
-                }}
-                title={post.author}
-              >
-                {post.author[0]}
-              </div>
+                >
+                  {post.author[0]}
+                </div>
                 <div>
                   {post.user_id ? (
                     <button
@@ -279,7 +245,7 @@ function PostDetail() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex gap-2 items-center flex-wrap select-none">
                 <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">👁 {viewsCount} Views</span>
                 <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">💬 {commentsCount} Comments</span>
@@ -310,18 +276,17 @@ function PostDetail() {
           <div className="border-t border-slate-100 pt-4 flex gap-3 flex-wrap">
             {isAuthenticated ? (
               <>
-                <button 
-                  className={`px-4 py-2 text-xs md:text-sm font-bold border rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none ${
-                    isLiked 
-                      ? 'text-pink-600 border-pink-100 bg-pink-50/20 hover:bg-pink-50' 
+                <button
+                  className={`px-4 py-2 text-xs md:text-sm font-bold border rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none ${isLiked
+                      ? 'text-pink-600 border-pink-100 bg-pink-50/20 hover:bg-pink-50'
                       : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'
-                  }`}
+                    }`}
                   onClick={handleLike}
                 >
                   {isLiked ? '❤️ Liked' : '🤍 Like'} • {likesCount}
                 </button>
                 {currentUserId && post && post.user_id === currentUserId && (
-                  <button 
+                  <button
                     className="px-4 py-2 text-xs md:text-sm font-bold border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 text-red-600 rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none"
                     onClick={handleDeletePost}
                     title="Delete this post"
@@ -340,9 +305,9 @@ function PostDetail() {
 
         {/* Dedicated comments section taking up the bottom page area */}
         <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
-          <CommentSection 
-            postId={id} 
-            onCommentsCountChange={setCommentsCount} 
+          <CommentSection
+            postId={id}
+            onCommentsCountChange={setCommentsCount}
           />
         </div>
       </div>
