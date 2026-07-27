@@ -54,3 +54,36 @@ export const request = async (endpoint, options = {}) => {
 
   return data;
 };
+
+export const uploadImageFile = async (file, folder = "gully_news") => {
+  const token = getAuthToken();
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const headers = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const url = `${API_BASE_URL}/api/upload/image?folder=${folder}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: formData,
+    credentials: "include"
+  });
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error || data?.message || `Failed to upload image (${response.status})`);
+  }
+
+  return data;
+};
+

@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import newsRoutes from "./routes/news.js";
+import uploadRoutes from "./routes/upload.js";
 import { verifyToken, optionalVerifyToken } from "./middleware/authMiddleware.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -74,6 +75,7 @@ try {
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/upload", uploadRoutes);
 
 app.get("/api/news/nearby", optionalVerifyToken, (req, res) => {
   res.status(200).json({ posts: [], nextCursor: null, hasMore: false });

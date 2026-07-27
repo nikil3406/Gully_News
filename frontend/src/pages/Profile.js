@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import { getProfile, getUserProfileById, updateProfile, toggleFollowUser } from '../services/authService';
 import { deletePost } from '../services/postService';
+import ImageUploadPicker from '../components/ImageUploadPicker';
 
 const getUserColor = (username) => {
   if (!username) return '#007bff';
@@ -258,13 +259,11 @@ const Profile = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Profile Image URL</label>
-                  <input
-                    type="text"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    value={editProfileImage}
-                    onChange={(e) => setEditProfileImage(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                  <ImageUploadPicker
+                    label="Profile Photo"
+                    currentImageUrl={editProfileImage}
+                    folder="gully_news/profiles"
+                    onImageUploaded={(url) => setEditProfileImage(url)}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">

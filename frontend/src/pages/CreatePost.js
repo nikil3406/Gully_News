@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import L from 'leaflet';
 import { getPostPayload } from '../utils/postLocation';
 import { fetchCategories, createPost } from '../services/postService';
+import ImageUploadPicker from '../components/ImageUploadPicker';
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -321,17 +322,15 @@ function CreatePost() {
               </div>
               
               <div className="flex flex-col gap-1.5 flex-1">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Image URL (Optional)</label>
-                <input
-                  type="text"
-                  name="image_url"
-                  value={formData.image_url}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                <ImageUploadPicker
+                  label="Post Image (Optional)"
+                  currentImageUrl={formData.image_url}
+                  folder="gully_news/posts"
+                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
                 />
               </div>
             </div>
+
 
             {/* Location Picker Section */}
             <div className="flex flex-col gap-3 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl">
