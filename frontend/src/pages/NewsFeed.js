@@ -262,17 +262,9 @@ function NewsFeed() {
         {/* Main Content Feed */}
         <div className="flex-grow min-w-0 flex flex-col">
           
-          {/* Mobile search, category chips, and create button */}
+          {/* Mobile search and category chips */}
           {isMobileOrTablet && (
             <div className="flex flex-col gap-3 mb-4 w-full">
-              {isAuthenticated && (
-                <button
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer text-center block select-none border-none"
-                  onClick={() => navigate('/create-post')}
-                >
-                  ✍️ Create New Post
-                </button>
-              )}
               <SearchBar onSearch={handleSearch} />
               <CategoryFilter
                 categories={categories}

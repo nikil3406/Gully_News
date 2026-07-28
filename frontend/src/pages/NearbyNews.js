@@ -403,15 +403,6 @@ function NearbyNews() {
           {/* Mobile search, category chips, and radius selector */}
           {isMobileOrTablet && (
             <div className="flex flex-col gap-3 mb-4 w-full">
-              {isAuthenticated && (
-                <button
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer text-center block select-none border-none"
-                  onClick={() => navigate('/create-post')}
-                >
-                  ✍️ Create New Post
-                </button>
-              )}
-
               {geoPermissionState === 'granted' && (
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-3 shadow-xs">
                   <div className="flex items-center justify-between gap-3">

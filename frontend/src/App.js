@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
 import Profile from "./pages/Profile";
 import PostDetail from "./pages/PostDetail";
+import BottomNav from "./components/BottomNav";
 
 function DashboardRedirect() {
   const token = localStorage.getItem("token");
@@ -26,6 +27,7 @@ function App() {
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
       </Routes>
+      <BottomNav />
     </BrowserRouter>
   );
 }
