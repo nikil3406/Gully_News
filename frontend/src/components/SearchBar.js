@@ -5,66 +5,77 @@ function SearchBar({ onSearch }) {
   const [isActive, setIsActive] = useState(false);
   const debounceTimer = useRef(null);
 
-  // Debounced search effect
   useEffect(() => {
-    // Clear previous timer
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    // Set new timer for debounced search
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      if (onSearch) {
-        onSearch(searchTerm);
-      }
-    }, 300); // 300ms delay
-
-    // Cleanup on unmount
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
+      if (onSearch) onSearch(searchTerm);
+    }, 300);
+    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [searchTerm, onSearch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Immediate search on submit (bypass debounce)
-    if (onSearch) {
-      onSearch(searchTerm);
-    }
-  };
-
-  const handleClear = () => {
-    setSearchTerm('');
-  };
-
-  const handleChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
+    if (onSearch) onSearch(searchTerm);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full mb-4 md:mb-6" role="search">
-      <div className={`flex w-full items-center border-2 rounded-full pl-4 pr-2 bg-white h-10 shadow-xs transition-colors duration-200 ${isActive ? 'border-blue-500' : 'border-slate-200'}`}>
-        <span className="text-sm mr-2 select-none">🔍</span>
+    <form
+      onSubmit={handleSubmit}
+      role="search"
+      style={{ width: '100%', marginBottom: 14 }}
+    >
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        background: '#ffffff',
+        border: `1.5px solid ${isActive ? '#0f172a' : '#e7e5e4'}`,
+        borderRadius: 12,
+        padding: '0 12px',
+        height: 40,
+        gap: 8,
+        transition: 'all 0.18s',
+        boxShadow: isActive ? '0 0 0 3px rgba(15,23,42,0.06)' : 'none',
+      }}>
+        <span style={{ color: '#94a3b8', display: 'flex', flexShrink: 0 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/>
+          </svg>
+        </span>
         <input
           type="text"
-          placeholder="Search local news, events, topics..."
+          placeholder="Search news, topics..."
           value={searchTerm}
-          onChange={handleChange}
+          onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsActive(true)}
           onBlur={() => setIsActive(false)}
-          className="flex-1 py-1.5 border-none outline-none text-sm bg-transparent placeholder-slate-400"
+          style={{
+            flex: 1,
+            border: 'none',
+            outline: 'none',
+            background: 'transparent',
+            fontSize: 13,
+            fontFamily: 'var(--font-sans)',
+            color: '#0f172a',
+          }}
         />
-        <button
-          type="button"
-          onClick={handleClear}
-          className={`text-slate-400 hover:text-slate-600 text-xs px-1.5 transition-opacity duration-200 cursor-pointer ${searchTerm ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          title="Clear search"
-        >
-          ✕
-        </button>
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={() => setSearchTerm('')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#94a3b8', display: 'flex', padding: 2, flexShrink: 0,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+            title="Clear search"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        )}
       </div>
     </form>
   );

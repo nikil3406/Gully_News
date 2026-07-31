@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUserProfileById, searchUsers } from '../services/authService';
 
 const getUserColor = (username) => {
-  if (!username) return '#007bff';
+  if (!username) return '#d97706';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 45%)`;
+  return `hsl(${h}, 60%, 42%)`;
 };
 
 function Header({ categories = [], selectedCategory, onCategorySelect, showCategoryDropdown = false }) {
@@ -24,9 +24,14 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // Click outside to close dropdown
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -37,27 +42,23 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Decode current logged-in user ID from token
   useEffect(() => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setCurrentUserId(payload.userId);
       } catch (err) {
-        console.error("Error decoding token:", err);
+        console.error('Error decoding token:', err);
       }
     }
   }, [token]);
 
-  // Fetch current user's profile
   useEffect(() => {
     const fetchCurrentUserProfile = async () => {
       if (!currentUserId || !token) return;
       try {
         const data = await getUserProfileById(currentUserId);
-        if (data && data.user) {
-          setCurrentUserProfile(data.user);
-        }
+        if (data && data.user) setCurrentUserProfile(data.user);
       } catch (err) {
         console.error('Error fetching current user profile:', err);
       }
@@ -65,13 +66,8 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     fetchCurrentUserProfile();
   }, [currentUserId, token]);
 
-  // Debounced search logic
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setResults([]);
-      return;
-    }
-
+    if (!searchQuery.trim()) { setResults([]); return; }
     setLoading(true);
     const delayDebounceFn = setTimeout(async () => {
       try {
@@ -83,7 +79,6 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
         setLoading(false);
       }
     }, 300);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
@@ -91,123 +86,325 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     setSearchQuery('');
     setResults([]);
     setShowDropdown(false);
-    setMobileMenuOpen(false);
     navigate(`/profile/${userId}`);
   };
 
-  const handleNavLinkClick = () => {
-    setMobileMenuOpen(false);
-  };
-
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+    <header
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        background: '#ffffff',
+        borderBottom: '1px solid #e7e5e4',
+        boxShadow: scrolled ? '0 2px 16px rgba(15,23,42,0.08)' : '0 1px 0 rgba(15,23,42,0.05)',
+        transition: 'box-shadow 0.25s ease',
+      }}
+    >
+      <div style={{
+        maxWidth: 1280,
+        margin: '0 auto',
+        padding: '0 20px',
+        height: 60,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 16,
+      }}>
 
         {/* Logo */}
-        <div className="flex-shrink-0">
-          <Link to="/" className="text-xl font-extrabold tracking-tight text-blue-600 hover:text-blue-700 transition-colors duration-200 flex items-center gap-2">
-            <span>📰</span>
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Gully News</span>
-          </Link>
-        </div>
+        <Link
+          to="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            textDecoration: 'none',
+            flexShrink: 0,
+          }}
+        >
+          <div style={{
+            width: 32,
+            height: 32,
+            background: '#0f172a',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#fbbf24" strokeWidth="1.8" />
+              <path d="M7 9h10M7 12h7M7 15h5" stroke="#fbbf24" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </div>
+          <span style={{
+            fontFamily: 'var(--font-sans)',
+            fontWeight: 800,
+            fontSize: 18,
+            color: '#0f172a',
+            letterSpacing: '-0.5px',
+          }}>
+            Gully <span style={{ color: '#d97706' }}>News</span>
+          </span>
+        </Link>
 
-        {/* Desktop Search Bar (Reporters Search) */}
-        <div className="hidden md:block flex-1 max-w-md relative" ref={searchRef}>
-          <div className="relative flex items-center">
-            <span className="absolute left-3 text-slate-400">🔍</span>
+        {/* Desktop Search Bar */}
+        <div
+          ref={searchRef}
+          style={{
+            flex: '1 1 auto',
+            maxWidth: 380,
+            position: 'relative',
+          }}
+          className="hidden md:block"
+        >
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <span style={{ position: 'absolute', left: 12, color: '#94a3b8', display: 'flex' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" />
+              </svg>
+            </span>
             <input
               type="text"
               placeholder="Search local reporters..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowDropdown(true)}
-              className="w-full pl-10 pr-10 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200"
+              style={{
+                width: '100%',
+                paddingLeft: 36,
+                paddingRight: searchQuery ? 36 : 14,
+                paddingTop: 7,
+                paddingBottom: 7,
+                fontSize: 13,
+                fontFamily: 'var(--font-sans)',
+                background: '#fafaf9',
+                border: '1.5px solid #e7e5e4',
+                borderRadius: 999,
+                outline: 'none',
+                color: '#0f172a',
+                transition: 'all 0.18s',
+              }}
+              onFocus2={(e) => { e.target.style.borderColor = '#d97706'; e.target.style.background = '#fff'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#e7e5e4'; e.target.style.background = '#fafaf9'; }}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#94a3b8',
+                  fontSize: 13,
+                  display: 'flex',
+                  padding: 2,
+                }}
               >
-                ✕
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
             )}
           </div>
 
           {/* Search Dropdown */}
           {showDropdown && searchQuery.trim() && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-80 overflow-y-auto z-50 divide-y divide-slate-100">
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              left: 0,
+              right: 0,
+              background: '#fff',
+              border: '1px solid #e7e5e4',
+              borderRadius: 14,
+              boxShadow: '0 12px 40px rgba(15,23,42,0.14)',
+              maxHeight: 300,
+              overflowY: 'auto',
+              zIndex: 50,
+            }}>
               {loading ? (
-                <div className="p-4 text-center text-sm text-slate-500 animate-pulse">Searching reporters...</div>
+                <div style={{ padding: '16px', textAlign: 'center', fontSize: 13, color: '#94a3b8', fontFamily: 'var(--font-sans)' }}>
+                  Searching...
+                </div>
               ) : results.length > 0 ? (
                 results.map((u) => (
                   <div
                     key={u.id}
-                    className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors duration-150"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '10px 14px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
+                      borderBottom: '1px solid #f5f4f2',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#fafaf9'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     onClick={() => handleUserClick(u.id)}
                   >
-                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-slate-200">
+                    <div style={{
+                      width: 34, height: 34, borderRadius: '50%', overflow: 'hidden',
+                      flexShrink: 0, border: '1.5px solid #e7e5e4',
+                    }}>
                       {u.profile_image ? (
-                        <img src={u.profile_image} alt={u.username} className="w-full h-full object-cover" />
+                        <img src={u.profile_image} alt={u.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        <div
-                          className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
-                          style={{ backgroundColor: getUserColor(u.username) }}
-                        >
+                        <div style={{
+                          width: '100%', height: '100%', background: getUserColor(u.username),
+                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-sans)',
+                        }}>
                           {u.username ? u.username[0].toUpperCase() : 'U'}
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 truncate text-left">{u.username}</p>
-                      <p className="text-xs text-slate-400 truncate text-left">
-                        {u.bio ? u.bio : `${u.followers_count || 0} followers • Reputation: ${u.reputation_score || 0}`}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#0f172a', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.username}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: '#94a3b8', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {u.bio ? u.bio : `${u.followers_count || 0} followers · Rep: ${u.reputation_score || 0}`}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-sm text-slate-500">No reporters found</div>
+                <div style={{ padding: '16px', textAlign: 'center', fontSize: 13, color: '#94a3b8', fontFamily: 'var(--font-sans)' }}>
+                  No reporters found
+                </div>
               )}
             </div>
           )}
         </div>
 
-        <nav className="hidden md:flex items-center gap-4">
-          <div className="flex items-center gap-1.5 mr-2">
-            <Link to="/" className={`px-3 py-2 text-sm font-semibold transition-colors ${location.pathname === '/' ? 'text-blue-600 bg-blue-50/50 rounded-xl' : 'text-slate-600 hover:text-slate-900'}`}>Home</Link>
-            <Link to="/nearby" className={`px-3 py-2 text-sm font-semibold transition-colors ${location.pathname === '/nearby' ? 'text-blue-600 bg-blue-50/50 rounded-xl' : 'text-slate-600 hover:text-slate-900'}`}>📍 Nearby</Link>
-          </div>
+        {/* Desktop Nav — visible only on md and above */}
+        <nav style={{ alignItems: 'center', gap: 6 }} className="hidden md:flex">
+
+          {/* Page links */}
+          <Link
+            to="/"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 999,
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'var(--font-sans)',
+              textDecoration: 'none',
+              transition: 'all 0.18s',
+              background: location.pathname === '/' ? '#0f172a' : 'transparent',
+              color: location.pathname === '/' ? '#ffffff' : '#334155',
+            }}
+          >
+            Home
+          </Link>
+          <Link
+            to="/nearby"
+            style={{
+              padding: '6px 14px',
+              borderRadius: 999,
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: 'var(--font-sans)',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              transition: 'all 0.18s',
+              background: location.pathname === '/nearby' ? '#0f172a' : 'transparent',
+              color: location.pathname === '/nearby' ? '#ffffff' : '#334155',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            Nearby
+          </Link>
+
+          <div style={{ width: 1, height: 20, background: '#e7e5e4', margin: '0 4px' }} />
 
           {token ? (
-            <div className="flex items-center gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Write CTA */}
               <Link
                 to="/create-post"
-                className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200 flex items-center gap-1.5"
+                style={{
+                  padding: '7px 16px',
+                  background: '#d97706',
+                  color: '#fff',
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-sans)',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 8px rgba(217,119,6,0.25)',
+                  transition: 'all 0.18s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#b45309'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.35)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(217,119,6,0.25)'; }}
               >
-                <span>✍️</span> Create Post
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Write
               </Link>
 
+              {/* Profile avatar */}
               {currentUserProfile && (
                 <button
                   onClick={() => navigate(`/profile/${currentUserId}`)}
-                  className="w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-colors focus:outline-none cursor-pointer"
+                  style={{
+                    width: 34, height: 34,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '2px solid #e7e5e4',
+                    cursor: 'pointer',
+                    background: 'none',
+                    padding: 0,
+                    flexShrink: 0,
+                    transition: 'border-color 0.18s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#d97706'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e7e5e4'}
                   title="View Profile"
                 >
                   {currentUserProfile.profile_image ? (
-                    <img src={currentUserProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={currentUserProfile.profile_image} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <div
-                      className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
-                      style={{ backgroundColor: getUserColor(currentUserProfile.username) }}
-                    >
+                    <div style={{
+                      width: '100%', height: '100%',
+                      background: getUserColor(currentUserProfile.username),
+                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-sans)',
+                    }}>
                       {currentUserProfile.username ? currentUserProfile.username[0].toUpperCase() : 'U'}
                     </div>
                   )}
                 </button>
               )}
 
+              {/* Logout */}
               <button
-                className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-full transition-all duration-200 cursor-pointer"
+                style={{
+                  padding: '6px 14px',
+                  background: 'transparent',
+                  color: '#64748b',
+                  border: '1.5px solid #e7e5e4',
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-sans)',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fca5a5'; e.currentTarget.style.background = '#fff5f5'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e7e5e4'; e.currentTarget.style.background = 'transparent'; }}
                 onClick={async () => {
                   try {
                     await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
@@ -222,24 +419,46 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">Login</Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Link
+                to="/login"
+                style={{
+                  padding: '6px 14px',
+                  fontSize: 13, fontWeight: 600,
+                  fontFamily: 'var(--font-sans)',
+                  color: '#334155',
+                  textDecoration: 'none',
+                  borderRadius: 999,
+                  transition: 'color 0.18s',
+                }}
+              >
+                Sign in
+              </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-full shadow-md shadow-blue-200/50 hover:shadow-lg transition-all duration-200"
+                style={{
+                  padding: '7px 16px',
+                  background: '#0f172a',
+                  color: '#fff',
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-sans)',
+                  textDecoration: 'none',
+                  transition: 'all 0.18s',
+                  boxShadow: '0 2px 8px rgba(15,23,42,0.18)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#1e293b'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#0f172a'; }}
               >
-                Register
+                Get Started
               </Link>
             </div>
           )}
         </nav>
       </div>
     </header>
-
   );
 }
 
 export default Header;
-
-
-

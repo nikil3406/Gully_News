@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUserProfileById, searchUsers } from '../services/authService';
 
 const getUserColor = (username) => {
-  if (!username) return '#2563eb';
+  if (!username) return '#d97706';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 45%)`;
+  return `hsl(${h}, 60%, 42%)`;
 };
 
 function BottomNav() {
@@ -25,7 +25,6 @@ function BottomNav() {
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = useRef(null);
 
-  // Decode current logged-in user ID from JWT token
   useEffect(() => {
     if (token) {
       try {
@@ -40,15 +39,12 @@ function BottomNav() {
     }
   }, [token]);
 
-  // Fetch logged-in user profile details
   useEffect(() => {
     const fetchProfile = async () => {
       if (!currentUserId || !token) return;
       try {
         const data = await getUserProfileById(currentUserId);
-        if (data && data.user) {
-          setCurrentUserProfile(data.user);
-        }
+        if (data && data.user) setCurrentUserProfile(data.user);
       } catch (err) {
         console.error('Error fetching user profile in BottomNav:', err);
       }
@@ -56,13 +52,8 @@ function BottomNav() {
     fetchProfile();
   }, [currentUserId, token]);
 
-  // Debounced search logic for local reporters
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
+    if (!searchQuery.trim()) { setSearchResults([]); return; }
     setSearchLoading(true);
     const delayDebounceFn = setTimeout(async () => {
       try {
@@ -74,16 +65,12 @@ function BottomNav() {
         setSearchLoading(false);
       }
     }, 300);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Auto focus input when search modal opens
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [isSearchOpen]);
 
@@ -94,230 +81,277 @@ function BottomNav() {
   };
 
   const currentPath = location.pathname;
-
-  // Tab active checks
-  const isHomeActive = currentPath === '/';
-  const isNearbyActive = currentPath === '/nearby';
-  const isCreateActive = currentPath === '/create-post';
+  const isHomeActive    = currentPath === '/';
+  const isNearbyActive  = currentPath === '/nearby';
+  const isCreateActive  = currentPath === '/create-post';
   const isProfileActive = currentPath.startsWith('/profile');
 
-  // Link destinations
-  const createTarget = token ? '/create-post' : '/login';
-  const profileTarget = token
-    ? currentUserId
-      ? `/profile/${currentUserId}`
-      : '/profile'
-    : '/login';
+  const createTarget  = token ? '/create-post' : '/login';
+  const profileTarget = token ? (currentUserId ? `/profile/${currentUserId}` : '/profile') : '/login';
+
+  const navStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 10px',
+    borderRadius: 14,
+    textDecoration: 'none',
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    transition: 'all 0.22s',
+    minWidth: 52,
+    gap: 3,
+    fontFamily: 'var(--font-sans)',
+  };
+
+  const getTabStyle = (isActive) => ({
+    ...navStyle,
+    background: isActive ? '#0f172a' : 'transparent',
+    color: isActive ? '#ffffff' : '#64748b',
+  });
+
+  const getLabelStyle = (isActive) => ({
+    fontSize: 10,
+    fontWeight: isActive ? 700 : 600,
+    fontFamily: 'var(--font-sans)',
+    letterSpacing: '0.01em',
+    lineHeight: 1,
+  });
 
   return (
     <>
-      {/* Mobile Floating Bottom Navigation Bar - Applies ONLY in Mobile View (md:hidden) */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md md:hidden pointer-events-auto">
+      {/* Mobile Floating Bottom Nav */}
+      <div
+        className="md:hidden"
+        style={{
+          position: 'fixed',
+          bottom: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 40,
+          width: 'calc(100% - 32px)',
+          maxWidth: 400,
+          pointerEvents: 'auto',
+        }}
+      >
         <nav
-          className="relative flex items-center justify-around px-2 py-2 bg-white/85 backdrop-blur-xl border border-white/90 rounded-[28px] shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14),0_4px_16px_-2px_rgba(0,0,0,0.06)] transition-all duration-300"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            padding: '8px 10px',
+            background: 'rgba(255,255,255,0.97)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid #e7e5e4',
+            borderRadius: 24,
+            boxShadow: '0 8px 32px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06)',
+          }}
           aria-label="Mobile Navigation"
         >
-          {/* 1. Home Tab */}
-          <Link
-            to="/"
-            className={`relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 group ${
-              isHomeActive
-                ? 'text-blue-600 font-semibold bg-blue-50/90'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <div
-              className={`transition-transform duration-300 ${
-                isHomeActive ? 'scale-110 -translate-y-0.5' : 'group-hover:scale-105'
-              }`}
-            >
-              <svg
-                className="w-5 h-5 stroke-[2.2] fill-none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 10.25L12 3l9 7.25V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.75z" />
-              </svg>
-            </div>
-            <span className="text-[11px] font-medium tracking-tight mt-0.5">
-              Home
-            </span>
+          {/* Home */}
+          <Link to="/" style={getTabStyle(isHomeActive)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isHomeActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {isHomeActive
+                ? <path d="M3 10.25L12 3l9 7.25V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.75z"/>
+                : <path d="M3 10.25L12 3l9 7.25V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.75z"/>}
+            </svg>
+            <span style={getLabelStyle(isHomeActive)}>Home</span>
           </Link>
 
-          {/* 2. Nearby News Tab */}
-          <Link
-            to="/nearby"
-            className={`relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 group ${
-              isNearbyActive
-                ? 'text-blue-600 font-semibold bg-blue-50/90'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <div
-              className={`transition-transform duration-300 ${
-                isNearbyActive ? 'scale-110 -translate-y-0.5' : 'group-hover:scale-105'
-              }`}
-            >
-              <svg
-                className="w-5 h-5 stroke-[2.2] fill-none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                <circle cx="12" cy="9" r="2.5" />
-              </svg>
-            </div>
-            <span className="text-[11px] font-medium tracking-tight mt-0.5">
-              Nearby
-            </span>
+          {/* Nearby */}
+          <Link to="/nearby" style={getTabStyle(isNearbyActive)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill={isNearbyActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5" fill={isNearbyActive ? 'white' : 'currentColor'}/>
+            </svg>
+            <span style={getLabelStyle(isNearbyActive)}>Nearby</span>
           </Link>
 
-          {/* 3. Search Button (Primary Action for Reporters) */}
+          {/* Center Search Button */}
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
             aria-label="Search Local Reporters"
-            className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-[0_6px_18px_-2px_rgba(37,99,235,0.45)] hover:shadow-[0_8px_22px_-2px_rgba(37,99,235,0.55)] active:scale-90 hover:scale-105 transition-all duration-300 cursor-pointer focus:outline-none ring-4 ring-white/90"
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: '50%',
+              background: '#d97706',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(217,119,6,0.4)',
+              color: '#ffffff',
+              transition: 'all 0.22s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#b45309'; e.currentTarget.style.transform = 'scale(1.06)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            <svg
-              className="w-5 h-5 stroke-[2.5] fill-none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.35-4.35" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M21 21l-4-4"/>
             </svg>
           </button>
 
-          {/* 4. Create Post Tab (Right of Search, Left of Profile) */}
-          <Link
-            to={createTarget}
-            className={`relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 group ${
-              isCreateActive
-                ? 'text-blue-600 font-semibold bg-blue-50/90'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <div
-              className={`transition-transform duration-300 ${
-                isCreateActive ? 'scale-110 -translate-y-0.5' : 'group-hover:scale-105'
-              }`}
-            >
-              <svg
-                className="w-5 h-5 stroke-[2.2] fill-none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 4v16m-8-8h16" />
-              </svg>
-            </div>
-            <span className="text-[11px] font-medium tracking-tight mt-0.5">
-              Create
-            </span>
+          {/* Create */}
+          <Link to={createTarget} style={getTabStyle(isCreateActive)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              {isCreateActive
+                ? <><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/><path d="M12 8v8M8 12h8" stroke="white" strokeWidth="2"/></>
+                : <><path d="M12 5v14M5 12h14"/></>}
+            </svg>
+            <span style={getLabelStyle(isCreateActive)}>Write</span>
           </Link>
 
-          {/* 5. Profile Tab */}
-          <Link
-            to={profileTarget}
-            className={`relative flex flex-col items-center justify-center py-1.5 px-2.5 rounded-2xl transition-all duration-300 ease-out active:scale-95 group ${
-              isProfileActive
-                ? 'text-blue-600 font-semibold bg-blue-50/90'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <div
-              className={`transition-transform duration-300 ${
-                isProfileActive ? 'scale-110 -translate-y-0.5' : 'group-hover:scale-105'
-              }`}
-            >
-              {token && currentUserProfile && currentUserProfile.profile_image ? (
-                <div className="w-5 h-5 rounded-full overflow-hidden border border-blue-500/60 shadow-xs">
-                  <img
-                    src={currentUserProfile.profile_image}
-                    alt={currentUserProfile.username || 'Profile'}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <svg
-                  className="w-5 h-5 stroke-[2.2] fill-none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              )}
-            </div>
-            <span className="text-[11px] font-medium tracking-tight mt-0.5">
-              Profile
-            </span>
+          {/* Profile */}
+          <Link to={profileTarget} style={getTabStyle(isProfileActive)}>
+            {token && currentUserProfile && currentUserProfile.profile_image ? (
+              <div style={{
+                width: 22, height: 22, borderRadius: '50%', overflow: 'hidden',
+                border: isProfileActive ? '2px solid #fbbf24' : '1.5px solid #e7e5e4',
+              }}>
+                <img src={currentUserProfile.profile_image} alt={currentUserProfile.username || 'Profile'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill={isProfileActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            )}
+            <span style={getLabelStyle(isProfileActive)}>Profile</span>
           </Link>
         </nav>
       </div>
 
-      {/* Mobile Reporter Search Modal Drawer */}
+      {/* Reporter Search Modal */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:hidden">
-          {/* Semi-transparent Backdrop */}
+        <div
+          className="md:hidden"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}
+        >
+          {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs animate-backdrop-fade-in"
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(15,23,42,0.45)',
+              backdropFilter: 'blur(2px)',
+            }}
+            className="animate-backdrop-fade-in"
             onClick={() => setIsSearchOpen(false)}
           />
 
-          {/* Modal Card */}
-          <div className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 border border-slate-100 z-10 max-h-[85vh] flex flex-col animate-modal-slide-up">
-            {/* Header / Grab Handle */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🔍</span>
-                <div>
-                  <h3 className="text-base font-bold text-slate-800 tracking-tight leading-none">
-                    Search Local Reporters
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Connect with reporters & local journalists
-                  </p>
-                </div>
+          {/* Modal */}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: 520,
+              background: '#ffffff',
+              borderRadius: '24px 24px 0 0',
+              boxShadow: '0 -4px 40px rgba(15,23,42,0.18)',
+              padding: 20,
+              zIndex: 10,
+              maxHeight: '82vh',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            className="animate-modal-slide-up"
+          >
+            {/* Grab handle */}
+            <div style={{
+              width: 36, height: 4, background: '#e7e5e4',
+              borderRadius: 99, margin: '0 auto 18px',
+            }} />
+
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 16,
+              paddingBottom: 14,
+              borderBottom: '1px solid #f5f4f2',
+            }}>
+              <div>
+                <h3 style={{
+                  margin: 0, fontSize: 16, fontWeight: 800,
+                  color: '#0f172a', fontFamily: 'var(--font-sans)',
+                  letterSpacing: '-0.3px',
+                }}>
+                  Find Reporters
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#94a3b8', fontFamily: 'var(--font-sans)' }}>
+                  Connect with local journalists
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200 flex items-center justify-center text-sm font-semibold transition-colors cursor-pointer"
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: '#f5f4f2', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: '#64748b', transition: 'all 0.18s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e7e5e4'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f5f4f2'; }}
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
               </button>
             </div>
 
-            {/* Search Input Field (Clear/Cancel 'x' option removed inside input as requested) */}
-            <div className="relative flex items-center mb-4">
-              <span className="absolute left-3.5 text-slate-400 text-base">🔍</span>
+            {/* Search Input */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              background: '#fafaf9',
+              border: '1.5px solid #e7e5e4',
+              borderRadius: 14,
+              padding: '0 14px',
+              height: 46,
+              marginBottom: 14,
+              gap: 10,
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/>
+              </svg>
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Type a reporter name or topic..."
+                placeholder="Search by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all text-slate-800 placeholder-slate-400"
+                style={{
+                  flex: 1, border: 'none', outline: 'none',
+                  background: 'transparent', fontSize: 14,
+                  fontFamily: 'var(--font-sans)', color: '#0f172a',
+                }}
               />
             </div>
 
-            {/* Results Container */}
-            <div className="flex-1 overflow-y-auto min-h-[160px] max-h-[340px] divide-y divide-slate-100 pr-1">
+            {/* Results */}
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 120, maxHeight: 300 }}>
               {searchLoading ? (
-                <div className="py-8 text-center text-sm text-slate-500 flex flex-col items-center gap-2">
-                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  <span>Searching local reporters...</span>
+                <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13, fontFamily: 'var(--font-sans)' }}>
+                  <div style={{
+                    width: 24, height: 24, border: '2px solid #e7e5e4',
+                    borderTopColor: '#d97706', borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                    margin: '0 auto 8px',
+                  }} />
+                  Searching...
                 </div>
               ) : searchQuery.trim() ? (
                 searchResults.length > 0 ? (
@@ -325,50 +359,64 @@ function BottomNav() {
                     <div
                       key={user.id}
                       onClick={() => handleUserClick(user.id)}
-                      className="flex items-center gap-3 py-3 px-2 hover:bg-blue-50/50 rounded-xl cursor-pointer transition-colors group"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '10px 8px',
+                        borderRadius: 12,
+                        cursor: 'pointer',
+                        transition: 'background 0.15s',
+                        borderBottom: '1px solid #f5f4f2',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#fafaf9'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-slate-200 group-hover:border-blue-500 transition-colors">
+                      <div style={{
+                        width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
+                        flexShrink: 0, border: '1.5px solid #e7e5e4',
+                      }}>
                         {user.profile_image ? (
-                          <img
-                            src={user.profile_image}
-                            alt={user.username}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={user.profile_image} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          <div
-                            className="w-full h-full text-white flex items-center justify-center text-sm font-bold uppercase"
-                            style={{ backgroundColor: getUserColor(user.username) }}
-                          >
+                          <div style={{
+                            width: '100%', height: '100%', background: getUserColor(user.username),
+                            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-sans)',
+                          }}>
                             {user.username ? user.username[0].toUpperCase() : 'R'}
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-blue-600 transition-colors">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#0f172a', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {user.username}
                         </p>
-                        <p className="text-xs text-slate-400 truncate">
-                          {user.bio
-                            ? user.bio
-                            : `${user.followers_count || 0} followers • Reputation: ${
-                                user.reputation_score || 0
-                              }`}
+                        <p style={{ margin: 0, fontSize: 11, color: '#94a3b8', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {user.bio ? user.bio : `${user.followers_count || 0} followers · Rep: ${user.reputation_score || 0}`}
                         </p>
                       </div>
-                      <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, color: '#d97706',
+                        background: '#fef3c7', border: '1px solid #fde68a',
+                        borderRadius: 999, padding: '3px 10px',
+                        flexShrink: 0, fontFamily: 'var(--font-sans)',
+                      }}>
                         View
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div className="py-8 text-center text-sm text-slate-500">
-                    No reporters found matching "{searchQuery}"
+                  <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: '#94a3b8', fontFamily: 'var(--font-sans)' }}>
+                    No reporters found for "{searchQuery}"
                   </div>
                 )
               ) : (
-                <div className="py-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-                  <span className="text-2xl">📰</span>
-                  <span>Search local reporters by username to view their profile & stories</span>
+                <div style={{ padding: 24, textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>📡</div>
+                  <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
+                    Search for local reporters by name
+                  </p>
                 </div>
               )}
             </div>
