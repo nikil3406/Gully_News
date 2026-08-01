@@ -1,6 +1,15 @@
 import React from 'react';
 
 function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
+  const [isMobile, setIsMobile] = React.useState(() => window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div style={{
       fontFamily: 'var(--font-sans)',
@@ -101,35 +110,35 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
         </div>
       </div>
 
-      {/* Mobile horizontal chips */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          overflowX: 'auto',
-          paddingBottom: 8,
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
-        }}
-        className="md:hidden"
-      >
-        <MobileChip
-          label="All"
-          isActive={!selectedCategory}
-          onClick={() => onCategorySelect(null)}
-          color="#d97706"
-        />
-        {categories.map((category) => (
+      {isMobile && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            overflowX: 'auto',
+            paddingBottom: 8,
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           <MobileChip
-            key={category.id}
-            label={category.name}
-            isActive={selectedCategory === category.id}
-            onClick={() => onCategorySelect(category.id)}
-            color={category.color || '#94a3b8'}
+            label="All"
+            isActive={!selectedCategory}
+            onClick={() => onCategorySelect(null)}
+            color="#d97706"
           />
-        ))}
-      </div>
+          {categories.map((category) => (
+            <MobileChip
+              key={category.id}
+              label={category.name}
+              isActive={selectedCategory === category.id}
+              onClick={() => onCategorySelect(category.id)}
+              color={category.color || '#94a3b8'}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

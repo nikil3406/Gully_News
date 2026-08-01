@@ -25,11 +25,19 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
   const [currentUserId, setCurrentUserId] = useState(null);
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -87,6 +95,16 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
     setResults([]);
     setShowDropdown(false);
     navigate(`/profile/${userId}`);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
+        method: 'POST', credentials: 'include'
+      });
+    } catch (_) {}
+    localStorage.removeItem('token');
+    window.location.reload();
   };
 
   return (
@@ -280,6 +298,64 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
           )}
         </div>
 
+        {isMobile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {token ? (
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '6px 12px',
+                  background: 'transparent',
+                  color: '#64748b',
+                  border: '1.5px solid #e7e5e4',
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-sans)',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s',
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-sans)',
+                    color: '#334155',
+                    textDecoration: 'none',
+                    borderRadius: 999,
+                    transition: 'color 0.18s',
+                  }}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/register"
+                  style={{
+                    padding: '6px 12px',
+                    background: '#0f172a',
+                    color: '#fff',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-sans)',
+                    textDecoration: 'none',
+                    transition: 'all 0.18s',
+                  }}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Desktop Nav — visible only on md and above */}
         <nav style={{ alignItems: 'center', gap: 6 }} className="hidden md:flex">
 
@@ -405,15 +481,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fca5a5'; e.currentTarget.style.background = '#fff5f5'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e7e5e4'; e.currentTarget.style.background = 'transparent'; }}
-                onClick={async () => {
-                  try {
-                    await fetch(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {
-                      method: 'POST', credentials: 'include'
-                    });
-                  } catch (_) { }
-                  localStorage.removeItem('token');
-                  window.location.reload();
-                }}
+                onClick={handleLogout}
               >
                 Logout
               </button>

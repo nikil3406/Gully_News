@@ -61,7 +61,7 @@ function NearbyNews() {
   // Geolocation states
   const [userCoords, setUserCoords] = useState(null);
   const [geoPermissionState, setGeoPermissionState] = useState('prompt'); // 'prompt' | 'granted' | 'denied' | 'error'
-  const [radius, setRadius] = useState(50); // radius in km
+  const [radius, setRadius] = useState(10); // radius in km
 
   const filtersRef = useRef({ selectedCategory, searchTerm, userCoords, radius });
   useEffect(() => {
@@ -327,17 +327,6 @@ function NearbyNews() {
 
         {/* Sidebar (Desktop only) */}
         <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-fit z-10 bg-slate-50">
-          {isAuthenticated && (
-            <div className="mb-4">
-              <button
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer text-center block select-none border-none"
-                onClick={() => navigate('/create-post')}
-              >
-                ✍️ Create New Post
-              </button>
-            </div>
-          )}
-
           {geoPermissionState === 'granted' && (
             <div className="mb-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left block mb-2">
@@ -389,9 +378,6 @@ function NearbyNews() {
                 <span className="text-lg animate-bounce">📍</span>
                 <div>
                   <p className="font-bold text-slate-800">Showing news near you</p>
-                  <p className="text-slate-500 text-[10px] sm:text-xs">
-                    Coordinates: {userCoords.latitude.toFixed(4)}, {userCoords.longitude.toFixed(4)}
-                  </p>
                 </div>
               </div>
               <div className="hidden sm:block text-emerald-700 bg-emerald-100/60 font-bold px-3 py-1.5 rounded-full text-xs">
