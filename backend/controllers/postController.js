@@ -157,7 +157,7 @@ export const deletePost = async (req, res) => {
 
 export const getNearbyPosts = async (req, res) => {
   const userId = req.user ? req.user.userId : null;
-  const { latitude, longitude, radius = 50, cursor, limit = 5 } = req.query;
+  const { latitude, longitude, radius = 50, cursor, limit = 5, category_id, search } = req.query;
 
   if (latitude === undefined || longitude === undefined || latitude === "" || longitude === "") {
     return res.status(400).json({ error: "Latitude and longitude are required query parameters." });
@@ -178,7 +178,7 @@ export const getNearbyPosts = async (req, res) => {
   }
 
   try {
-    const result = await postService.fetchNearbyPosts({ latitude, longitude, radius, cursor, limit, userId });
+    const result = await postService.fetchNearbyPosts({ latitude, longitude, radius, cursor, limit, userId, category_id, search });
     res.json(result);
   } catch (err) {
     console.error("Error fetching nearby posts:", err);

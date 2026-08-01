@@ -6,6 +6,7 @@ import CategoryFilter from '../components/CategoryFilter';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../socket';
 import { fetchPosts, fetchNearbyPosts, fetchCategories, deletePost } from '../services/postService';
+import { filterPostsByCategoryAndSearch } from '../utils/postFilters';
 
 // Client-side Haversine helper to compute distance for socket/real-time posts
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -218,6 +219,8 @@ function NearbyNews() {
           radius,
           cursor: cursorVal,
           limit: 5,
+          categoryId: selectedCategory,
+          search: searchTerm,
         });
       } else {
         data = await fetchPosts({
@@ -228,10 +231,12 @@ function NearbyNews() {
         });
       }
 
+      const filteredPosts = filterPostsByCategoryAndSearch(data.posts || [], selectedCategory, searchTerm);
+
       if (shouldAppend) {
-        setArticles(prev => [...prev, ...(data.posts || [])]);
+        setArticles(prev => [...prev, ...filteredPosts]);
       } else {
-        setArticles(data.posts || []);
+        setArticles(filteredPosts);
       }
       setNextCursor(data.nextCursor);
       setHasMore(data.hasMore);
@@ -248,7 +253,7 @@ function NearbyNews() {
     if (geoPermissionState !== 'prompt') {
       fetchArticles(null, false);
     }
-  }, [fetchArticles, geoPermissionState, radius]);
+  }, [fetchArticles, geoPermissionState, radius, selectedCategory, searchTerm]);
 
   // Infinite Scroll
   useEffect(() => {

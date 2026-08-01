@@ -45,7 +45,7 @@ export const deletePost = async (id) => {
   });
 };
 
-export const fetchNearbyPosts = async ({ latitude, longitude, radius = 50, cursor, limit = 5 }) => {
+export const fetchNearbyPosts = async ({ latitude, longitude, radius = 50, cursor, limit = 5, categoryId, search } = {}) => {
   const query = new URLSearchParams({
     latitude,
     longitude,
@@ -53,6 +53,8 @@ export const fetchNearbyPosts = async ({ latitude, longitude, radius = 50, curso
     limit,
   });
   if (cursor) query.append("cursor", cursor);
+  if (categoryId !== null && categoryId !== undefined && categoryId !== '') query.append("category_id", categoryId);
+  if (search) query.append("search", search);
 
   return await request(`/api/news/nearby?${query.toString()}`);
 };

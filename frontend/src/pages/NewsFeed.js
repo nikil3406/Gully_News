@@ -328,11 +328,6 @@ function NewsFeed() {
                     ? `Results for "${searchTerm}"`
                     : 'Latest Stories'}
               </h1>
-              {articles.length > 0 && (
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#94a3b8', fontFamily: 'var(--font-sans)' }}>
-                  {articles.length} {articles.length === 1 ? 'story' : 'stories'}
-                </p>
-              )}
             </div>
 
             {/* Live indicator */}
