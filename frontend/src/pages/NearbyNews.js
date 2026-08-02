@@ -105,16 +105,9 @@ function NearbyNews() {
 
     const handlePostCreated = (newPost) => {
       const { selectedCategory: currentCat, searchTerm: currentSearch, userCoords: currentCoords, radius: currentRadius } = filtersRef.current;
-      
-      // Filter Category
-      const matchesCategory = !currentCat || parseInt(newPost.category_id, 10) === parseInt(currentCat, 10);
-      
-      // Filter Search
-      const matchesSearch = !currentSearch || 
-        (newPost.title && newPost.title.toLowerCase().includes(currentSearch.toLowerCase())) ||
-        (newPost.content && newPost.content.toLowerCase().includes(currentSearch.toLowerCase()));
+      const matchesFilters = filterPostsByCategoryAndSearch([newPost], currentCat, currentSearch).length > 0;
 
-      if (matchesCategory && matchesSearch) {
+      if (matchesFilters) {
         if (currentCoords) {
           // If Geolocation is active, verify distance and calculate distance_km for client injection
           const postLat = parseFloat(newPost.latitude);
@@ -356,6 +349,7 @@ function NearbyNews() {
             categories={categories}
             selectedCategory={selectedCategory}
             onCategorySelect={handleCategorySelect}
+            trendingPosts={articles}
           />
         </div>
         
@@ -420,6 +414,7 @@ function NearbyNews() {
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategorySelect={handleCategorySelect}
+                trendingPosts={articles}
               />
             </div>
           )}

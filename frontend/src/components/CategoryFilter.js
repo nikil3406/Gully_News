@@ -1,7 +1,23 @@
 import React from 'react';
 
-function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
+function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendingPosts = [] }) {
   const [isMobile, setIsMobile] = React.useState(() => window.innerWidth < 768);
+
+  const topTrendingPosts = React.useMemo(() => {
+    if (!Array.isArray(trendingPosts) || trendingPosts.length === 0) return [];
+
+    return [...trendingPosts]
+      .sort((a, b) => {
+        const viewDiff = (Number(b.views_count) || 0) - (Number(a.views_count) || 0);
+        if (viewDiff !== 0) return viewDiff;
+
+        const likeDiff = (Number(b.likes_count) || 0) - (Number(a.likes_count) || 0);
+        if (likeDiff !== 0) return likeDiff;
+
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      })
+      .slice(0, 4);
+  }, [trendingPosts]);
 
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -85,27 +101,35 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory }) {
             Trending
           </h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {['#CommunityFestival', '#LocalSports', '#BusinessNews', '#Education'].map((tag) => (
-              <div
-                key={tag}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: '#475569',
-                  background: '#fafaf9',
-                  border: '1px solid #f0ede9',
-                  borderRadius: 8,
-                  padding: '7px 11px',
-                  cursor: 'pointer',
-                  transition: 'all 0.18s',
-                  fontFamily: 'var(--font-sans)',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#fef3c7'; e.currentTarget.style.color = '#d97706'; e.currentTarget.style.borderColor = '#fde68a'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#fafaf9'; e.currentTarget.style.color = '#475569'; e.currentTarget.style.borderColor = '#f0ede9'; }}
-              >
-                {tag}
+            {topTrendingPosts.length > 0 ? (
+              topTrendingPosts.map((post) => (
+                <div
+                  key={post.id}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: '#475569',
+                    background: '#fafaf9',
+                    border: '1px solid #f0ede9',
+                    borderRadius: 8,
+                    padding: '7px 11px',
+                    transition: 'all 0.18s',
+                    fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>
+                    {post.title ? post.title.slice(0, 44) + (post.title.length > 44 ? '…' : '') : 'Untitled post'}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                    {Number(post.views_count || 0)} views · {Number(post.likes_count || 0)} likes
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: 12, color: '#64748b', fontFamily: 'var(--font-sans)' }}>
+                No trending posts yet.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

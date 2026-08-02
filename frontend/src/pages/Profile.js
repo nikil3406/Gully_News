@@ -159,7 +159,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header />
+      {!isEditing && <Header />}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
 
         {/* Profile Card Banner */}
@@ -244,17 +244,6 @@ const Profile = () => {
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     placeholder="Username"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Email</label>
-                  <input
-                    type="email"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    placeholder="Email"
                     required
                   />
                 </div>

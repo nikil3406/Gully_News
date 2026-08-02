@@ -288,6 +288,7 @@ function NewsFeed() {
               categories={categories}
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
+              trendingPosts={articles}
             />
           </aside>
         )}
@@ -302,6 +303,7 @@ function NewsFeed() {
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategorySelect={handleCategorySelect}
+                trendingPosts={articles}
               />
             </div>
           )}
