@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUserProfileById, searchUsers } from '../services/authService';
 
 const getUserColor = (username) => {
-  if (!username) return '#d97706';
+  if (!username) return '#2563eb';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 60%, 42%)`;
+  return `hsl(${h}, 65%, 45%)`;
 };
 
 function BottomNav() {
@@ -100,7 +100,7 @@ function BottomNav() {
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
-    transition: 'all 0.22s',
+    transition: 'all 0.25s ease',
     minWidth: 52,
     gap: 3,
     fontFamily: 'var(--font-sans)',
@@ -108,8 +108,8 @@ function BottomNav() {
 
   const getTabStyle = (isActive) => ({
     ...navStyle,
-    background: isActive ? '#0f172a' : 'transparent',
-    color: isActive ? '#ffffff' : '#64748b',
+    background: isActive ? '#2563eb' : 'transparent',
+    color: isActive ? '#ffffff' : '#475569',
   });
 
   const getLabelStyle = (isActive) => ({
@@ -142,12 +142,12 @@ function BottomNav() {
             alignItems: 'center',
             justifyContent: 'space-around',
             padding: '8px 10px',
-            background: 'rgba(255,255,255,0.97)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid #e7e5e4',
+            background: 'rgba(255, 255, 255, 0.92)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid #e2e8f0',
             borderRadius: 24,
-            boxShadow: '0 8px 32px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06)',
+            boxShadow: '0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04)',
           }}
           aria-label="Mobile Navigation"
         >
@@ -179,19 +179,19 @@ function BottomNav() {
               width: 50,
               height: 50,
               borderRadius: '50%',
-              background: '#d97706',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
               border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(217,119,6,0.4)',
+              boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
               color: '#ffffff',
-              transition: 'all 0.22s',
+              transition: 'all 0.25s ease',
               flexShrink: 0,
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#b45309'; e.currentTarget.style.transform = 'scale(1.06)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.transform = 'scale(1)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="7"/>
@@ -214,7 +214,7 @@ function BottomNav() {
             {token && currentUserProfile && currentUserProfile.profile_image ? (
               <div style={{
                 width: 22, height: 22, borderRadius: '50%', overflow: 'hidden',
-                border: isProfileActive ? '2px solid #fbbf24' : '1.5px solid #e7e5e4',
+                border: isProfileActive ? '2px solid #ffffff' : '1.5px solid #e2e8f0',
               }}>
                 <img src={currentUserProfile.profile_image} alt={currentUserProfile.username || 'Profile'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
@@ -242,8 +242,9 @@ function BottomNav() {
           <div
             style={{
               position: 'fixed', inset: 0,
-              background: 'rgba(15,23,42,0.45)',
-              backdropFilter: 'blur(2px)',
+              background: 'rgba(15, 23, 42, 0.45)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
             }}
             className="animate-backdrop-fade-in"
             onClick={() => setIsSearchOpen(false)}
@@ -257,18 +258,19 @@ function BottomNav() {
               maxWidth: 520,
               background: '#ffffff',
               borderRadius: '24px 24px 0 0',
-              boxShadow: '0 -4px 40px rgba(15,23,42,0.18)',
+              boxShadow: '0 -4px 32px rgba(15,23,42,0.12)',
               padding: 20,
               zIndex: 10,
               maxHeight: '82vh',
               display: 'flex',
               flexDirection: 'column',
+              borderTop: '1px solid #e2e8f0',
             }}
             className="animate-modal-slide-up"
           >
             {/* Grab handle */}
             <div style={{
-              width: 36, height: 4, background: '#e7e5e4',
+              width: 36, height: 4, background: '#e2e8f0',
               borderRadius: 99, margin: '0 auto 18px',
             }} />
 
@@ -279,7 +281,7 @@ function BottomNav() {
               justifyContent: 'space-between',
               marginBottom: 16,
               paddingBottom: 14,
-              borderBottom: '1px solid #f5f4f2',
+              borderBottom: '1px solid #f1f5f9',
             }}>
               <div>
                 <h3 style={{
@@ -298,12 +300,12 @@ function BottomNav() {
                 onClick={() => setIsSearchOpen(false)}
                 style={{
                   width: 32, height: 32, borderRadius: '50%',
-                  background: '#f5f4f2', border: 'none',
+                  background: '#f1f5f9', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#64748b', transition: 'all 0.18s',
+                  cursor: 'pointer', color: '#475569', transition: 'all 0.2s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#e7e5e4'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#f5f4f2'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M18 6L6 18M6 6l12 12"/>
@@ -316,8 +318,8 @@ function BottomNav() {
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              background: '#fafaf9',
-              border: '1.5px solid #e7e5e4',
+              background: '#f1f5f9',
+              border: '1.5px solid #e2e8f0',
               borderRadius: 14,
               padding: '0 14px',
               height: 46,
@@ -346,8 +348,8 @@ function BottomNav() {
               {searchLoading ? (
                 <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13, fontFamily: 'var(--font-sans)' }}>
                   <div style={{
-                    width: 24, height: 24, border: '2px solid #e7e5e4',
-                    borderTopColor: '#d97706', borderRadius: '50%',
+                    width: 24, height: 24, border: '2px solid #e2e8f0',
+                    borderTopColor: '#2563eb', borderRadius: '50%',
                     animation: 'spin 0.8s linear infinite',
                     margin: '0 auto 8px',
                   }} />
@@ -366,15 +368,15 @@ function BottomNav() {
                         padding: '10px 8px',
                         borderRadius: 12,
                         cursor: 'pointer',
-                        transition: 'background 0.15s',
-                        borderBottom: '1px solid #f5f4f2',
+                        transition: 'background 0.2s ease',
+                        borderBottom: '1px solid #f1f5f9',
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = '#fafaf9'}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#eef4ff'}
                       onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <div style={{
                         width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
-                        flexShrink: 0, border: '1.5px solid #e7e5e4',
+                        flexShrink: 0, border: '1.5px solid #e2e8f0',
                       }}>
                         {user.profile_image ? (
                           <img src={user.profile_image} alt={user.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -397,8 +399,8 @@ function BottomNav() {
                         </p>
                       </div>
                       <span style={{
-                        fontSize: 11, fontWeight: 700, color: '#d97706',
-                        background: '#fef3c7', border: '1px solid #fde68a',
+                        fontSize: 11, fontWeight: 700, color: '#2563eb',
+                        background: '#eef4ff', border: '1px solid #bfdbfe',
                         borderRadius: 999, padding: '3px 10px',
                         flexShrink: 0, fontFamily: 'var(--font-sans)',
                       }}>

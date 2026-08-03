@@ -133,7 +133,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
 
   return (
     <div className="w-full space-y-3">
-      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider text-left">
         {label}
       </label>
 
@@ -148,14 +148,14 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
 
       {/* Preview Area */}
       {previewUrl ? (
-        <div className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-900/5 shadow-inner max-w-md">
+        <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-900 shadow-xs max-w-md">
           <img
             src={previewUrl}
             alt="Uploaded preview"
             className="w-full h-48 sm:h-64 object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {loading && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white">
+            <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-center text-white">
               <svg className="animate-spin h-8 w-8 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -168,7 +168,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={loading}
-              className="px-3 py-1.5 bg-gray-900/80 hover:bg-black text-white text-xs font-medium rounded-lg backdrop-blur-md transition-all shadow-md"
+              className="px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg backdrop-blur-md transition-all shadow-xs cursor-pointer border-none"
             >
               Change Photo
             </button>
@@ -176,7 +176,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
               type="button"
               onClick={handleRemoveImage}
               disabled={loading}
-              className="px-3 py-1.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-medium rounded-lg backdrop-blur-md transition-all shadow-md"
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg backdrop-blur-md transition-all shadow-xs cursor-pointer border-none"
             >
               Remove
             </button>
@@ -184,20 +184,20 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
         </div>
       ) : (
         /* Choice buttons when no image selected */
-        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors bg-gray-50/50 dark:bg-gray-800/50">
-          <div className="mx-auto w-12 h-12 mb-3 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-blue-500 transition-colors bg-slate-50">
+          <div className="mx-auto w-12 h-12 mb-3 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+          <p className="text-sm font-medium text-slate-700 mb-4">
             Upload an image or snap a photo
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer border-none"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -207,7 +207,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
             <button
               type="button"
               onClick={startCamera}
-              className="inline-flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5"
+              className="inline-flex items-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer border-none"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -221,15 +221,15 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
 
       {/* Error display */}
       {error && (
-        <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-300">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600">
           {error}
         </div>
       )}
 
       {/* Camera Capture Modal */}
       {showCamera && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 text-white rounded-2xl max-w-lg w-full p-5 shadow-2xl relative border border-slate-700">
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 text-white rounded-2xl max-w-lg w-full p-5 shadow-2xl relative border border-slate-800">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold flex items-center">
                 <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,7 +240,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
               <button
                 type="button"
                 onClick={stopCamera}
-                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -271,7 +271,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
               <button
                 type="button"
                 onClick={stopCamera}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium rounded-xl transition-colors"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium rounded-xl transition-colors cursor-pointer border-none"
               >
                 Cancel
               </button>
@@ -279,7 +279,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
                 <button
                   type="button"
                   onClick={capturePhoto}
-                  className="inline-flex items-center px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-transform active:scale-95"
+                  className="inline-flex items-center px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-transform active:scale-95 cursor-pointer border-none"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />

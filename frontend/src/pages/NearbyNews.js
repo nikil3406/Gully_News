@@ -326,14 +326,14 @@ function NearbyNews() {
         {/* Sidebar (Desktop only) */}
         <div className="hidden md:block w-72 flex-shrink-0 sticky top-24 h-fit z-10 bg-slate-50">
           {geoPermissionState === 'granted' && (
-            <div className="mb-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
+            <div className="mb-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left block mb-2">
                 📍 Radius Filter
               </label>
               <select
                 value={radius}
                 onChange={(e) => setRadius(parseInt(e.target.value, 10))}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
               >
                 <option value="5">5 km</option>
                 <option value="10">10 km</option>
@@ -362,7 +362,7 @@ function NearbyNews() {
               <span className="text-lg">⚠️</span>
               <div>
                 <p className="font-bold mb-0.5">Location Access Disabled</p>
-                <p className="text-amber-700/90 leading-relaxed">
+                <p className="text-amber-800/90 leading-relaxed">
                   {geoPermissionState === 'denied'
                     ? "Location permission was denied. We are displaying the general news feed instead. To view nearby news, enable location access in your browser settings."
                     : "Unable to retrieve your location. Showing general news instead."}
@@ -372,14 +372,14 @@ function NearbyNews() {
           )}
 
           {geoPermissionState === 'granted' && userCoords && (
-            <div className="bg-emerald-50/50 text-emerald-800 border border-emerald-100 p-4 rounded-2xl text-xs md:text-sm mb-4 text-left flex items-center justify-between shadow-xs select-none">
+            <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 p-4 rounded-2xl text-xs md:text-sm mb-4 text-left flex items-center justify-between shadow-xs select-none">
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-bounce">📍</span>
                 <div>
-                  <p className="font-bold text-slate-800">Showing news near you</p>
+                  <p className="font-bold text-slate-900">Showing news near you</p>
                 </div>
               </div>
-              <div className="hidden sm:block text-emerald-700 bg-emerald-100/60 font-bold px-3 py-1.5 rounded-full text-xs">
+              <div className="hidden sm:block text-emerald-700 bg-emerald-100 font-bold px-3 py-1.5 rounded-full text-xs">
                 Within {radius} km
               </div>
             </div>
@@ -389,7 +389,7 @@ function NearbyNews() {
           {isMobileOrTablet && (
             <div className="flex flex-col gap-3 mb-4 w-full">
               {geoPermissionState === 'granted' && (
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-3 shadow-xs">
+                <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs">
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none">
                       📍 Radius Filter
@@ -397,7 +397,7 @@ function NearbyNews() {
                     <select
                       value={radius}
                       onChange={(e) => setRadius(parseInt(e.target.value, 10))}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 outline-none text-xs bg-white cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg border border-slate-200 outline-none text-xs bg-white text-slate-900 cursor-pointer"
                     >
                       <option value="5">5 km</option>
                       <option value="10">10 km</option>
@@ -420,8 +420,8 @@ function NearbyNews() {
           )}
 
           {articles.length === 0 ? (
-            <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
-              <h3 className="text-base font-extrabold text-slate-800 mb-1">No nearby news found</h3>
+            <div className="text-center py-12 px-6 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <h3 className="text-base font-extrabold text-slate-900 mb-1">No nearby news found</h3>
               <p className="text-xs text-slate-500">
                 {geoPermissionState === 'granted' 
                   ? `There are no articles within ${radius} km of your location. Try expanding the radius filter.`

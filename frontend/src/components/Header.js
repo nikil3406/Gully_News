@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUserProfileById, searchUsers } from '../services/authService';
 
 const getUserColor = (username) => {
-  if (!username) return '#d97706';
+  if (!username) return '#2563eb';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 60%, 42%)`;
+  return `hsl(${h}, 65%, 45%)`;
 };
 
 function Header({ categories = [], selectedCategory, onCategorySelect, showCategoryDropdown = false }) {
@@ -113,9 +113,11 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        background: '#ffffff',
-        borderBottom: '1px solid #e7e5e4',
-        boxShadow: scrolled ? '0 2px 16px rgba(15,23,42,0.08)' : '0 1px 0 rgba(15,23,42,0.05)',
+        background: 'rgba(255, 255, 255, 0.90)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid #e2e8f0',
+        boxShadow: scrolled ? '0 4px 20px rgba(15,23,42,0.06)' : '0 1px 3px rgba(15,23,42,0.03)',
         transition: 'box-shadow 0.25s ease',
       }}
     >
@@ -142,18 +144,19 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
           }}
         >
           <div style={{
-            width: 32,
-            height: 32,
-            background: '#0f172a',
-            borderRadius: 8,
+            width: 34,
+            height: 34,
+            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            borderRadius: 9,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#fbbf24" strokeWidth="1.8" />
-              <path d="M7 9h10M7 12h7M7 15h5" stroke="#fbbf24" strokeWidth="1.8" strokeLinecap="round" />
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#ffffff" strokeWidth="2" />
+              <path d="M7 9h10M7 12h7M7 15h5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
           <span style={{
@@ -163,7 +166,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
             color: '#0f172a',
             letterSpacing: '-0.5px',
           }}>
-            Gully <span style={{ color: '#d97706' }}>News</span>
+            Gully <span style={{ color: '#2563eb' }}>News</span>
           </span>
         </Link>
 
@@ -197,15 +200,15 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 paddingBottom: 7,
                 fontSize: 13,
                 fontFamily: 'var(--font-sans)',
-                background: '#fafaf9',
-                border: '1.5px solid #e7e5e4',
+                background: '#f1f5f9',
+                border: '1.5px solid #e2e8f0',
                 borderRadius: 999,
                 outline: 'none',
                 color: '#0f172a',
-                transition: 'all 0.18s',
+                transition: 'all 0.25s ease',
               }}
-              onFocus2={(e) => { e.target.style.borderColor = '#d97706'; e.target.style.background = '#fff'; }}
-              onBlur={(e) => { e.target.style.borderColor = '#e7e5e4'; e.target.style.background = '#fafaf9'; }}
+              onFocus2={(e) => { e.target.style.borderColor = '#2563eb'; e.target.style.background = '#ffffff'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.12)'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.background = '#f1f5f9'; e.target.style.boxShadow = 'none'; }}
             />
             {searchQuery && (
               <button
@@ -220,7 +223,10 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                   fontSize: 13,
                   display: 'flex',
                   padding: 2,
+                  transition: 'color 0.2s',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M18 6L6 18M6 6l12 12" />
@@ -236,10 +242,10 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               top: 'calc(100% + 8px)',
               left: 0,
               right: 0,
-              background: '#fff',
-              border: '1px solid #e7e5e4',
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
               borderRadius: 14,
-              boxShadow: '0 12px 40px rgba(15,23,42,0.14)',
+              boxShadow: '0 12px 32px rgba(15,23,42,0.08)',
               maxHeight: 300,
               overflowY: 'auto',
               zIndex: 50,
@@ -258,16 +264,16 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                       gap: 10,
                       padding: '10px 14px',
                       cursor: 'pointer',
-                      transition: 'background 0.15s',
-                      borderBottom: '1px solid #f5f4f2',
+                      transition: 'background 0.2s ease',
+                      borderBottom: '1px solid #f1f5f9',
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#fafaf9'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#eef4ff'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     onClick={() => handleUserClick(u.id)}
                   >
                     <div style={{
                       width: 34, height: 34, borderRadius: '50%', overflow: 'hidden',
-                      flexShrink: 0, border: '1.5px solid #e7e5e4',
+                      flexShrink: 0, border: '1.5px solid #e2e8f0',
                     }}>
                       {u.profile_image ? (
                         <img src={u.profile_image} alt={u.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -306,14 +312,14 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 style={{
                   padding: '6px 12px',
                   background: 'transparent',
-                  color: '#64748b',
-                  border: '1.5px solid #e7e5e4',
+                  color: '#475569',
+                  border: '1.5px solid #e2e8f0',
                   borderRadius: 999,
                   fontSize: 12,
                   fontWeight: 600,
                   fontFamily: 'var(--font-sans)',
                   cursor: 'pointer',
-                  transition: 'all 0.18s',
+                  transition: 'all 0.25s ease',
                 }}
               >
                 Logout
@@ -327,10 +333,10 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                     fontSize: 12,
                     fontWeight: 600,
                     fontFamily: 'var(--font-sans)',
-                    color: '#334155',
+                    color: '#475569',
                     textDecoration: 'none',
                     borderRadius: 999,
-                    transition: 'color 0.18s',
+                    transition: 'color 0.25s ease',
                   }}
                 >
                   Sign in
@@ -339,14 +345,15 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                   to="/register"
                   style={{
                     padding: '6px 12px',
-                    background: '#0f172a',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                     color: '#fff',
                     borderRadius: 999,
                     fontSize: 12,
                     fontWeight: 700,
                     fontFamily: 'var(--font-sans)',
                     textDecoration: 'none',
-                    transition: 'all 0.18s',
+                    transition: 'all 0.25s ease',
+                    boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
                   }}
                 >
                   Get Started
@@ -369,9 +376,9 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               fontWeight: 600,
               fontFamily: 'var(--font-sans)',
               textDecoration: 'none',
-              transition: 'all 0.18s',
-              background: location.pathname === '/' ? '#0f172a' : 'transparent',
-              color: location.pathname === '/' ? '#ffffff' : '#334155',
+              transition: 'all 0.25s ease',
+              background: location.pathname === '/' ? '#2563eb' : 'transparent',
+              color: location.pathname === '/' ? '#ffffff' : '#475569',
             }}
           >
             Home
@@ -388,9 +395,9 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
               display: 'flex',
               alignItems: 'center',
               gap: 5,
-              transition: 'all 0.18s',
-              background: location.pathname === '/nearby' ? '#0f172a' : 'transparent',
-              color: location.pathname === '/nearby' ? '#ffffff' : '#334155',
+              transition: 'all 0.25s ease',
+              background: location.pathname === '/nearby' ? '#2563eb' : 'transparent',
+              color: location.pathname === '/nearby' ? '#ffffff' : '#475569',
             }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -400,7 +407,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
             Nearby
           </Link>
 
-          <div style={{ width: 1, height: 20, background: '#e7e5e4', margin: '0 4px' }} />
+          <div style={{ width: 1, height: 20, background: '#e2e8f0', margin: '0 4px' }} />
 
           {token ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -409,7 +416,7 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 to="/create-post"
                 style={{
                   padding: '7px 16px',
-                  background: '#d97706',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                   color: '#fff',
                   borderRadius: 999,
                   fontSize: 13,
@@ -419,11 +426,11 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  boxShadow: '0 2px 8px rgba(217,119,6,0.25)',
-                  transition: 'all 0.18s',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
+                  transition: 'all 0.25s ease',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#b45309'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.35)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(217,119,6,0.25)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.35)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(37,99,235,0.25)'; }}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14"/>
@@ -439,15 +446,15 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                     width: 34, height: 34,
                     borderRadius: '50%',
                     overflow: 'hidden',
-                    border: '2px solid #e7e5e4',
+                    border: '2px solid #e2e8f0',
                     cursor: 'pointer',
                     background: 'none',
                     padding: 0,
                     flexShrink: 0,
-                    transition: 'border-color 0.18s',
+                    transition: 'all 0.25s ease',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#d97706'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e7e5e4'}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#2563eb'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
                   title="View Profile"
                 >
                   {currentUserProfile.profile_image ? (
@@ -470,17 +477,17 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 style={{
                   padding: '6px 14px',
                   background: 'transparent',
-                  color: '#64748b',
-                  border: '1.5px solid #e7e5e4',
+                  color: '#475569',
+                  border: '1.5px solid #e2e8f0',
                   borderRadius: 999,
                   fontSize: 13,
                   fontWeight: 600,
                   fontFamily: 'var(--font-sans)',
                   cursor: 'pointer',
-                  transition: 'all 0.18s',
+                  transition: 'all 0.25s ease',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fca5a5'; e.currentTarget.style.background = '#fff5f5'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e7e5e4'; e.currentTarget.style.background = 'transparent'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#fecaca'; e.currentTarget.style.background = '#fef2f2'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'transparent'; }}
                 onClick={handleLogout}
               >
                 Logout
@@ -494,11 +501,13 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                   padding: '6px 14px',
                   fontSize: 13, fontWeight: 600,
                   fontFamily: 'var(--font-sans)',
-                  color: '#334155',
+                  color: '#475569',
                   textDecoration: 'none',
                   borderRadius: 999,
-                  transition: 'color 0.18s',
+                  transition: 'all 0.25s ease',
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#2563eb'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#475569'}
               >
                 Sign in
               </Link>
@@ -506,18 +515,18 @@ function Header({ categories = [], selectedCategory, onCategorySelect, showCateg
                 to="/register"
                 style={{
                   padding: '7px 16px',
-                  background: '#0f172a',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                   color: '#fff',
                   borderRadius: 999,
                   fontSize: 13,
                   fontWeight: 700,
                   fontFamily: 'var(--font-sans)',
                   textDecoration: 'none',
-                  transition: 'all 0.18s',
-                  boxShadow: '0 2px 8px rgba(15,23,42,0.18)',
+                  transition: 'all 0.25s ease',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#1e293b'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#0f172a'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.35)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(37,99,235,0.25)'; }}
               >
                 Get Started
               </Link>

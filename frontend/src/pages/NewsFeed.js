@@ -174,7 +174,7 @@ function NewsFeed() {
     return (
       <div style={{
         minHeight: '100vh',
-        background: '#fafaf9',
+        background: '#f8fafc',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -183,27 +183,28 @@ function NewsFeed() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
           {/* Animated logo */}
           <div style={{
-            width: 48, height: 48, background: '#0f172a',
-            borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 50, height: 50, background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 14px rgba(37,99,235,0.30)',
             animation: 'bounceSubtle 2s infinite ease-in-out',
           }}>
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#fbbf24" strokeWidth="1.8"/>
-              <path d="M7 9h10M7 12h7M7 15h5" stroke="#fbbf24" strokeWidth="1.8" strokeLinecap="round"/>
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#ffffff" strokeWidth="2"/>
+              <path d="M7 9h10M7 12h7M7 15h5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0f172a', textAlign: 'center' }}>
-              Gully News
+            <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0f172a', textAlign: 'center' }}>
+              Gully <span style={{ color: '#2563eb' }}>News</span>
             </p>
-            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
+            <p style={{ margin: '3px 0 0', fontSize: 12, color: '#94a3b8', textAlign: 'center' }}>
               Loading your local feed...
             </p>
           </div>
           {/* Skeleton cards */}
           <div style={{ width: 320, display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ background: '#fff', borderRadius: 14, padding: 16, border: '1px solid #e7e5e4' }}>
+              <div key={i} style={{ background: '#ffffff', borderRadius: 14, padding: 16, border: '1px solid #e2e8f0' }}>
                 <div className="skeleton" style={{ height: 14, width: '60%', marginBottom: 10 }} />
                 <div className="skeleton" style={{ height: 10, width: '90%', marginBottom: 6 }} />
                 <div className="skeleton" style={{ height: 10, width: '75%' }} />
@@ -216,7 +217,7 @@ function NewsFeed() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fafaf9', fontFamily: 'var(--font-sans)' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'var(--font-sans)' }}>
       <Header
         categories={categories}
         selectedCategory={selectedCategory}
@@ -249,7 +250,7 @@ function NewsFeed() {
                 style={{
                   width: '100%',
                   padding: '11px 0',
-                  background: '#0f172a',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: 12,
@@ -262,18 +263,18 @@ function NewsFeed() {
                   justifyContent: 'center',
                   gap: 8,
                   marginBottom: 14,
-                  boxShadow: '0 2px 8px rgba(15,23,42,0.18)',
-                  transition: 'all 0.18s',
+                  boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
+                  transition: 'all 0.25s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#1e293b';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)';
                   e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(15,23,42,0.25)';
+                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.35)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#0f172a';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
                   e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(15,23,42,0.18)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(37,99,235,0.25)';
                 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -335,15 +336,15 @@ function NewsFeed() {
             {/* Live indicator */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              fontSize: 11, fontWeight: 700, color: '#059669',
-              background: '#ecfdf5', border: '1px solid #a7f3d0',
+              fontSize: 11, fontWeight: 700, color: '#22c55e',
+              background: '#f0fdf4', border: '1px solid #bbf7d0',
               borderRadius: 999, padding: '4px 10px',
               fontFamily: 'var(--font-sans)',
             }}>
               <span style={{
                 width: 6, height: 6, borderRadius: '50%',
-                background: '#10b981',
-                boxShadow: '0 0 0 2px #6ee7b740',
+                background: '#22c55e',
+                boxShadow: '0 0 0 2px rgba(34,197,94,0.25)',
                 animation: 'bounceSubtle 2s infinite',
                 display: 'inline-block',
               }} />
@@ -357,9 +358,9 @@ function NewsFeed() {
               textAlign: 'center',
               padding: '48px 24px',
               background: '#ffffff',
-              border: '1px solid #e7e5e4',
+              border: '1px solid #e2e8f0',
               borderRadius: 16,
-              boxShadow: '0 1px 3px rgba(15,23,42,0.05)',
+              boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.05)',
             }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🗞️</div>
               <h3 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-sans)' }}>
@@ -396,8 +397,8 @@ function NewsFeed() {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                       <div style={{
                         width: 26, height: 26,
-                        border: '2.5px solid #e7e5e4',
-                        borderTopColor: '#d97706',
+                        border: '2.5px solid #e2e8f0',
+                        borderTopColor: '#2563eb',
                         borderRadius: '50%',
                         animation: 'spin 0.75s linear infinite',
                       }} />
@@ -419,9 +420,9 @@ function NewsFeed() {
                   justifyContent: 'center',
                   gap: 8,
                 }}>
-                  <span style={{ flex: 1, height: 1, background: '#f0ede9', maxWidth: 60 }} />
+                  <span style={{ flex: 1, height: 1, background: '#e2e8f0', maxWidth: 60 }} />
                   You've read it all
-                  <span style={{ flex: 1, height: 1, background: '#f0ede9', maxWidth: 60 }} />
+                  <span style={{ flex: 1, height: 1, background: '#e2e8f0', maxWidth: 60 }} />
                 </div>
               )}
             </>

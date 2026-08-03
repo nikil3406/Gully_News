@@ -28,13 +28,13 @@ function SearchBar({ onSearch }) {
         display: 'flex',
         alignItems: 'center',
         background: '#ffffff',
-        border: `1.5px solid ${isActive ? '#0f172a' : '#e7e5e4'}`,
+        border: `1.5px solid ${isActive ? '#2563eb' : '#e2e8f0'}`,
         borderRadius: 12,
         padding: '0 12px',
         height: 40,
         gap: 8,
-        transition: 'all 0.18s',
-        boxShadow: isActive ? '0 0 0 3px rgba(15,23,42,0.06)' : 'none',
+        transition: 'all 0.25s ease',
+        boxShadow: isActive ? '0 0 0 3px rgba(37, 99, 235, 0.12)' : 'none',
       }}>
         <span style={{ color: '#94a3b8', display: 'flex', flexShrink: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +65,7 @@ function SearchBar({ onSearch }) {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: '#94a3b8', display: 'flex', padding: 2, flexShrink: 0,
-              transition: 'color 0.15s',
+              transition: 'color 0.2s',
             }}
             onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}

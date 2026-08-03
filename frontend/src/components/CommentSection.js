@@ -106,12 +106,12 @@ function CommentSection({ postId, onCommentsCountChange }) {
   };
 
   return (
-    <div className="bg-slate-50/50 border-t border-slate-200/80 p-4 md:p-6 rounded-b-2xl animate-fadeIn">
-      <div className="mb-4 border-b border-slate-200/60 pb-2 flex justify-between items-center">
-        <h4 className="text-sm font-extrabold text-slate-800">Discussion ({comments.length})</h4>
+    <div className="bg-slate-50 border-t border-slate-200 p-4 md:p-6 rounded-b-2xl animate-fadeIn">
+      <div className="mb-4 border-b border-slate-200 pb-3 flex justify-between items-center">
+        <h4 className="text-sm font-extrabold text-slate-900">Discussion ({comments.length})</h4>
       </div>
 
-      {error && <div className="bg-red-50 text-red-700 border-l-4 border-red-500 p-3 rounded-r-lg text-xs md:text-sm mb-4">⚠️ {error}</div>}
+      {error && <div className="bg-red-50 text-red-600 border-l-4 border-red-500 p-3 rounded-r-lg text-xs md:text-sm mb-4">⚠️ {error}</div>}
 
       {/* Comments List */}
       <div className="flex flex-col gap-4 max-h-[350px] overflow-y-auto mb-6 pr-2 scrollbar-thin">
@@ -132,20 +132,20 @@ function CommentSection({ postId, onCommentsCountChange }) {
                 <img 
                   src={comment.profile_image} 
                   alt={comment.author} 
-                  className="w-9 h-9 rounded-full object-cover shadow-xs flex-shrink-0 border border-slate-200" 
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-slate-200" 
                 />
               ) : (
                 <div 
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0 text-white shadow-xs border border-white/20 select-none"
-                  style={{ backgroundColor: `hsl(${getAvatarHue(comment.author)}, 65%, 55%)` }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold uppercase flex-shrink-0 text-white border border-white/20 select-none"
+                  style={{ backgroundColor: `hsl(${getAvatarHue(comment.author)}, 65%, 45%)` }}
                 >
                   {comment.author[0].toUpperCase()}
                 </div>
               )}
               
-              <div className="bg-white border border-slate-200/80 rounded-2xl px-4 py-3 flex-1 shadow-xs relative">
+              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 flex-1 shadow-xs relative">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="font-bold text-xs md:text-sm text-slate-800">{comment.author}</span>
+                  <span className="font-bold text-xs md:text-sm text-slate-900">{comment.author}</span>
                   <span className="text-[10px] md:text-xs text-slate-400">{formatRelativeTime(comment.created_at)}</span>
                 </div>
                 <p className="text-xs md:text-sm text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-left">{comment.content}</p>
@@ -153,7 +153,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
                 {isAuthenticated && currentUserId.current === comment.user_id && (
                   <button 
                     onClick={() => handleDelete(comment.id)} 
-                    className="text-[10px] md:text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer border-none bg-transparent mt-2 inline-flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity"
+                    className="text-[10px] md:text-xs text-red-500 hover:text-red-600 font-semibold cursor-pointer border-none bg-transparent mt-2 inline-flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity"
                     title="Delete your comment"
                   >
                     🗑️ Delete
@@ -166,11 +166,11 @@ function CommentSection({ postId, onCommentsCountChange }) {
       </div>
 
       {/* Add Comment Input */}
-      <div className="border-t border-slate-200/60 pt-4">
+      <div className="border-t border-slate-200 pt-4">
         {isAuthenticated ? (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <textarea
-              className="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none text-xs md:text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 outline-none text-xs md:text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all resize-none"
               placeholder="Share your thoughts locally..."
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
@@ -181,7 +181,7 @@ function CommentSection({ postId, onCommentsCountChange }) {
             <div className="flex justify-end">
               <button 
                 type="submit" 
-                className="px-4 py-2 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                className="px-5 py-2.5 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full shadow-sm hover:shadow transition-all duration-200 cursor-pointer border-none"
                 disabled={submitting || !commentText.trim()}
               >
                 {submitting ? 'Posting...' : 'Post Comment 🚀'}
@@ -189,10 +189,10 @@ function CommentSection({ postId, onCommentsCountChange }) {
             </div>
           </form>
         ) : (
-          <div className="bg-blue-50/20 border border-dashed border-blue-200/60 rounded-2xl p-4 text-center">
+          <div className="bg-blue-50/50 border border-dashed border-blue-200 rounded-2xl p-4 text-center">
             <p className="text-xs md:text-sm text-blue-700 font-semibold mb-3">Join the discussion in your community!</p>
             <div className="flex justify-center">
-              <Link to="/login" className="px-5 py-2 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-md shadow-blue-100 transition-all duration-200 text-decoration-none">
+              <Link to="/login" className="px-5 py-2 text-xs md:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full shadow-sm transition-all duration-200 text-decoration-none">
                 Login to comment
               </Link>
             </div>

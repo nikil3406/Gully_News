@@ -7,13 +7,13 @@ import { deletePost } from '../services/postService';
 import ImageUploadPicker from '../components/ImageUploadPicker';
 
 const getUserColor = (username) => {
-  if (!username) return '#007bff';
+  if (!username) return '#2563eb';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 45%)`;
+  return `hsl(${h}, 65%, 45%)`;
 };
 
 const Profile = () => {
@@ -175,9 +175,9 @@ const Profile = () => {
         )}
 
         {/* Profile Card Banner */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 flex-1 w-full">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border border-slate-200 flex-shrink-0 shadow-sm">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border border-slate-200 flex-shrink-0 shadow-xs">
               {userData.profile_image ? (
                 <img src={userData.profile_image} alt={userData.username} className="w-full h-full object-cover" />
               ) : (
@@ -191,7 +191,7 @@ const Profile = () => {
             </div>
 
             <div className="flex flex-col gap-1 text-center sm:text-left flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-tight truncate">{userData.username}</h1>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight truncate">{userData.username}</h1>
               {isOwnProfile && <p className="text-xs md:text-sm text-slate-400 font-medium">{userData.email}</p>}
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed my-2 max-w-lg break-words">{userData.bio || "No bio added yet."}</p>
 
@@ -222,9 +222,9 @@ const Profile = () => {
               </button>
             ) : token ? (
               <button
-                className={`px-5 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 cursor-pointer shadow-sm select-none border-none ${userData.is_following
+                className={`px-5 py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 cursor-pointer shadow-xs select-none border-none ${userData.is_following
                     ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100 hover:shadow-lg'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   }`}
                 onClick={handleFollowToggle}
                 disabled={followLoading}
@@ -244,15 +244,15 @@ const Profile = () => {
 
         {/* Edit Profile Modal */}
         {isEditing && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto animate-scaleUp">
-              <h2 className="text-lg font-bold text-slate-800 mb-4 text-left border-b border-slate-100 pb-2">Edit Profile</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4 text-left border-b border-slate-100 pb-2">Edit Profile</h2>
               <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Username</label>
                   <input
                     type="text"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     placeholder="Username"
@@ -270,7 +270,7 @@ const Profile = () => {
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider text-left">Bio</label>
                   <textarea
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all resize-none"
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
                     placeholder="Tell us about yourself..."
@@ -287,7 +287,7 @@ const Profile = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full font-bold text-xs md:text-sm text-white transition-colors cursor-pointer shadow-md shadow-blue-100 border-none select-none"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full font-bold text-xs md:text-sm text-white transition-colors cursor-pointer shadow-xs border-none select-none"
                     disabled={updateLoading}
                   >
                     {updateLoading ? 'Saving...' : 'Save Changes'}
@@ -299,7 +299,7 @@ const Profile = () => {
         )}
 
         <div className="mt-6">
-          <h2 className="text-lg font-extrabold text-slate-800 mb-4 text-left border-b border-slate-100 pb-2 select-none">
+          <h2 className="text-lg font-extrabold text-slate-900 mb-4 text-left border-b border-slate-100 pb-2 select-none">
             {isOwnProfile ? 'Your Articles' : `${userData.username}'s Articles`}
           </h2>
           {posts.length > 0 ? (
@@ -314,11 +314,11 @@ const Profile = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
+            <div className="text-center py-12 px-6 bg-white border border-slate-200 rounded-2xl shadow-xs">
               <p className="text-xs sm:text-sm text-slate-500 mb-4">{isOwnProfile ? "You haven't published any articles yet." : "This reporter hasn't published any articles yet."}</p>
               {isOwnProfile && (
                 <button
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs md:text-sm shadow-md cursor-pointer border-none"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs md:text-sm shadow-xs cursor-pointer border-none"
                   onClick={() => navigate('/create-post')}
                 >
                   Create Your First Post

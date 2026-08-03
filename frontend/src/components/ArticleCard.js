@@ -4,24 +4,24 @@ import { toggleLikePost } from '../services/postService';
 import { formatDate } from '../utils/dateFormatter';
 
 const getUserColor = (username) => {
-  if (!username) return '#d97706';
+  if (!username) return '#2563eb';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 60%, 42%)`;
+  return `hsl(${h}, 65%, 45%)`;
 };
 
 const CATEGORY_COLORS = {
-  Politics: '#dc2626',
+  Politics: '#ef4444',
   Sports:   '#2563eb',
-  Business: '#059669',
-  Health:   '#7c3aed',
-  Tech:     '#0891b2',
-  Crime:    '#9f1239',
+  Business: '#14b8a6',
+  Health:   '#8b5cf6',
+  Tech:     '#06b6d4',
+  Crime:    '#f59e0b',
   Weather:  '#0284c7',
-  default:  '#d97706',
+  default:  '#2563eb',
 };
 
 function getCategoryColor(category) {
@@ -68,14 +68,14 @@ function ArticleCard({ article, currentUserId, onDelete }) {
       style={{
         background: '#ffffff',
         border: '1px solid',
-        borderColor: cardHovered ? '#d4d0cc' : '#e7e5e4',
+        borderColor: cardHovered ? '#bfdbfe' : '#e2e8f0',
         borderRadius: 16,
         overflow: 'hidden',
         marginBottom: 20,
-        transform: cardHovered ? 'translateY(-3px)' : 'translateY(0)',
+        transform: cardHovered ? 'translateY(-2px)' : 'translateY(0)',
         boxShadow: cardHovered
-          ? '0 8px 30px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.06)'
-          : '0 1px 3px rgba(15,23,42,0.06), 0 2px 8px rgba(15,23,42,0.03)',
+          ? '0 10px 15px -3px rgba(37, 99, 235, 0.08), 0 4px 6px -4px rgba(37, 99, 235, 0.04)'
+          : '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
         transition: 'all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         cursor: 'default',
         fontFamily: 'var(--font-sans)',
@@ -97,8 +97,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
               height: '100%',
               objectFit: 'cover',
               display: 'block',
-              transition: 'transform 0.5s ease',
-              transform: cardHovered ? 'scale(1.03)' : 'scale(1)',
+              transition: 'transform 0.4s ease',
+              transform: cardHovered ? 'scale(1.025)' : 'scale(1)',
             }}
           />
           {/* Gradient overlay at bottom */}
@@ -106,15 +106,15 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             position: 'absolute',
             bottom: 0, left: 0, right: 0,
             height: 80,
-            background: 'linear-gradient(to top, rgba(15,23,42,0.45) 0%, transparent 100%)',
+            background: 'linear-gradient(to top, rgba(15,23,42,0.40) 0%, transparent 100%)',
           }} />
           {/* Category badge over image */}
           {article.category && (
             <div style={{
               position: 'absolute',
               top: 12, left: 12,
-              background: 'rgba(255,255,255,0.96)',
-              border: `1.5px solid ${catColor}22`,
+              background: 'rgba(255,255,255,0.92)',
+              border: `1.5px solid ${catColor}33`,
               borderRadius: 999,
               padding: '3px 10px',
               fontSize: 10,
@@ -122,7 +122,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
               color: catColor,
-              backdropFilter: 'blur(4px)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
             }}>
               {article.category}
             </div>
@@ -149,8 +150,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             )}
             {article.city && (
               <span style={{
-                fontSize: 10, fontWeight: 600, color: '#64748b',
-                background: '#f5f4f2', border: '1px solid #e7e5e4',
+                fontSize: 10, fontWeight: 600, color: '#475569',
+                background: '#f1f5f9', border: '1px solid #e2e8f0',
                 borderRadius: 999, padding: '3px 10px',
                 display: 'flex', alignItems: 'center', gap: 3,
               }}>
@@ -163,8 +164,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             )}
             {article.distance_km !== undefined && article.distance_km !== null && (
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#059669',
-                background: '#ecfdf5', border: '1px solid #a7f3d0',
+                fontSize: 10, fontWeight: 700, color: '#22c55e',
+                background: '#f0fdf4', border: '1px solid #bbf7d0',
                 borderRadius: 999, padding: '3px 10px',
               }}>
                 {parseFloat(article.distance_km).toFixed(1)} km away
@@ -178,8 +179,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
             {article.city && (
               <span style={{
-                fontSize: 10, fontWeight: 600, color: '#64748b',
-                background: '#f5f4f2', border: '1px solid #e7e5e4',
+                fontSize: 10, fontWeight: 600, color: '#475569',
+                background: '#f1f5f9', border: '1px solid #e2e8f0',
                 borderRadius: 999, padding: '3px 10px',
                 display: 'flex', alignItems: 'center', gap: 3,
               }}>
@@ -192,8 +193,8 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             )}
             {article.distance_km !== undefined && article.distance_km !== null && (
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#059669',
-                background: '#ecfdf5', border: '1px solid #a7f3d0',
+                fontSize: 10, fontWeight: 700, color: '#22c55e',
+                background: '#f0fdf4', border: '1px solid #bbf7d0',
                 borderRadius: 999, padding: '3px 10px',
               }}>
                 {parseFloat(article.distance_km).toFixed(1)} km away
@@ -209,9 +210,9 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             fontSize: 17,
             fontWeight: 800,
             lineHeight: 1.35,
-            color: cardHovered ? '#d97706' : '#0f172a',
+            color: cardHovered ? '#2563eb' : '#0f172a',
             cursor: 'pointer',
-            transition: 'color 0.2s',
+            transition: 'color 0.25s ease',
             fontFamily: 'var(--font-sans)',
             letterSpacing: '-0.3px',
           }}
@@ -234,10 +235,11 @@ function ArticleCard({ article, currentUserId, onDelete }) {
                 <button
                   style={{
                     background: 'none', border: 'none', padding: 0,
-                    color: '#d97706', fontWeight: 700, fontSize: 13.5,
+                    color: '#2563eb', fontWeight: 700, fontSize: 13.5,
                     cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                    textDecoration: 'underline', textDecorationColor: '#fbbf2480',
+                    textDecoration: 'underline', textDecorationColor: '#bfdbfe',
                     textUnderlineOffset: 2,
+                    transition: 'color 0.2s',
                   }}
                   onClick={navigateToDetail}
                 >
@@ -254,7 +256,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
           alignItems: 'center',
           paddingBottom: 12,
           marginBottom: 12,
-          borderBottom: '1px solid #f5f4f2',
+          borderBottom: '1px solid #f1f5f9',
           flexWrap: 'wrap',
           gap: 8,
         }}>
@@ -266,7 +268,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
                 alt={article.author}
                 style={{
                   width: 26, height: 26, borderRadius: '50%',
-                  objectFit: 'cover', border: '1.5px solid #e7e5e4',
+                  objectFit: 'cover', border: '1.5px solid #e2e8f0',
                   flexShrink: 0,
                 }}
                 onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
@@ -292,18 +294,18 @@ function ArticleCard({ article, currentUserId, onDelete }) {
                   type="button"
                   style={{
                     background: 'none', border: 'none', padding: 0,
-                    fontWeight: 700, fontSize: 12, color: '#334155',
+                    fontWeight: 700, fontSize: 12, color: '#475569',
                     cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                    transition: 'color 0.18s',
+                    transition: 'color 0.25s ease',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#d97706'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#334155'}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#2563eb'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#475569'}
                   onClick={(e) => handleOpenProfile(e, article.user_id)}
                 >
                   {article.author}
                 </button>
               ) : (
-                <span style={{ fontWeight: 700, fontSize: 12, color: '#334155', fontFamily: 'var(--font-sans)' }}>
+                <span style={{ fontWeight: 700, fontSize: 12, color: '#475569', fontFamily: 'var(--font-sans)' }}>
                   {article.author}
                 </span>
               )}
@@ -321,9 +323,9 @@ function ArticleCard({ article, currentUserId, onDelete }) {
                 color: '#ef4444', fontSize: 11, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'var(--font-sans)',
                 display: 'flex', alignItems: 'center', gap: 4,
-                transition: 'all 0.18s',
+                transition: 'all 0.25s ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#fff5f5'; e.currentTarget.style.borderColor = '#fca5a5'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.borderColor = '#fecaca'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'transparent'; }}
               onClick={(e) => { e.stopPropagation(); onDelete(article.id); }}
               title="Delete this post"
@@ -343,7 +345,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             fontSize: 11, fontWeight: 600, color: '#94a3b8',
-            background: '#f5f4f2', border: '1px solid #e7e5e4',
+            background: '#f1f5f9', border: '1px solid #e2e8f0',
             borderRadius: 999, padding: '4px 10px',
             fontFamily: 'var(--font-sans)',
           }}>
@@ -360,13 +362,15 @@ function ArticleCard({ article, currentUserId, onDelete }) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4,
                 fontSize: 11, fontWeight: 700,
-                color: isLiked ? '#e11d48' : '#64748b',
-                background: isLiked ? '#fff1f2' : '#ffffff',
-                border: `1px solid ${isLiked ? '#fecdd3' : '#e7e5e4'}`,
+                color: isLiked ? '#ef4444' : '#475569',
+                background: isLiked ? '#fef2f2' : '#ffffff',
+                border: `1px solid ${isLiked ? '#fecaca' : '#e2e8f0'}`,
                 borderRadius: 999, padding: '4px 10px',
                 cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                transition: 'all 0.18s',
+                transition: 'all 0.25s ease',
               }}
+              onMouseEnter={(e) => { if (!isLiked) { e.currentTarget.style.background = '#eef4ff'; e.currentTarget.style.borderColor = '#bfdbfe'; } }}
+              onMouseLeave={(e) => { if (!isLiked) { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = '#e2e8f0'; } }}
               onClick={handleLike}
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -378,7 +382,7 @@ function ArticleCard({ article, currentUserId, onDelete }) {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
               fontSize: 11, fontWeight: 600, color: '#94a3b8',
-              background: '#f5f4f2', border: '1px solid #e7e5e4',
+              background: '#f1f5f9', border: '1px solid #e2e8f0',
               borderRadius: 999, padding: '4px 10px',
               fontFamily: 'var(--font-sans)',
             }}>
@@ -393,14 +397,14 @@ function ArticleCard({ article, currentUserId, onDelete }) {
           <button
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontSize: 11, fontWeight: 600, color: '#64748b',
-              background: '#ffffff', border: '1px solid #e7e5e4',
+              fontSize: 11, fontWeight: 600, color: '#475569',
+              background: '#ffffff', border: '1px solid #e2e8f0',
               borderRadius: 999, padding: '4px 10px',
               cursor: 'pointer', fontFamily: 'var(--font-sans)',
-              transition: 'all 0.18s',
+              transition: 'all 0.25s ease',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#f5f4f2'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#eef4ff'; e.currentTarget.style.borderColor = '#bfdbfe'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
             onClick={navigateToDetail}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

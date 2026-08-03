@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CommentSection from '../components/CommentSection';
 import { socket } from '../socket';
 import { fetchPostById, incrementPostView, toggleLikePost, deletePost } from '../services/postService';
-import { formatDate } from '../utils/dateFormatter';
 
 // Generate a consistent color from the author's username
 const getUserColor = (username) => {
-  if (!username) return '#3b82f6';
+  if (!username) return '#2563eb';
   let hash = 0;
   for (let i = 0; i < username.length; i++) {
     hash = username.charCodeAt(i) + ((hash << 5) - hash);
   }
   const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 65%, 42%)`;
+  return `hsl(${h}, 65%, 45%)`;
 };
 
 function PostDetail() {
@@ -166,11 +165,11 @@ function PostDetail() {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header />
-        <div className="text-center py-12 px-6 bg-white border border-slate-200/80 rounded-2xl shadow-xs max-w-md mx-auto mt-12">
+        <div className="text-center py-12 px-6 bg-white border border-slate-200 rounded-2xl shadow-xs max-w-md mx-auto mt-12">
           <h2 className="text-lg font-bold text-red-600 mb-2">Error Loading Post</h2>
           <p className="text-sm text-slate-500 mb-4">{error || 'Post details could not be found.'}</p>
           <button
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors cursor-pointer text-xs md:text-sm border-none shadow-md shadow-blue-100"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors cursor-pointer text-xs md:text-sm border-none shadow-sm"
             onClick={() => navigate('/')}
           >
             ← Return to Feed
@@ -193,12 +192,12 @@ function PostDetail() {
         </button>
 
         {/* Full Article Layout */}
-        <article className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 md:p-6 mb-6">
+        <article className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5 md:p-6 mb-6">
           <div className="mb-4">
-            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 font-extrabold text-[10px] md:text-xs rounded-full uppercase tracking-wider mb-3 select-none text-left">
+            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 font-extrabold text-[10px] md:text-xs rounded-full uppercase tracking-wider mb-3 select-none text-left border border-blue-100">
               {post.category}
             </span>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-800 leading-tight mb-4 text-left">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight mb-4 text-left">
               {post.title}
             </h1>
 
@@ -247,22 +246,22 @@ function PostDetail() {
               </div>
 
               <div className="flex gap-2 items-center flex-wrap select-none">
-                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">👁 {viewsCount} Views</span>
-                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-full">💬 {commentsCount} Comments</span>
+                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-full">👁 {viewsCount} Views</span>
+                <span className="px-3 py-1 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-full">💬 {commentsCount} Comments</span>
               </div>
             </div>
           </div>
 
           {/* Image Representation */}
           {post.image_url && (
-            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200/80 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
+            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
               <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
 
           {/* Video Representation */}
           {post.video_url && (
-            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200/80 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
+            <div className="w-full max-h-[380px] overflow-hidden rounded-2xl border border-slate-200 shadow-xs mb-5 flex items-center justify-center bg-slate-900">
               <video src={post.video_url} controls className="w-full h-full object-cover focus:outline-none" />
             </div>
           )}
@@ -278,7 +277,7 @@ function PostDetail() {
               <>
                 <button
                   className={`px-4 py-2 text-xs md:text-sm font-bold border rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none ${isLiked
-                      ? 'text-pink-600 border-pink-100 bg-pink-50/20 hover:bg-pink-50'
+                      ? 'text-red-500 border-red-200 bg-red-50 hover:bg-red-100'
                       : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100'
                     }`}
                   onClick={handleLike}
@@ -304,7 +303,7 @@ function PostDetail() {
         </article>
 
         {/* Dedicated comments section taking up the bottom page area */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
           <CommentSection
             postId={id}
             onCommentsCountChange={setCommentsCount}

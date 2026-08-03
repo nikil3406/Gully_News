@@ -34,10 +34,10 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
       <div
         style={{
           background: '#ffffff',
-          border: '1px solid #e7e5e4',
+          border: '1px solid #e2e8f0',
           borderRadius: 16,
           padding: 18,
-          boxShadow: '0 1px 3px rgba(15,23,42,0.05)',
+          boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
         }}
         className="hidden md:block"
       >
@@ -65,7 +65,7 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
                 <path d="M7 9h10M7 12h7M7 15h5"/>
               </svg>
             }
-            color="#d97706"
+            color="#2563eb"
           />
 
           {categories.map((category) => (
@@ -74,14 +74,14 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
               label={category.name}
               isActive={selectedCategory === category.id}
               onClick={() => onCategorySelect(category.id)}
-              color={category.color || '#94a3b8'}
+              color={category.color || '#2563eb'}
               dot
             />
           ))}
         </div>
 
         {/* Trending section */}
-        <div style={{ borderTop: '1px solid #f5f4f2', marginTop: 16, paddingTop: 16 }}>
+        <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 16, paddingTop: 16 }}>
           <h4 style={{
             margin: '0 0 10px 0',
             fontSize: 10,
@@ -96,11 +96,11 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
           }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b">
               <path d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/>
-              <path d="M12 12c0 3-2 4-2 7a2 2 0 004 0c0-3-2-4-2-7z" fill="#fcd34d"/>
+              <path d="M12 12c0 3-2 4-2 7a2 2 0 004 0c0-3-2-4-2-7z" fill="#fde68a"/>
             </svg>
             Trending
           </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {topTrendingPosts.length > 0 ? (
               topTrendingPosts.map((post) => (
                 <div
@@ -109,11 +109,11 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
                     fontSize: 12,
                     fontWeight: 600,
                     color: '#475569',
-                    background: '#fafaf9',
-                    border: '1px solid #f0ede9',
-                    borderRadius: 8,
-                    padding: '7px 11px',
-                    transition: 'all 0.18s',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 10,
+                    padding: '8px 11px',
+                    transition: 'all 0.25s ease',
                     fontFamily: 'var(--font-sans)',
                   }}
                 >
@@ -150,7 +150,7 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
             label="All"
             isActive={!selectedCategory}
             onClick={() => onCategorySelect(null)}
-            color="#d97706"
+            color="#2563eb"
           />
           {categories.map((category) => (
             <MobileChip
@@ -158,7 +158,7 @@ function CategoryFilter({ categories, onCategorySelect, selectedCategory, trendi
               label={category.name}
               isActive={selectedCategory === category.id}
               onClick={() => onCategorySelect(category.id)}
-              color={category.color || '#94a3b8'}
+              color={category.color || '#2563eb'}
             />
           ))}
         </div>
@@ -188,22 +188,23 @@ function CategoryButton({ label, isActive, onClick, color, icon, dot }) {
         fontSize: 13,
         fontWeight: isActive ? 700 : 600,
         textAlign: 'left',
-        transition: 'all 0.18s',
-        background: isActive ? '#0f172a' : hovered ? '#fafaf9' : 'transparent',
-        color: isActive ? '#ffffff' : hovered ? '#0f172a' : '#475569',
+        transition: 'all 0.25s ease',
+        background: isActive ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : hovered ? '#eef4ff' : 'transparent',
+        color: isActive ? '#ffffff' : hovered ? '#2563eb' : '#475569',
+        boxShadow: isActive ? '0 2px 6px rgba(37,99,235,0.20)' : 'none',
       }}
     >
       {dot && (
         <span style={{
           width: 8, height: 8,
           borderRadius: '50%',
-          background: isActive ? '#fbbf24' : color,
+          background: isActive ? '#f59e0b' : color,
           flexShrink: 0,
-          transition: 'background 0.18s',
+          transition: 'background 0.2s',
         }} />
       )}
       {icon && (
-        <span style={{ color: isActive ? '#fbbf24' : color, display: 'flex' }}>
+        <span style={{ color: isActive ? '#f59e0b' : color, display: 'flex' }}>
           {icon}
         </span>
       )}
@@ -221,15 +222,16 @@ function MobileChip({ label, isActive, onClick, color }) {
         padding: '6px 14px',
         borderRadius: 999,
         border: '1.5px solid',
-        borderColor: isActive ? '#0f172a' : '#e7e5e4',
-        background: isActive ? '#0f172a' : '#ffffff',
+        borderColor: isActive ? '#2563eb' : '#e2e8f0',
+        background: isActive ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' : '#ffffff',
         color: isActive ? '#ffffff' : '#475569',
         fontSize: 12,
         fontWeight: 700,
         fontFamily: 'var(--font-sans)',
         cursor: 'pointer',
-        transition: 'all 0.18s',
+        transition: 'all 0.25s ease',
         whiteSpace: 'nowrap',
+        boxShadow: isActive ? '0 2px 6px rgba(37,99,235,0.20)' : 'none',
       }}
     >
       {label}

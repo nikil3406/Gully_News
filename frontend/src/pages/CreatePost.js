@@ -284,11 +284,11 @@ function CreatePost() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-xs">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 text-center mb-1 select-none">Create News Post</h1>
-          <p className="text-xs sm:text-sm text-slate-500 text-center mb-6 select-none">Share what's happening in your gully</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center mb-1 select-none">Create News Post</h1>
+          <p className="text-xs sm:text-sm text-slate-400 text-center mb-6 select-none">Share what's happening in your gully</p>
           
-          {error && <div className="bg-red-50 text-red-700 border-l-4 border-red-500 p-3.5 rounded-r-xl text-xs md:text-sm mb-4">⚠️ {error}</div>}
+          {error && <div className="bg-red-50 text-red-600 border-l-4 border-red-500 p-3.5 rounded-r-xl text-xs md:text-sm mb-4">⚠️ {error}</div>}
           
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5 flex-1">
@@ -299,7 +299,7 @@ function CreatePost() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="What's the news?"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 required
               />
             </div>
@@ -311,7 +311,7 @@ function CreatePost() {
                   name="category_id"
                   value={formData.category_id}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all cursor-pointer"
                   required
                 >
                   <option value="">Select Category</option>
@@ -331,10 +331,9 @@ function CreatePost() {
               </div>
             </div>
 
-
             {/* Location Picker Section */}
-            <div className="flex flex-col gap-3 p-4 bg-slate-50 border border-slate-200/60 rounded-2xl">
-              <h3 className="text-sm font-bold text-slate-700 text-left select-none flex items-center gap-1">
+            <div className="flex flex-col gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+              <h3 className="text-sm font-bold text-slate-800 text-left select-none flex items-center gap-1">
                 <span>📍</span> Location Details
               </h3>
               
@@ -344,13 +343,13 @@ function CreatePost() {
                   placeholder="Search for a location (e.g. Indiranagar, Bangalore)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-grow px-3.5 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="flex-grow px-3.5 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all"
                 />
                 <button
                   type="button"
                   onClick={handleSearchLocation}
                   disabled={searchLoading}
-                  className="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 active:bg-slate-900 transition-all cursor-pointer border-none"
+                  className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all cursor-pointer border-none"
                 >
                   {searchLoading ? 'Searching...' : 'Search'}
                 </button>
@@ -359,19 +358,19 @@ function CreatePost() {
               <div id="map" className="h-[250px] w-full rounded-xl border border-slate-200 bg-slate-100 relative z-0"></div>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mt-1">
-                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200/50">
+                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200">
                   <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">City</span>
                   <span className="text-slate-700 truncate">{formData.city || 'Not selected'}</span>
                 </div>
-                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200/50">
+                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200">
                   <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">State</span>
                   <span className="text-slate-700 truncate">{formData.state || 'Not selected'}</span>
                 </div>
-                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200/50">
+                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200">
                   <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Country</span>
                   <span className="text-slate-700 truncate">{formData.country || 'Not selected'}</span>
                 </div>
-                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200/50 col-span-2 sm:col-span-3">
+                <div className="flex flex-col gap-1 bg-white p-2.5 rounded-lg border border-slate-200 col-span-2 sm:col-span-3">
                   <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Coordinates (Lat, Lng)</span>
                   <span className="text-slate-600 font-mono">
                     {formData.latitude && formData.longitude 
@@ -389,14 +388,14 @@ function CreatePost() {
                 value={formData.content}
                 onChange={handleChange}
                 placeholder="Write the full story here..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all min-h-[160px] resize-y"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all min-h-[160px] resize-y"
                 required
               />
             </div>
 
             <button 
               type="submit" 
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-full shadow-md shadow-blue-100 hover:shadow-lg transition-all duration-200 cursor-pointer select-none border-none mt-2"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-sm rounded-full shadow-xs hover:shadow transition-all duration-200 cursor-pointer select-none border-none mt-2"
               disabled={loading}
             >
               {loading ? 'Publishing...' : 'Publish Post 🚀'}
