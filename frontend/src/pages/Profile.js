@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import { getProfile, getUserProfileById, updateProfile, toggleFollowUser } from '../services/authService';
@@ -19,7 +19,9 @@ const getUserColor = (username) => {
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem('token');
+  const fromPostId = location.state?.fromPostId;
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userData, setUserData] = useState(null);
@@ -161,6 +163,16 @@ const Profile = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {!isEditing && <Header />}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+        
+        {/* Back Button to Post */}
+        {fromPostId && (
+          <button
+            className="text-xs md:text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors duration-200 mb-4 inline-flex items-center gap-1 bg-transparent border-none cursor-pointer p-0"
+            onClick={() => navigate(`/post/${fromPostId}`)}
+          >
+            ← Back to Post
+          </button>
+        )}
 
         {/* Profile Card Banner */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">

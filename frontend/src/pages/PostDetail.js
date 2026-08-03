@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import CommentSection from '../components/CommentSection';
 import { socket } from '../socket';
@@ -229,7 +229,7 @@ function PostDetail() {
                     <button
                       type="button"
                       className="font-bold text-xs md:text-sm text-slate-700 text-left hover:text-blue-600 hover:underline transition-colors cursor-pointer bg-transparent border-none p-0"
-                      onClick={() => navigate(`/profile/${post.user_id}`)}
+                      onClick={() => navigate(`/profile/${post.user_id}`, { state: { fromPostId: id } })}
                     >
                       {post.author}
                     </button>
