@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import CreatePost from "./pages/CreatePost";
 import Profile from "./pages/Profile";
 import PostDetail from "./pages/PostDetail";
+import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 
 function DashboardRedirect() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/dashboard" element={<DashboardRedirect />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />
     </BrowserRouter>

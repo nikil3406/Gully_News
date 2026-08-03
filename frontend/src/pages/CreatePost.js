@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import L from 'leaflet';
 import { getPostPayload } from '../utils/postLocation';
 import { fetchCategories, createPost } from '../services/postService';
+import { uploadImageFile } from '../services/apiClient';
 import ImageUploadPicker from '../components/ImageUploadPicker';
 
 // Fix Leaflet marker icon issue
@@ -31,6 +32,7 @@ function CreatePost() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const navigate = useNavigate();
@@ -269,9 +271,23 @@ function CreatePost() {
             longitude: markerInstanceRef.current.getLatLng().lng,
           }
         : null;
-      const payload = getPostPayload(formData, fallbackLocation, markerLocation);
+
+      let uploadedImageUrl = formData.image_url || '';
+
+      if (selectedImageFile) {
+        const uploadResult = await uploadImageFile(selectedImageFile, 'gully_news/posts');
+        uploadedImageUrl = uploadResult?.url || '';
+        setFormData(prev => ({ ...prev, image_url: uploadedImageUrl }));
+      }
+
+      const payload = getPostPayload(
+        { ...formData, image_url: uploadedImageUrl },
+        fallbackLocation,
+        markerLocation
+      );
 
       await createPost(payload);
+      setSelectedImageFile(null);
       navigate('/');
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -326,7 +342,11 @@ function CreatePost() {
                   label="Post Image (Optional)"
                   currentImageUrl={formData.image_url}
                   folder="gully_news/posts"
-                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, image_url: url }))}
+                  onImageUploaded={(url) => {
+                    setFormData(prev => ({ ...prev, image_url: url }));
+                    if (!url) setSelectedImageFile(null);
+                  }}
+                  onImageFileSelected={setSelectedImageFile}
                 />
               </div>
             </div>

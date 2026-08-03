@@ -7,8 +7,7 @@ import { uploadImageFile } from '../services/apiClient';
  * 2. Live Web Camera Capture
  * Uploads automatically to Cloudinary and returns the hosted URL.
  */
-function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload Image', folder = 'gully_news' }) {
-  const [loading, setLoading] = useState(false);
+function ImageUploadPicker({ currentImageUrl, onImageUploaded, onImageFileSelected, label = 'Upload Image', folder = 'gully_news' }) {
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState(currentImageUrl || '');
   const [showCamera, setShowCamera] = useState(false);
@@ -32,7 +31,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
     };
   }, [cameraStream]);
 
-  const handleFileUpload = async (file) => {
+  const handleFileSelection = (file) => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -40,34 +39,19 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
       return;
     }
 
-    // Local instant preview
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
-    setLoading(true);
     setError('');
 
-    try {
-      const res = await uploadImageFile(file, folder);
-      if (res && res.url) {
-        setPreviewUrl(res.url);
-        if (onImageUploaded) {
-          onImageUploaded(res.url);
-        }
-      }
-    } catch (err) {
-      console.error('Image upload error:', err);
-      setError(err.message || 'Failed to upload image to Cloudinary.');
-      // Revert preview if upload failed
-      setPreviewUrl(currentImageUrl || '');
-    } finally {
-      setLoading(false);
+    if (onImageFileSelected) {
+      onImageFileSelected(file);
     }
   };
 
   const handleFileInputChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleFileUpload(file);
+      handleFileSelection(file);
     }
   };
 
@@ -116,7 +100,7 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
       if (blob) {
         const capturedFile = new File([blob], `camera_capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
         stopCamera();
-        await handleFileUpload(capturedFile);
+        handleFileSelection(capturedFile);
       }
     }, 'image/jpeg', 0.9);
   };
@@ -125,6 +109,9 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
     setPreviewUrl('');
     if (onImageUploaded) {
       onImageUploaded('');
+    }
+    if (onImageFileSelected) {
+      onImageFileSelected(null);
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -154,20 +141,13 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
             alt="Uploaded preview"
             className="w-full h-48 sm:h-64 object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          {loading && (
-            <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-xs flex flex-col items-center justify-center text-white">
-              <svg className="animate-spin h-8 w-8 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span className="text-sm font-medium">Uploading to Cloudinary...</span>
-            </div>
-          )}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent px-3 py-2 text-white text-[11px] font-medium">
+            Ready to publish
+          </div>
           <div className="absolute bottom-3 right-3 flex space-x-2 opacity-90 group-hover:opacity-100 transition-opacity">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={loading}
               className="px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg backdrop-blur-md transition-all shadow-xs cursor-pointer border-none"
             >
               Change Photo
@@ -175,7 +155,6 @@ function ImageUploadPicker({ currentImageUrl, onImageUploaded, label = 'Upload I
             <button
               type="button"
               onClick={handleRemoveImage}
-              disabled={loading}
               className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg backdrop-blur-md transition-all shadow-xs cursor-pointer border-none"
             >
               Remove
