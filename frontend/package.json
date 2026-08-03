@@ -7,13 +7,13 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^13.5.0",
+    "@testing-library/user-event": "^14.6.1",
     "axios": "^1.16.0",
     "concurrently": "^10.0.3",
     "leaflet": "^1.9.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2",
+    "react-router-dom": "^6.30.4",
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.3.0",
@@ -22,7 +22,10 @@
   "scripts": {
     "start": "concurrently \"npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind-compiled.css --watch\" \"react-scripts start\"",
     "build": "npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind-compiled.css --minify && react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watch=false",
+    "test:watch": "react-scripts test",
+    "test:coverage": "react-scripts test --watch=false --coverage",
+    "test:frontend": "react-scripts test --watch=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

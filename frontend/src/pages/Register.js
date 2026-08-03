@@ -125,8 +125,10 @@ function Register() {
           <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Username */}
             <div>
-              <label style={labelStyle}>Username</label>
+              <label htmlFor="register-username" style={labelStyle}>Username</label>
               <input
+                id="register-username"
+                name="username"
                 type="text"
                 placeholder="your_handle"
                 value={username}
@@ -140,8 +142,10 @@ function Register() {
 
             {/* Email */}
             <div>
-              <label style={labelStyle}>Email</label>
+              <label htmlFor="register-email" style={labelStyle}>Email</label>
               <input
+                id="register-email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -155,9 +159,11 @@ function Register() {
 
             {/* Password */}
             <div>
-              <label style={labelStyle}>Password</label>
+              <label htmlFor="register-password" style={labelStyle}>Password</label>
               <div style={{ position: 'relative' }}>
                 <input
+                  id="register-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}

@@ -94,7 +94,7 @@ function Login() {
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Email */}
             <div>
-              <label style={{
+              <label htmlFor="login-email" style={{
                 display: 'block',
                 fontSize: 11,
                 fontWeight: 800,
@@ -106,6 +106,8 @@ function Login() {
                 Email
               </label>
               <input
+                id="login-email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -131,7 +133,7 @@ function Login() {
 
             {/* Password */}
             <div>
-              <label style={{
+              <label htmlFor="login-password" style={{
                 display: 'block',
                 fontSize: 11,
                 fontWeight: 800,
@@ -144,6 +146,8 @@ function Login() {
               </label>
               <div style={{ position: 'relative' }}>
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
