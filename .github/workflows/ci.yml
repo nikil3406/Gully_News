@@ -95,7 +95,7 @@ jobs:
       # Fetches the source code. `fetch-depth: 1` (default) keeps the clone
       # shallow for speed. Only the commit being tested is needed here.
       - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── 2. Node.js setup ───────────────────────────────────────────────────
       # Installs the specified Node version and configures the npm cache path
@@ -215,7 +215,7 @@ jobs:
     steps:
       # ── 1. Checkout ────────────────────────────────────────────────────────
       - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── 2. Node.js setup + npm cache ───────────────────────────────────────
       - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
@@ -304,7 +304,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
