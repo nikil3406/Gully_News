@@ -1,25 +1,5 @@
-# =============================================================================
-# Gully News — Continuous Integration Pipeline
-# =============================================================================
-# Runs on every pull request targeting `main` AND on every direct push to `main`.
-# Spins up two parallel jobs:
-#   • frontend  – lint → test (with coverage) → build
-#   • backend   – lint → jest (with coverage)
-# Both jobs use dependency caching to keep run times short.
-# =============================================================================
-
 name: 🚀 CI — Gully News
 
-# ---------------------------------------------------------------------------
-# TRIGGERS
-# ---------------------------------------------------------------------------
-# `pull_request` → runs checks before a PR is merged, protecting `main`.
-# `push`         → validates the branch after a merge / direct push.
-#
-# `paths` filters mean the frontend job only re-runs when frontend files
-# change, and the backend job only when backend files change. This avoids
-# wasting runner minutes on unrelated modifications.
-# ---------------------------------------------------------------------------
 on:
   pull_request:
     branches:
@@ -28,158 +8,68 @@ on:
     branches:
       - main
 
-# ---------------------------------------------------------------------------
-# CONCURRENCY
-# ---------------------------------------------------------------------------
-# If a new push/PR event arrives for the same branch before the current
-# run finishes, the older run is automatically cancelled. This saves
-# runner minutes and always keeps only the most recent state under test.
-#
-# `github.head_ref` is set on pull_request events (the PR branch name).
-# `github.ref`      is set on push events (e.g. refs/heads/main).
-# Falling back to `github.run_id` ensures non-PR pushes are never wrongly
-# cancelled when multiple branches push simultaneously.
-# ---------------------------------------------------------------------------
 concurrency:
   group: ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-# ---------------------------------------------------------------------------
-# PERMISSIONS (Least Privilege)
-# ---------------------------------------------------------------------------
-# Only the permissions actually required by the workflow steps are granted.
-# `contents: read`      → checkout the source code.
-# `pull-requests: read` → read PR metadata (branch name, labels, etc.).
-# No write permissions are granted at the top level; specific jobs that
-# need elevated access (e.g. CodeQL, in the future) should declare their own.
-# ---------------------------------------------------------------------------
 permissions:
   contents: read
   pull-requests: read
 
-# ---------------------------------------------------------------------------
-# REUSABLE VARIABLES
-# ---------------------------------------------------------------------------
-# Centralise values that are referenced in multiple places so that a
-# version bump or path rename only needs one edit.
-# ---------------------------------------------------------------------------
 env:
-  NODE_VERSION: "24"          # Keep in sync with your local runtime
+  NODE_VERSION: "24"
   FRONTEND_DIR: ./frontend
   BACKEND_DIR: ./backend
 
-# =============================================================================
-# JOBS
-# =============================================================================
 jobs:
 
-  # -------------------------------------------------------------------------
-  # JOB 1 — FRONTEND
-  # -------------------------------------------------------------------------
-  # Runs: ESLint (via react-scripts) → Unit tests + coverage → Production build
-  # The job fails immediately on the first step that errors (fail-fast is the
-  # default for steps; the `--max-warnings 0` flag propagates lint warnings
-  # as failures so they cannot be silently ignored).
-  # -------------------------------------------------------------------------
   frontend:
     name: 🖥️  Frontend — Lint · Test · Build
     runs-on: ubuntu-latest
-    timeout-minutes: 20            # Hard-kill if something hangs unexpectedly
+    timeout-minutes: 20
 
     defaults:
       run:
         working-directory: ${{ env.FRONTEND_DIR }}
 
     steps:
-      # ── 1. Checkout ────────────────────────────────────────────────────────
-      # Fetches the source code. `fetch-depth: 1` (default) keeps the clone
-      # shallow for speed. Only the commit being tested is needed here.
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Node.js setup ───────────────────────────────────────────────────
-      # Installs the specified Node version and configures the npm cache path
-      # so the next step can restore it efficiently.
       - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          # ── CACHING ───────────────────────────────────────────────────────
-          # `cache: 'npm'` tells setup-node to:
-          #   1. Hash `package-lock.json` to generate a unique cache key.
-          #   2. Restore node_modules from the GitHub Actions cache if the
-          #      key matches (i.e. dependencies did not change).
-          #   3. Save a new cache entry after a successful install.
-          # On a cache hit, `npm ci` still runs but completes in ~3 s instead
-          # of ~45 s because it only validates against the lock-file.
           cache: npm
           cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
 
-      # ── 3. Install dependencies ────────────────────────────────────────────
-      # `npm ci` is preferred over `npm install` in CI because it:
-      #   • Deletes node_modules before installing (clean slate).
-      #   • Respects package-lock.json exactly — no version drift.
-      #   • Fails if lock-file and package.json disagree.
       - name: 📦 Install dependencies
         run: npm ci
 
-      # ── 4. Lint ─────────────────────────────────────────────────────────────
-      # react-scripts ships a pre-configured ESLint that covers React, hooks,
-      # and accessibility rules. `--max-warnings 0` promotes any warning to an
-      # error so lint issues cannot be ignored.
-      # `continue-on-error: false` (default) — the job stops if lint fails.
       - name: 🔍 Run ESLint
         run: npx react-scripts lint --max-warnings 0
-        # If ESLint is not yet configured or react-scripts lint is unavailable,
-        # temporarily set `continue-on-error: true` while you add config files.
         continue-on-error: true
 
-      # ── 5. Unit / integration tests + coverage ─────────────────────────────
-      # `CI=true` makes react-scripts run tests non-interactively and exit
-      # after the first failure. `--watchAll=false` stops the interactive
-      # watch mode from keeping the runner alive indefinitely.
-      # `--coverage` instruments the code and emits reports to ./coverage/.
       - name: 🧪 Run tests with coverage
         run: npm run test:coverage
         env:
           CI: true
-          # react-scripts respects this to enable stable snapshot testing.
           REACT_APP_ENV: test
 
-      # ── 6. Upload coverage artifact ────────────────────────────────────────
-      # Stores the generated lcov/html reports so they can be downloaded from
-      # the GitHub Actions run summary. Useful for reviewing coverage locally
-      # or feeding into a coverage reporting service (e.g. Codecov).
       - name: 📊 Upload coverage report
         uses: actions/upload-artifact@v4
-        if: always()               # Upload even if tests partially fail
+        if: always()
         with:
           name: frontend-coverage
           path: ${{ env.FRONTEND_DIR }}/coverage
-          retention-days: 7        # Artifacts are auto-deleted after 7 days
+          retention-days: 7
 
-      # ── 7. Production build ────────────────────────────────────────────────
-      # Validates that the app compiles successfully. This catches import
-      # errors, missing env variables used at build time, and tree-shaking
-      # issues that don't surface in unit tests.
-      # The Tailwind CLI step is baked into the `build` script in package.json.
       - name: 🏗️  Build production bundle
         run: npm run build
         env:
           CI: true
-          # Treat React warnings as errors during build (CRA default behaviour
-          # when CI=true). Remove if you have intentional warnings to suppress.
-          GENERATE_SOURCEMAP: false   # Keeps build artefact size smaller in CI
+          GENERATE_SOURCEMAP: false
 
-  # -------------------------------------------------------------------------
-  # JOB 2 — BACKEND
-  # -------------------------------------------------------------------------
-  # Runs: ESLint (if configured) → Jest tests + coverage
-  # The backend uses ES Modules + node --experimental-vm-modules to run Jest,
-  # matching the exact command in backend/package.json.
-  # A PostgreSQL service container is spun up so integration-style tests that
-  # hit a real DB still work without mocking the DB layer.
-  # -------------------------------------------------------------------------
   backend:
     name: ⚙️  Backend — Lint · Test · Coverage
     runs-on: ubuntu-latest
@@ -189,14 +79,6 @@ jobs:
       run:
         working-directory: ${{ env.BACKEND_DIR }}
 
-    # ── Service containers ──────────────────────────────────────────────────
-    # GitHub Actions can spin up Docker-based service containers alongside the
-    # job. Here we start a PostgreSQL instance that matches the schema used by
-    # the application. The `options` health-check ensures the container is
-    # fully ready before tests run (avoids flaky "connection refused" failures).
-    #
-    # If your tests are fully mocked (like auth.test.js currently is), you can
-    # remove this `services` block. Keep it here for when you add real DB tests.
     services:
       postgres:
         image: postgres:16-alpine
@@ -213,11 +95,9 @@ jobs:
           --health-retries 5
 
     steps:
-      # ── 1. Checkout ────────────────────────────────────────────────────────
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Node.js setup + npm cache ───────────────────────────────────────
       - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
@@ -225,63 +105,34 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
 
-      # ── 3. Install dependencies ────────────────────────────────────────────
       - name: 📦 Install dependencies
         run: npm ci
 
-      # ── 4. Lint ─────────────────────────────────────────────────────────────
-      # The backend does not have a dedicated ESLint config yet.
-      # `continue-on-error: true` keeps CI green while you add one.
-      # Once you add an `.eslintrc` or `eslint.config.js`, remove the flag.
       - name: 🔍 Run ESLint
         run: npx eslint . --ext .js --max-warnings 0
         continue-on-error: true
 
-      # ── 5. Database schema initialisation ──────────────────────────────────
-      # Runs the SQL init script against the service-container PostgreSQL so
-      # any tests that need the real schema can find the tables.
-      # `PGPASSWORD` is set to avoid the interactive password prompt.
-      # Remove this step if you don't have DB-touching tests.
       - name: 🗄️  Initialise test database schema
         run: psql -h localhost -U postgres -d neondb_test -f init_db.sql
         env:
           PGPASSWORD: postgres
 
-      # ── 6. Run Jest tests with coverage ────────────────────────────────────
-      # Uses the exact command from backend/package.json `test:coverage` script.
-      # `--runInBand` runs tests serially (avoids port-conflict flakiness when
-      # multiple test files start their own express instances).
-      #
-      # SECRETS — environment variables are injected from GitHub Secrets so
-      # that real credentials are NEVER hard-coded in the YAML file.
-      # They are masked in logs automatically by GitHub Actions.
-      # How to configure secrets:
-      #   GitHub repo → Settings → Secrets and variables → Actions → New secret
-      #   Add each key listed below.
       - name: 🧪 Run Jest tests with coverage
         run: npm run test:coverage
         env:
-          # ── App secrets (configure these in GitHub → Settings → Secrets) ──
           NODE_ENV: test
           PORT: 5000
-
-          # JWT signing key — used by auth routes
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-          # PostgreSQL connection (points to the service container above)
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/neondb_test
           DB_USER: postgres
           DB_HOST: localhost
           DB_NAME: neondb_test
           DB_PASSWORD: postgres
           DB_PORT: 5432
-
-          # Cloudinary — only needed if image upload tests run
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
-      # ── 7. Upload coverage artifact ────────────────────────────────────────
       - name: 📊 Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
@@ -290,13 +141,6 @@ jobs:
           path: ${{ env.BACKEND_DIR }}/coverage
           retention-days: 7
 
-  # -------------------------------------------------------------------------
-  # JOB 3 — SECURITY AUDIT
-  # -------------------------------------------------------------------------
-  # Runs `npm audit` against both workspaces to catch known CVEs in
-  # third-party dependencies. `--audit-level=high` means the job fails only
-  # for high/critical vulnerabilities; adjust to `moderate` for stricter policy.
-  # -------------------------------------------------------------------------
   security:
     name: 🔒 Security Audit
     runs-on: ubuntu-latest
@@ -316,7 +160,7 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm audit --audit-level=high
-        continue-on-error: true   # Remove once all current advisories are resolved
+        continue-on-error: true
 
       - name: 🔍 Audit backend dependencies
         working-directory: ${{ env.BACKEND_DIR }}
