@@ -219,7 +219,7 @@ export const incrementPostView = async (id) => {
 };
 
 export const findPostOwner = async (id) => {
-  const result = await pool.query("SELECT user_id FROM posts WHERE id = $1", [id]);
+  const result = await pool.query("SELECT user_id, image_url FROM posts WHERE id = $1", [id]);
   return result.rows[0] || null;
 };
 

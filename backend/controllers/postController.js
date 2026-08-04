@@ -1,5 +1,6 @@
 import { normalizeNumber } from "../utils/normalize.js";
 import * as postService from "../services/postService.js";
+import { deleteFromCloudinary } from "../utils/cloudinary.js";
 
 export const createPost = async (req, res) => {
   const { title, content, image_url, video_url, category_id, location_id, latitude, longitude, city, state, country } = req.body;
@@ -138,6 +139,13 @@ export const deletePost = async (req, res) => {
     }
 
     await postService.deletePostRecord(id);
+
+    // Delete associated photo from Cloudinary (non-blocking)
+    if (postOwner.image_url) {
+      deleteFromCloudinary(postOwner.image_url).catch((err) => {
+        console.error("Non-blocking Cloudinary deletion error:", err);
+      });
+    }
 
     try {
       const io = req.app.get("io");
