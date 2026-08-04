@@ -3,7 +3,7 @@ import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
-import { useNavigate } from 'react-router-dom';
+
 import { socket } from '../socket';
 import { fetchPosts, fetchNearbyPosts, fetchCategories, deletePost } from '../services/postService';
 import { filterPostsByCategoryAndSearch } from '../utils/postFilters';
@@ -53,9 +53,7 @@ function NearbyNews() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const navigate = useNavigate();
   const sentinelRef = useRef(null);
   const isMobileOrTablet = useMediaQuery('(max-width: 768px)');
 
@@ -167,10 +165,9 @@ function NearbyNews() {
     };
   }, []);
 
-  // Check auth
+  // Check auth — only userId is needed to identify post ownership in the feed
   useEffect(() => {
     const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
     if (token) {
       try {
         const payload = token.split('.')[1];

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { uploadImageFile } from '../services/apiClient';
 
 /**
  * ImageUploadPicker component allowing users to upload an image from:
