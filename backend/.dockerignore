@@ -1,0 +1,10 @@
+node_modules
+coverage
+.env
+.env.*
+!.env.example
+tests
+.agents
+skills-lock.json
+*.log
+npm-debug.log*
