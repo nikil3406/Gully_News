@@ -1,0 +1,74 @@
+# =============================================================================
+# CodeQL — Static Application Security Testing (SAST)
+# =============================================================================
+# Runs GitHub's CodeQL analysis engine to detect security vulnerabilities,
+# code quality issues, and CWEs in JavaScript source code.
+#
+# Schedule: runs every Sunday at 02:00 UTC (off-peak) in addition to
+# push/PR triggers so even dormant code is periodically re-scanned.
+#
+# Results appear in: GitHub repo → Security → Code scanning alerts
+# =============================================================================
+
+name: 🔐 CodeQL Security Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly scan — every Sunday at 02:00 UTC
+    - cron: "0 2 * * 0"
+
+concurrency:
+  group: codeql-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  # Required for CodeQL to upload findings to the Security tab
+  security-events: write
+  # Required for private repositories
+  actions: read
+
+jobs:
+  analyze:
+    name: 🔐 CodeQL Analysis — JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      # Analyse both 'javascript' and 'typescript' under the same language key
+      matrix:
+        language:
+          - javascript-typescript
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # Initialise CodeQL tooling and configure which language to analyse.
+      # CodeQL auto-detects build steps for interpreted languages (JS/TS)
+      # so no explicit build command is needed here.
+      - name: 🔧 Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Use the extended query suite for deeper vulnerability detection.
+          # Options: 'default' | 'extended' | 'security-extended' | 'security-and-quality'
+          queries: security-extended
+
+      # Auto-build is sufficient for JavaScript/TypeScript projects.
+      # For compiled languages you would replace this with your actual build command.
+      - name: 🏗️  Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # Upload findings to GitHub Security dashboard.
+      - name: 📤 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
