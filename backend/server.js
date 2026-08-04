@@ -27,20 +27,16 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
 
   socket.on("join_post", (postId) => {
     socket.join(`post_${postId}`);
-    console.log(`Socket ${socket.id} joined room post_${postId}`);
   });
 
   socket.on("leave_post", (postId) => {
     socket.leave(`post_${postId}`);
-    console.log(`Socket ${socket.id} left room post_${postId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
   });
 });
 

@@ -8,6 +8,8 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-336791.svg)](https://www.postgresql.org/)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-black.svg)](https://socket.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+[![CI/CD](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF.svg)](https://github.com/nikil3406/Gully_News/actions)
 
 ---
 
@@ -19,10 +21,11 @@
 - [Project Structure](#-project-structure)
 - [Architecture](#-architecture)
 - [Database Schema](#-database-schema)
-- [API Reference](#-api-reference)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
 - [Running the Application](#-running-the-application)
+- [Running with Docker](#-running-with-docker)
+- [CI/CD & Security](#-cicd--security)
 - [Deployment](#-deployment)
 - [Contributing](#-contributing)
 
@@ -32,7 +35,7 @@
 
 **Gully News** is a hyperlocal news platform designed to empower local reporters and community members to publish, discover, and engage with news happening in their immediate surroundings. Unlike national news aggregators, Gully News focuses on the stories that matter most to your neighbourhood — road conditions, local events, weather alerts, sports results, and more.
 
-The platform supports both unauthenticated browsing and a rich authenticated experience for registered reporters, with geolocation-powered nearby news discovery, real-time updates via WebSockets, and Cloudinary-hosted image uploads.
+The platform supports both unauthenticated browsing and a rich authenticated experience for registered reporters, with geolocation-powered nearby news discovery, real-time updates via WebSockets, Cloudinary-hosted image uploads with automated deletion lifecycle management, and a complete Docker & CI/CD pipeline.
 
 ---
 
@@ -50,9 +53,10 @@ The platform supports both unauthenticated browsing and a rich authenticated exp
 - Graceful fallback to global feed when location is unavailable or denied.
 - Radius filter selector in the sidebar.
 
-### ✍️ Post Creation
+### ✍️ Post Creation & Cloudinary Lifecycle
 - Create rich posts with title, content, category, and location tagging.
 - Upload images (JPEG, PNG, WEBP, GIF — up to 10 MB) directly to Cloudinary.
+- **Automated Cloudinary Image Deletion:** When a post is deleted, its associated hosted image is automatically removed from Cloudinary storage.
 - Optional video URL attachment.
 - Automatic geotagging via browser coordinates.
 
@@ -79,6 +83,14 @@ The platform supports both unauthenticated browsing and a rich authenticated exp
 - Fully responsive — desktop gets a full sidebar and top navigation, mobile gets the floating bottom bar.
 - Tap-to-search reporter modal with smooth slide-up animation.
 
+### 🐳 Docker Containerisation
+- Multi-container orchestration (`docker compose up`) featuring PostgreSQL + PostGIS, Express API, and Nginx React SPA.
+- Single-command full-stack execution with automatic spatial schema initialization.
+
+### 🚀 CI/CD & Static Security Scanning
+- Automated GitHub Actions workflow (`ci.yml`) for linting, Jest testing with coverage, frontend React build verification, and dependency security audits.
+- CodeQL SAST scanning (`codeql.yml`) and Dependabot automated updates (`dependabot.yml`).
+
 ---
 
 ## 🛠️ Tech Stack
@@ -90,22 +102,30 @@ The platform supports both unauthenticated browsing and a rich authenticated exp
 | React Router DOM | 7.x | Client-side routing |
 | Tailwind CSS | 4.x | Utility-first styling |
 | Socket.IO Client | 4.x | Real-time WebSocket communication |
-| Leaflet | 1.9.x | Map rendering (if used) |
+| Nginx | 1.27-alpine | Web Server & Reverse Proxy (Docker) |
 | Axios | 1.x | HTTP requests (auth setup) |
 
 ### Backend
 | Technology | Version | Purpose |
 |---|---|---|
-| Node.js | 18+ | Runtime |
+| Node.js | 18+ / 24+ | Runtime |
 | Express.js | 5.x | HTTP server and REST API |
 | Socket.IO | 4.x | WebSocket server |
-| PostgreSQL + PostGIS | 14+ | Relational database with geospatial extension |
+| PostgreSQL + PostGIS | 14+ / 16+ | Relational database with geospatial extension |
 | bcrypt | 6.x | Password hashing |
-| JSON Web Tokens (jsonwebtoken) | 9.x | Authentication tokens |
+| JSON Web Tokens | 9.x | Authentication tokens |
 | Multer | 2.x | Multipart file upload handling |
-| Cloudinary | 2.x | Cloud image hosting and delivery |
+| Cloudinary | 2.x | Cloud image hosting & automated deletion |
 | cookie-parser | 1.x | HttpOnly refresh token cookies |
 | pg (node-postgres) | 8.x | PostgreSQL client |
+
+### DevOps & CI/CD
+| Technology | Tool | Purpose |
+|---|---|---|
+| Docker | Docker Compose | Multi-container orchestration |
+| CI/CD | GitHub Actions | Automated build, test, and lint pipeline |
+| Security | CodeQL & npm audit | Vulnerability scanning & SAST |
+| Dependency Management | Dependabot | Automated dependency updates |
 
 ---
 
@@ -113,10 +133,21 @@ The platform supports both unauthenticated browsing and a rich authenticated exp
 
 ```
 Gully_news/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                  # GitHub Actions CI pipeline
+│   │   └── codeql.yml              # CodeQL Security Analysis workflow
+│   └── dependabot.yml              # Automated dependency update configuration
+│
+├── docker-compose.yml              # Multi-container orchestration (Postgres, Backend, Frontend)
+├── .env.docker.example             # Safe environment template for Docker Compose
+│
 ├── backend/                        # Express.js REST API
+│   ├── Dockerfile                  # Node.js 24 Alpine container definition
+│   ├── .dockerignore
 │   ├── controllers/
 │   │   ├── authController.js       # Auth: register, login, refresh, logout, profile, follow, search
-│   │   ├── postController.js       # Posts: CRUD, likes, views, nearby
+│   │   ├── postController.js       # Posts: CRUD, likes, views, nearby, Cloudinary cleanup
 │   │   └── commentController.js    # Comments: get, add, delete
 │   ├── middleware/
 │   │   ├── authMiddleware.js       # JWT verifyToken / optionalVerifyToken
@@ -130,9 +161,12 @@ Gully_news/
 │   │   ├── authService.js          # Database queries for users, follows, refresh tokens
 │   │   ├── postService.js          # Database queries for posts (incl. PostGIS nearby)
 │   │   └── commentService.js       # Database queries for comments
+│   ├── scripts/
+│   │   ├── seedGoT.js              # Game of Thrones sample dataset seeder
+│   │   └── seedPaginationData.js   # Large feed test dataset seeder
 │   ├── utils/
 │   │   ├── jwt.js                  # Token generation helpers
-│   │   ├── cloudinary.js           # Cloudinary upload stream utility
+│   │   ├── cloudinary.js           # Cloudinary upload & automated deletion helpers
 │   │   └── normalize.js            # Input normalisation helpers
 │   ├── db.js                       # PostgreSQL pool (supports DATABASE_URL or local config)
 │   ├── server.js                   # App entry point: Express + Socket.IO setup
@@ -140,7 +174,9 @@ Gully_news/
 │   └── .env.example                # Required environment variables template
 │
 ├── frontend/                       # React 19 SPA
-│   ├── public/
+│   ├── Dockerfile                  # Multi-stage build (Node builder -> Nginx runner)
+│   ├── nginx.conf                  # Nginx SPA router + reverse proxy for /api/ & /socket.io/
+│   ├── .dockerignore
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Header.js           # Desktop sticky top navigation bar
@@ -167,7 +203,7 @@ Gully_news/
 │   │   ├── index.css               # Global styles + mobile nav animations
 │   │   ├── setupAuth.js            # Global fetch interceptor for silent JWT refresh
 │   │   └── socket.js               # Socket.IO client singleton
-│   └── .env                        # Frontend environment variables
+│   └── package.json
 │
 └── package.json                    # Root workspace package
 ```
@@ -179,7 +215,7 @@ Gully_news/
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                       React Frontend                        │
-│  (Create React App + Tailwind CSS + Socket.IO Client)       │
+│             (Served by Nginx / CRA Dev Server)              │
 │                                                             │
 │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐  │
 │  │ NewsFeed │  │NearbyNews │  │ Profile  │  │PostDetail│  │
@@ -189,7 +225,7 @@ Gully_news/
 │  │            apiClient.js (fetch + JWT auto-refresh)     │  │
 │  └────────────────────────────────────────────────────────┘  │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ HTTPS REST + WebSocket
+                           │ HTTPS REST + WebSocket (/socket.io/)
 ┌──────────────────────────▼──────────────────────────────────┐
 │                     Express.js Backend                       │
 │                                                              │
@@ -202,20 +238,19 @@ Gully_news/
 │  └────────────────────────────┬────────────────────────────┘  │
 │                               │                               │
 │  ┌────────────────────────────▼────────────────────────────┐  │
-│  │         PostgreSQL + PostGIS                             │  │
-│  │  (Neon / Render / local) — users, posts, comments,      │  │
-│  │   likes, followers, locations, categories                │  │
+│  │       PostgreSQL + PostGIS (Docker / Neon)               │  │
+│  │  users, posts, comments, likes, followers, locations     │  │
 │  └─────────────────────────────────────────────────────────┘  │
 │                                                               │
-│  Socket.IO Server ──── Real-time events: post_created,        │
-│                         post_deleted, post_likes_updated,      │
-│                         post_views_updated, post_comments_updated │
-└───────────────────────────────────────────────────────────────┘
-                               │
-               ┌───────────────▼──────────────┐
-               │         Cloudinary CDN         │
-               │   (image hosting & delivery)   │
-               └───────────────────────────────┘
+│  Socket.IO Server ─── Real-time events: post_created,         │
+│                        post_deleted, post_likes_updated,      │
+│                        post_views_updated, post_comments      │
+└───────────────────────────────┬───────────────────────────────┘
+                                │
+                ┌───────────────▼──────────────┐
+                │         Cloudinary CDN        │
+                │  (upload & auto-delete API)  │
+                └──────────────────────────────┘
 ```
 
 ---
@@ -246,58 +281,6 @@ refresh_tokens -- id, user_id, token  (auto-created on server startup)
 CREATE INDEX idx_posts_location_geom ON posts USING gist(location_geom);
 ```
 This enables fast radius searches for the Nearby News feature using PostGIS `ST_DWithin`.
-
----
-
-## 📡 API Reference
-
-Base URL: `http://localhost:5000` (development) | your deployed backend URL (production)
-
-### Authentication — `/api/auth`
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/register` | ❌ | Create a new user account |
-| `POST` | `/login` | ❌ | Login; returns `accessToken` + sets `refreshToken` cookie |
-| `POST` | `/refresh` | Cookie | Silently refresh the access token |
-| `POST` | `/logout` | Cookie | Invalidate refresh token and clear cookie |
-| `GET`  | `/profile` | ✅ | Get the authenticated user's profile |
-| `PUT`  | `/profile` | ✅ | Update username, email, bio, profile image |
-| `POST` | `/:id/follow` | ✅ | Toggle follow/unfollow a user |
-| `GET`  | `/users/search?q=` | ❌ | Search users by username |
-| `GET`  | `/profile/:id` | Optional | Get public profile of any user |
-
-### Posts — `/api/posts`
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET`  | `/` | Optional | Paginated news feed (cursor, limit, category_id, search) |
-| `POST` | `/` | ✅ | Create a new post |
-| `GET`  | `/categories` | ❌ | List all categories |
-| `GET`  | `/nearby?lat&lng&radius&cursor&limit` | Optional | Geospatial nearby posts |
-| `GET`  | `/:id` | Optional | Get a single post by ID |
-| `POST` | `/:id/like` | ✅ | Toggle like on a post |
-| `POST` | `/:id/view` | ❌ | Increment view count |
-| `DELETE` | `/:id` | ✅ | Delete own post |
-| `GET`  | `/:id/comments` | ❌ | Get all comments for a post |
-| `POST` | `/:id/comments` | ✅ | Add a comment to a post |
-| `DELETE` | `/:id/comments/:commentId` | ✅ | Delete own comment |
-
-### Upload — `/api/upload`
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/image?folder=` | ✅ | Upload an image file (≤ 10 MB) to Cloudinary |
-
-### Real-time Events — Socket.IO
-
-| Event (emitted by server) | Payload | Description |
-|---|---|---|
-| `post_created` | Full post object | A new post has been published |
-| `post_deleted` | `postId` (number) | A post has been removed |
-| `post_likes_updated` | `{ id, likes_count }` | Like count changed |
-| `post_views_updated` | `{ id, views_count }` | View count changed |
-| `post_comments_updated` | `{ id, comments_count }` | Comment count changed |
 
 ---
 
@@ -400,7 +383,7 @@ REACT_APP_SOCKET_URL=http://localhost:5000
 
 ## ▶️ Running the Application
 
-### Development
+### Development Mode
 
 Open two terminal windows:
 
@@ -432,6 +415,56 @@ npm run build
 ```
 
 This compiles Tailwind and then runs `react-scripts build` into the `frontend/build/` folder, ready for static hosting (Vercel, Netlify, etc.).
+
+---
+
+## 🐳 Running with Docker
+
+You can run the entire full-stack application (PostgreSQL + PostGIS, Express Backend, Nginx Frontend) in containerised mode using Docker Compose.
+
+### Quick Start
+
+1. **Copy the Docker env template:**
+   ```bash
+   cp .env.docker.example backend/.env
+   ```
+2. **Configure your secrets in `backend/.env`:**
+   Set your `JWT_SECRET` and `CLOUDINARY_*` keys. Leave `DATABASE_URL=` empty so Docker Compose routes database connections to the internal `postgres` container.
+3. **Build and launch containers:**
+   ```bash
+   docker compose up -d
+   ```
+
+### Services & URLs
+
+* **Frontend App:** [http://localhost:3000](http://localhost:3000) (Served via Nginx, reverse-proxying `/api/` & `/socket.io/` to backend)
+* **Backend API:** [http://localhost:5000](http://localhost:5000)
+* **PostgreSQL:** `localhost:5432` (`user: postgres`, `password: postgres`, `db: gully_news`)
+
+### Seeding Data inside Docker
+
+Run the sample dataset script inside the running backend container:
+
+```bash
+docker exec -it gully_news_backend node scripts/seedGoT.js
+```
+
+---
+
+## 🚀 CI/CD & Security
+
+Gully News includes an automated GitHub Actions CI/CD workflow running on every Pull Request targeting `main` and push to `main`.
+
+### CI Workflow Jobs (`ci.yml`)
+
+* **🖥️ Frontend Job:** Dependency install, ESLint checking, Jest test execution with coverage, and React production build verification.
+* **⚙️ Backend Job:** PostgreSQL + PostGIS Docker service container startup, SQL schema initialisation, Jest testing with coverage, and artifact generation.
+* **🔒 Security Audit Job:** Dependency vulnerability check via `npm audit --audit-level=high`.
+
+### Automated Scans & Dependency Patching
+
+* **CodeQL (`codeql.yml`):** Static Application Security Testing (SAST) scanning for vulnerability pattern detection.
+* **Dependabot (`dependabot.yml`):** Weekly automated dependency update PRs for npm packages and GitHub Actions.
 
 ---
 
