@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:frontend",
+    "test:watch": "npm --prefix frontend run test:watch",
+    "test:coverage": "npm --prefix frontend run test:coverage",
+    "test:backend": "npm --prefix backend run test",
+    "test:frontend": "npm --prefix frontend run test:frontend",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test:backend && npm run test:frontend && npm run test:e2e"
   },
   "repository": {
     "type": "git",
@@ -19,6 +25,7 @@
   },
   "homepage": "https://github.com/nikil3406/Gully_News#readme",
   "dependencies": {
+    "@playwright/test": "^1.54.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
