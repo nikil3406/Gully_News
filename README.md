@@ -461,13 +461,6 @@ Gully News includes an automated GitHub Actions CI/CD workflow running on every 
 * **⚙️ Backend Job:** PostgreSQL + PostGIS Docker service container startup, SQL schema initialisation, Jest testing with coverage, and artifact generation.
 * **🔒 Security Audit Job:** Dependency vulnerability check via `npm audit --audit-level=high`.
 
-### Automated Scans & Dependency Patching
-
-* **CodeQL (`codeql.yml`):** Static Application Security Testing (SAST) scanning for vulnerability pattern detection.
-* **Dependabot (`dependabot.yml`):** Weekly automated dependency update PRs for npm packages and GitHub Actions.
-
----
-
 ## 🌐 Deployment
 
 The application is structured for a split-deployment model:
