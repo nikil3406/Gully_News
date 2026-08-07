@@ -13,14 +13,15 @@ function SearchBar({ onSearch }) {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [searchTerm, onSearch]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onSearch) onSearch(searchTerm);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (onSearch) onSearch(searchTerm);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
+    <div
       role="search"
       style={{ width: '100%', marginBottom: 14 }}
     >
@@ -46,6 +47,7 @@ function SearchBar({ onSearch }) {
           placeholder="Search news, topics..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsActive(true)}
           onBlur={() => setIsActive(false)}
           style={{
@@ -77,7 +79,7 @@ function SearchBar({ onSearch }) {
           </button>
         )}
       </div>
-    </form>
+    </div>
   );
 }
 

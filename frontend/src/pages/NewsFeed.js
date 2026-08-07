@@ -110,8 +110,11 @@ function NewsFeed() {
   }, []);
 
   const fetchArticles = useCallback(async (cursorVal = null, shouldAppend = false) => {
-    if (shouldAppend) setLoadingMore(true);
-    else setLoading(true);
+    if (shouldAppend) {
+      setLoadingMore(true);
+    } else if (articles.length === 0) {
+      setLoading(true);
+    }
 
     try {
       const data = await fetchPosts({
@@ -169,8 +172,8 @@ function NewsFeed() {
     }
   };
 
-  // Loading screen
-  if (loading && articles.length === 0) {
+  // Loading screen for the first load only
+  if (loading && articles.length === 0 && !searchTerm) {
     return (
       <div style={{
         minHeight: '100vh',

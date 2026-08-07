@@ -135,9 +135,7 @@ The platform supports both unauthenticated browsing and a rich authenticated exp
 Gully_news/
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml                  # GitHub Actions CI pipeline
-│   │   └── codeql.yml              # CodeQL Security Analysis workflow
-│   └── dependabot.yml              # Automated dependency update configuration
+│       ├── ci.yml                  # GitHub Actions CI 
 │
 ├── docker-compose.yml              # Multi-container orchestration (Postgres, Backend, Frontend)
 ├── .env.docker.example             # Safe environment template for Docker Compose

@@ -196,7 +196,7 @@ function NearbyNews() {
   const fetchArticles = useCallback(async (cursorVal = null, shouldAppend = false) => {
     if (shouldAppend) {
       setLoadingMore(true);
-    } else {
+    } else if (articles.length === 0) {
       setLoading(true);
     }
 
@@ -294,7 +294,7 @@ function NearbyNews() {
     }
   };
 
-  if (loading && articles.length === 0) {
+  if (loading && articles.length === 0 && !searchTerm) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-slate-500 animate-pulse font-medium">
