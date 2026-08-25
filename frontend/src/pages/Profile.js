@@ -17,7 +17,8 @@ const getUserColor = (username) => {
 };
 
 const Profile = () => {
-  const { id } = useParams();
+  const { id, identifier } = useParams();
+  const profileParam = identifier || id;
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem('token');
@@ -48,26 +49,35 @@ const Profile = () => {
     }
   }, [token]);
 
-  const isOwnProfile = !id || (currentUserId && parseInt(id) === currentUserId);
+  const isOwnParam = !profileParam || profileParam === 'me';
+  const isOwnProfile = isOwnParam || (currentUserId && userData && userData.id === currentUserId);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       setLoading(true);
       setError(null);
       try {
-        if (isOwnProfile && !token) {
+        if (isOwnParam && !token) {
           navigate('/login');
           return;
         }
 
-        const data = isOwnProfile
-          ? await getProfile()
-          : await getUserProfileById(id);
+        let data;
+        if (isOwnParam) {
+          data = await getProfile();
+        } else {
+          data = await getUserProfileById(profileParam);
+          if (currentUserId && data.user && data.user.id === currentUserId) {
+            navigate('/profile/me', { replace: true, state: location.state });
+          } else if (data.user && data.user.username && profileParam !== data.user.username) {
+            navigate(`/profile/${encodeURIComponent(data.user.username)}`, { replace: true, state: location.state });
+          }
+        }
 
         setUserData(data.user);
         setPosts(data.posts || []);
 
-        if (isOwnProfile && data.user) {
+        if (data.user && (isOwnParam || (currentUserId && data.user.id === currentUserId))) {
           setEditUsername(data.user.username || '');
           setEditEmail(data.user.email || '');
           setEditBio(data.user.bio || '');
@@ -81,7 +91,7 @@ const Profile = () => {
     };
 
     fetchProfileData();
-  }, [id, currentUserId, token, navigate, isOwnProfile]);
+  }, [profileParam, currentUserId, token, navigate, isOwnParam, location.state]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();

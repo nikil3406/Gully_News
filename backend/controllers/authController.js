@@ -144,8 +144,8 @@ export const getUserProfileById = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isFollowing = await authService.checkIsFollowing(viewerId, id);
-    const posts = await authService.getUserPosts(id, viewerId);
+    const isFollowing = await authService.checkIsFollowing(viewerId, user.id);
+    const posts = await authService.getUserPosts(user.id, viewerId);
 
     res.json({
       user: {

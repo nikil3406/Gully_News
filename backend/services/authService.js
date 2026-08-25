@@ -43,11 +43,20 @@ export const verifyRefreshTokenInDb = async (refreshToken, userId) => {
   return result.rows.length > 0;
 };
 
-export const getUserDetails = async (userId) => {
-  const result = await pool.query(
-    "SELECT id, username, email, profile_image, bio, reputation_score, followers_count, created_at FROM users WHERE id = $1",
-    [userId]
-  );
+export const getUserDetails = async (identifier) => {
+  let result;
+  if (/^\d+$/.test(String(identifier))) {
+    result = await pool.query(
+      "SELECT id, username, email, profile_image, bio, reputation_score, followers_count, created_at FROM users WHERE id = $1",
+      [parseInt(identifier, 10)]
+    );
+  }
+  if (!result || result.rows.length === 0) {
+    result = await pool.query(
+      "SELECT id, username, email, profile_image, bio, reputation_score, followers_count, created_at FROM users WHERE LOWER(username) = LOWER($1)",
+      [identifier]
+    );
+  }
   return result.rows[0] || null;
 };
 
