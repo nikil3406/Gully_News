@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import ArticleCard from '../components/ArticleCard';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
+import LocationPickerModal from '../components/LocationPickerModal';
 
 import { socket } from '../socket';
 import { fetchPosts, fetchNearbyPosts, fetchCategories, deletePost } from '../services/postService';
@@ -61,6 +62,9 @@ function NearbyNews() {
   const [userCoords, setUserCoords] = useState(null);
   const [geoPermissionState, setGeoPermissionState] = useState('prompt'); // 'prompt' | 'granted' | 'denied' | 'error'
   const [radius, setRadius] = useState(10); // radius in km
+  const [areaName, setAreaName] = useState(null);
+  const [isCustomLocation, setIsCustomLocation] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const filtersRef = useRef({ selectedCategory, searchTerm, userCoords, radius });
   useEffect(() => {
@@ -77,13 +81,37 @@ function NearbyNews() {
 
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const coords = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         };
         setUserCoords(coords);
         setGeoPermissionState('granted');
+
+        // Reverse-geocode to get area name
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const geoData = await response.json();
+          const addr = geoData.address || {};
+          const name =
+            addr.suburb ||
+            addr.neighbourhood ||
+            addr.village ||
+            addr.town ||
+            addr.city_district ||
+            addr.city ||
+            addr.county ||
+            addr.state_district ||
+            addr.state ||
+            null;
+          setAreaName(name);
+        } catch (err) {
+          console.warn('Reverse geocode failed:', err);
+        }
       },
       (error) => {
         console.warn("Geolocation error:", error);
@@ -294,6 +322,17 @@ function NearbyNews() {
     }
   };
 
+  const handleLocationConfirm = ({ latitude, longitude, areaName: name }) => {
+    setUserCoords({ latitude, longitude });
+    setAreaName(name || null);
+    setIsCustomLocation(true);
+    setShowLocationPicker(false);
+    // Reset articles so they re-fetch from new coords
+    setArticles([]);
+    setNextCursor(null);
+    setHasMore(false);
+  };
+
   if (loading && articles.length === 0 && !searchTerm) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -335,8 +374,6 @@ function NearbyNews() {
                 <option value="5">5 km</option>
                 <option value="10">10 km</option>
                 <option value="25">25 km</option>
-                <option value="50">50 km</option>
-                <option value="100">100 km</option>
               </select>
             </div>
           )}
@@ -373,11 +410,54 @@ function NearbyNews() {
               <div className="flex items-center gap-3">
                 <span className="text-lg animate-bounce">📍</span>
                 <div>
-                  <p className="font-bold text-slate-900">Showing news near you</p>
+                  <p className="font-bold text-slate-900">
+                    {isCustomLocation ? 'Browsing near' : 'Showing news near you'}{areaName ? ` — ${areaName}` : ''}
+                  </p>
+                  {isCustomLocation && (
+                    <p className="text-[10px] text-emerald-600 mt-0.5">Custom location active</p>
+                  )}
                 </div>
               </div>
-              <div className="hidden sm:block text-emerald-700 bg-emerald-100 font-bold px-3 py-1.5 rounded-full text-xs">
-                Within {radius} km
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:block text-emerald-700 bg-emerald-100 font-bold px-3 py-1.5 rounded-full text-xs">
+                  Within {radius} km
+                </div>
+                <button
+                  onClick={() => setShowLocationPicker(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Change
+                </button>
+                {isCustomLocation && (
+                  <button
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                          async (pos) => {
+                            const coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+                            setUserCoords(coords);
+                            setIsCustomLocation(false);
+                            setAreaName(null);
+                            try {
+                              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`, { headers: { 'Accept-Language': 'en' } });
+                              const gd = await res.json();
+                              const a = gd.address || {};
+                              setAreaName(a.suburb || a.neighbourhood || a.village || a.town || a.city_district || a.city || a.county || a.state || null);
+                            } catch {}
+                          },
+                          () => {}
+                        );
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all cursor-pointer"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -399,8 +479,6 @@ function NearbyNews() {
                       <option value="5">5 km</option>
                       <option value="10">10 km</option>
                       <option value="25">25 km</option>
-                      <option value="50">50 km</option>
-                      <option value="100">100 km</option>
                     </select>
                   </div>
                 </div>
@@ -452,6 +530,12 @@ function NearbyNews() {
           )}
         </div>
       </div>
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onConfirm={handleLocationConfirm}
+        initialCoords={userCoords}
+      />
     </div>
   );
 }
