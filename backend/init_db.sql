@@ -102,3 +102,32 @@ INSERT INTO categories (name) VALUES
 ('Politics'), 
 ('Events')
 ON CONFLICT (name) DO NOTHING;
+
+-- INDEXES
+-- POSTS
+CREATE INDEX IF NOT EXISTS idx_posts_user_id
+ON posts(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_posts_category_id
+ON posts(category_id);
+
+CREATE INDEX IF NOT EXISTS idx_posts_location_id
+ON posts(location_id);
+
+CREATE INDEX IF NOT EXISTS idx_posts_created_at
+ON posts(created_at DESC);
+
+-- COMMENTS
+CREATE INDEX IF NOT EXISTS idx_comments_post_created
+ON comments(post_id, created_at DESC);
+
+-- LIKES
+CREATE INDEX IF NOT EXISTS idx_likes_post_id
+ON likes(post_id);
+
+-- FOLLOWERS
+CREATE INDEX IF NOT EXISTS idx_followers_following_id
+ON followers(following_id);
+
+CREATE INDEX IF NOT EXISTS idx_followers_follower_id
+ON followers(follower_id);
